@@ -145,7 +145,7 @@ const Scene = {
   },
 
   setLoadProgress(p) { this.state.load = p; this.call('setLoadProgress', p); },
-  setBuildProgress(p) { this.state.build = p; this.call('setBuildProgress', p); },
+  setBuildProgress(p, immediate = false) { this.state.build = p; this.call('setBuildProgress', p, immediate); },
   setMode(m) {
     if (m === this.state.mode) return;
     this.state.mode = m;
@@ -298,7 +298,7 @@ function setActiveStage(i, announce) {
     const n = stageEls.get(id);
     if (!n) return;
     const title = (n.querySelector('.stage__title') || {}).textContent || '';
-    dom.buildLive.textContent = `Steg ${i + 1} av ${stages.length}: ${n.dataset.label}. ${title.trim()}`;
+    dom.buildLive.textContent = `Steg ${pad(i)} av ${pad(stages.length - 1)} — ${n.dataset.label}: ${title.trim()}`;
   }, 500);
 }
 
@@ -327,7 +327,7 @@ const absTop = (node) => node.getBoundingClientRect().top + window.scrollY;
 
 function measure() {
   needsMeasure = false;
-  M.vw = window.innerWidth;
+  M.vw = document.documentElement.clientWidth || window.innerWidth; // excludes a classic scrollbar
   M.vh = window.innerHeight;
   const jsMode = html.classList.contains('js');
 
@@ -450,7 +450,9 @@ function update() {
     const inBuild = y + vh * 0.5 > M.buildTop && y < M.buildTop + M.buildH - vh * 0.5;
     if (Math.abs(bp - U.lastBuild) > 1e-5 || force) {
       U.lastBuild = bp;
-      Scene.setBuildProgress(bp);
+      // Snap (no smoothing) when the build isn't on screen, e.g. after a jump to #kontakt,
+      // so the footer never shows the house still assembling itself.
+      Scene.setBuildProgress(bp, !inBuild);
       if (dom.rail) dom.rail.style.setProperty('--p', bp.toFixed(4));
       const pct = Math.round(bp * 100);
       if (pct !== U.lastPct && dom.buildPct) {
@@ -1428,7 +1430,11 @@ function createFallbackScene({ container, reducedMotion: rm = false }) {
 
   return {
     setLoadProgress(p) { apply(ghostItems, clamp(+p || 0)); },
-    setBuildProgress(p) { target = clamp(+p || 0); kick(); },
+    setBuildProgress(p, immediate = false) {
+      target = clamp(+p || 0);
+      if (immediate) { current = target; render(); }
+      kick();
+    },
     setMode(mode) { container.dataset.mode = mode; },
     setPointer(x, y) {
       if (rm) return;

@@ -665,7 +665,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     concrete: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92 }),
     wood: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }),
     clad: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72 }),
-    wrap: new THREE.MeshStandardMaterial({ color: 0xbfc4c2, roughness: 0.9 }),
+    wrap: new THREE.MeshStandardMaterial({ color: 0xa7acab, roughness: 0.92 }),
     frame: new THREE.MeshStandardMaterial({ color: 0x18191b, roughness: 0.4, metalness: 0.5 }),
     glass: new THREE.MeshStandardMaterial({
       color: 0x1c2830,
@@ -1174,7 +1174,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       L(-6, g0, dz, 6, g0, dz, 2);
       for (const x of [-6, 6]) L(x - 0.18, g0, dz + 0.18, x + 0.18, g0, dz - 0.18, 2);
       // height dimension at +x, in the gable centre plane
-      const hx = 11.0;
+      const hx = 10.6;
       L(hx, 0.02, 0, hx, RIDGE, 0, 2);
       L(GABLE_X + 0.3, RIDGE, 0, hx + 0.35, RIDGE, 0, 2);
       L(DECK_X1 + 0.3, 0.02, 0, hx + 0.35, 0.02, 0, 2);
@@ -1240,8 +1240,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     }
     for (const sx of [-1, 1]) N(sx * GABLE_X, roofY(0), 0, 0.58, 2);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) N(sx * GABLE_X, roofY(EAVE_Z), sz * EAVE_Z, 0.5);
-    N(11, RIDGE, 0, 0.95, 2);
-    N(11, 0.02, 0, 0.92, 2);
+    N(10.6, RIDGE, 0, 0.95, 2);
+    N(10.6, 0.02, 0, 0.92, 2);
 
     const lines = new THREE.LineSegments(lineGeometry(segs), lineMat(blueprintU));
     lines.frustumCulled = false;
@@ -1897,10 +1897,10 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const nb = Math.floor((DECK_X1 - 6.04) / pitch);
     for (let i = 0; i < nb; i++) {
       const x = 6.04 + 0.06 + i * pitch;
-      boards.push(it([x, FT - 0.014, -3.6], [0.12, 7.2, 0.028], i / (nb + 2), qZ, col(0xc9ab80, 0.07, 0.01)));
+      boards.push(it([x, FT - 0.014, -3.6], [0.12, 7.2, 0.028], i / (nb + 2), qZ, col(0xb89a70, 0.08, 0.01)));
     }
     // floating step
-    boards.push(it([DECK_X1 + 0.22, 0.3, -1.5], [0.4, 3.0, 0.05], 1, qZ, col(0xc9ab80, 0.05)));
+    boards.push(it([DECK_X1 + 0.22, 0.3, -1.5], [0.4, 3.0, 0.05], 1, qZ, col(0xb89a70, 0.05)));
     addPart('deckBoards', unitBase, mat.wood, boards, { win: win('innredning', 0.4, 1.0), dur: 0.16, anim: A_GROW });
   }
 
@@ -2065,7 +2065,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     pGF.intensity = 30 * L;
     pUF.intensity = 22 * L;
     pVoid.intensity = 26 * L;
-    spot.intensity = 14 * L;
+    spot.intensity = 7 * L;
     mat.interior.color.lerpColors(INT_DARK, INT_LIT, lights);
     mat.interior.emissiveIntensity = 0.07 * L;
     mat.lamp.emissiveIntensity = 4 * L;
@@ -2103,7 +2103,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   function setCameraTargets() {
     const aspect = camera.aspect || 1;
-    const fit = aspect >= 1.25 ? 1 : Math.min(2.25, Math.pow(1.25 / aspect, 0.78));
+    const fit = aspect >= 1.25 ? 1 : Math.min(2.1, Math.pow(1.25 / aspect, 0.72));
     const T = reducedMotion ? 0 : clock;
     let az;
     let y;
@@ -2247,7 +2247,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     blueprint.pts.visible = blueprint.lines.visible;
     gridMat.opacity = lvl.grid;
     rainMat.uniforms.uOpacity.value = lvl.rain * 0.42;
-    rain.visible = lvl.rain > 0.01;
+    rain.visible = !reducedMotion && lvl.rain > 0.01;
     if (!reducedMotion) rainMat.uniforms.uTime.value = clock;
     updateCrane(clock);
     // pointer (smoothed)
@@ -2303,6 +2303,12 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     stop();
   };
   canvas.addEventListener('webglcontextlost', onLost);
+  // keep the drawing buffer in sync even if the host forgets to call resize()
+  let ro = null;
+  if (typeof ResizeObserver !== 'undefined') {
+    ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+  }
 
   function resize() {
     if (disposed) return;
@@ -2386,6 +2392,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       disposed = true;
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onLost);
+      if (ro) ro.disconnect();
       const geos = new Set();
       scene.traverse((o) => {
         if (o.geometry) geos.add(o.geometry);
