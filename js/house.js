@@ -526,15 +526,17 @@ void main() {
 // [p, azimuth, elevation, lookY offset, distance multiplier]
 // azimuth 0 = front (+z), π/2 = glazed gable (+x). Distance is fitted to the
 // finished house, so the framing never jumps while it grows.
+// dm > 1 while the crane stands, so its jib stays inside the frame (and clear of the nav bar);
+// the camera settles in on the finished house as the crane sinks away.
 const CAM_KEYS = [
   [0.0, 1.02, 0.7, -1.4, 1.0],
-  [0.06, 0.96, 0.54, -1.1, 1.0],
-  [0.16, 0.88, 0.42, -0.7, 1.0],
-  [0.29, 0.8, 0.34, -0.25, 0.99],
-  [0.37, 0.72, 0.38, 0.0, 0.99],
-  [0.48, 0.64, 0.3, 0.0, 0.99],
-  [0.62, 0.62, 0.24, 0.0, 0.99],
-  [0.71, 0.7, 0.32, 0.0, 0.99],
+  [0.06, 0.96, 0.54, -1.1, 1.05],
+  [0.16, 0.88, 0.42, -0.7, 1.1],
+  [0.29, 0.8, 0.34, -0.25, 1.1],
+  [0.37, 0.72, 0.38, 0.0, 1.1],
+  [0.48, 0.64, 0.3, 0.0, 1.09],
+  [0.62, 0.62, 0.24, 0.0, 1.07],
+  [0.71, 0.7, 0.32, 0.0, 1.05],
   [0.92, 0.64, 0.2, 0.0, 0.98],
   [1.0, 0.7, 0.2, 0.0, 0.98],
 ];
@@ -582,8 +584,22 @@ function fitDistance(az, el, ty, tanH, tanV) {
 /* createHouseScene                                                        */
 /* ======================================================================= */
 
+/** three r170 needs WebGL2; probe quietly so a missing GPU doesn't spam the console */
+function hasWebGL2() {
+  try {
+    if (!window.WebGL2RenderingContext) return false;
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return false;
+    const lose = gl.getExtension('WEBGL_lose_context');
+    if (lose) lose.loseContext();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function createHouseScene({ canvas, reducedMotion = false, isMobile = false } = {}) {
-  if (!canvas || typeof window === 'undefined') return null;
+  if (!canvas || typeof window === 'undefined' || !hasWebGL2()) return null;
 
   let renderer;
   try {
@@ -648,12 +664,12 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   key.castShadow = true;
   key.shadow.mapSize.set(isMobile ? 1024 : 2048, isMobile ? 1024 : 2048);
   const sc = key.shadow.camera;
-  sc.left = -17;
-  sc.right = 17;
-  sc.top = 15;
-  sc.bottom = -13;
+  sc.left = -24;
+  sc.right = 24;
+  sc.top = 21;
+  sc.bottom = -19;
   sc.near = 5;
-  sc.far = 70;
+  sc.far = 80;
   key.shadow.bias = -0.0003;
   key.shadow.normalBias = 0.03;
   scene.add(key, key.target);
@@ -672,7 +688,6 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   /* --------------------------------------------------------------- materials */
   const mat = {
-    ground: new THREE.MeshStandardMaterial({ color: 0xf2f0eb, roughness: 1 }),
     gravel: new THREE.MeshStandardMaterial({
       color: 0xffffff,
       roughness: 1,
@@ -684,18 +699,18 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     wood: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.78 }),
     clad: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.66 }),
     wrap: new THREE.MeshStandardMaterial({ color: 0xbfcad1, roughness: 0.88 }),
-    frame: new THREE.MeshStandardMaterial({ color: 0x1b1c1d, roughness: 0.42, metalness: 0.45 }),
+    frame: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.42, metalness: 0.3 }),
     glass: new THREE.MeshStandardMaterial({
-      color: 0x22313b,
+      color: 0x253540,
       roughness: 0.06,
       metalness: 0.2,
       transparent: true,
-      opacity: 0.74,
+      opacity: 0.8,
       depthWrite: false,
       emissive: 0xffa35c,
       emissiveIntensity: 0,
     }),
-    roof: new THREE.MeshStandardMaterial({ color: 0x2e3234, roughness: 0.42, metalness: 0.5 }),
+    roof: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.46, metalness: 0.35 }),
     steel: new THREE.MeshStandardMaterial({ color: 0xaab0b4, roughness: 0.45, metalness: 0.55 }),
     interior: new THREE.MeshStandardMaterial({ color: 0x3a352f, roughness: 0.92, emissive: 0xffb06a, emissiveIntensity: 0 }),
     furn: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82 }),
@@ -718,28 +733,27 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     }
   }
 
-  /* ----------------------------------------- ground: studio table → white */
-  const groundU = {
-    uFadeC: { value: new THREE.Vector2(1.6, 0) },
-    uFadeIn: { value: 11.0 },
-    uFadeOut: { value: 31.0 },
-  };
-  mat.ground.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, groundU);
+  /* ---------------------------------- ground: white studio table + shadows */
+  // The table itself is pure white (unlit, not tone mapped), so it melts into
+  // the page. Shadows come from a separate shadow-catcher that fades out
+  // radially, so no edge or horizon line is ever visible.
+  mat.ground = new THREE.MeshBasicMaterial({ color: BG, toneMapped: false, fog: false });
+  const shadowU = { uFadeC: { value: new THREE.Vector2(1.5, 0) }, uFadeIn: { value: 13.0 }, uFadeOut: { value: 25.0 } };
+  const shadowMat = new THREE.ShadowMaterial({ color: 0x2c241b, opacity: 0.24, depthWrite: false, fog: false });
+  shadowMat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, shadowU);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vGroundXZ;')
       .replace('#include <project_vertex>', '#include <project_vertex>\nvGroundXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vGroundXZ;\nuniform vec2 uFadeC;\nuniform float uFadeIn;\nuniform float uFadeOut;')
       .replace(
-        '#include <dithering_fragment>',
-        `#include <dithering_fragment>
-        vec2 gq = (vGroundXZ - uFadeC) * vec2(0.82, 1.0);
-        float gf = smoothstep(uFadeIn, uFadeOut, length(gq));
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0), gf * gf * (3.0 - 2.0 * gf));`,
+        '#include <fog_fragment>',
+        `#include <fog_fragment>
+        gl_FragColor.a *= 1.0 - smoothstep(uFadeIn, uFadeOut, length((vGroundXZ - uFadeC) * vec2(0.8, 1.0)));`,
       );
   };
-  mat.ground.customProgramCacheKey = () => 'brv-ground';
+  shadowMat.customProgramCacheKey = () => 'brv-shadow-catcher';
 
   /* ------------------------------- paint: layered roller sweep on the panel */
   const RAW_C = new THREE.Color(RAW_PINE);
@@ -810,7 +824,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const PINE = 0xd8b989;
   const PINE_DARK = 0xc9a674;
   const OSB = 0xcda873;
-  const FRAME_C = 0x1b1c1d;
+  const FRAME_C = 0x24272a;
 
   const parts = [];
   const addPart = (name, geo, material, items, opts) => {
@@ -836,9 +850,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const site = new THREE.Group();
   scene.add(site);
 
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 72).rotateX(-Math.PI / 2), mat.ground);
-  ground.receiveShadow = true;
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 48).rotateX(-Math.PI / 2), mat.ground);
+  ground.receiveShadow = false;
   site.add(ground);
+  const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(64, 64).rotateX(-Math.PI / 2), shadowMat);
+  shadowCatcher.position.set(1.5, 0.003, 0);
+  shadowCatcher.receiveShadow = true;
+  shadowCatcher.renderOrder = 1;
+  site.add(shadowCatcher);
 
   // soft contact shadow ("ambient occlusion" blob) under the footprint
   const aoTex = (() => {
@@ -946,51 +965,46 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     for (const b of blobs) l.push(paint(new THREE.IcosahedronGeometry(b[3], 0).scale(1, 1.2, 1).translate(b[0], b[1], b[2]), crown[b[4]]));
     return merge(l);
   }
+  // The landscape pops up around the plot while the blueprint finishes, so the
+  // intro starts as clean lines on white.
   {
     const spruces = [
       [-15.5, -1.5, 0.95], [-13.0, 6.5, 0.8], [-4.0, -12.5, 0.95], [3.5, -13.0, 1.05], [10.5, -11.0, 0.85],
       [16.5, -6.0, 0.9], [-9.5, -14.5, 1.1], [19.5, 2.5, 0.75], [-18.5, -8.0, 1.0], [14.0, -15.5, 1.15],
     ];
-    const birchesGreen = [[-11.0, 2.0, 0.85], [13.5, -3.0, 0.8], [-1.5, -10.5, 0.75], [7.5, -9.0, 0.8]];
-    const birchesOchre = [[15.0, 7.5, 0.7], [-17.0, 3.0, 0.8]];
-    const mk = (geo, list, seed) => {
+    const birchesGreen = [[-11.0, 2.0, 0.85], [13.5, -2.5, 0.8], [-1.5, -10.5, 0.75], [6.0, -10.5, 0.8]];
+    const birchesOchre = [[11.2, -7.6, 0.72], [-17.0, 3.0, 0.8]];
+    const W0 = win('blueprint', 0.62, 1)[0];
+    const W1 = win('grunnmur', 0, 0.9)[1];
+    const mk = (name, geo, list, seed) => {
       const r = mulberry32(seed);
-      const m = new THREE.InstancedMesh(geo, mat.veg, list.length);
-      const q = new THREE.Quaternion();
-      const c = new THREE.Color();
-      list.forEach((t, i) => {
-        q.setFromAxisAngle(V_UP, r() * TAU);
+      const items = list.map((t) => {
+        const q = new THREE.Quaternion().setFromAxisAngle(V_UP, r() * TAU);
         const s = t[2];
-        _m4.compose(new THREE.Vector3(t[0], -0.05, t[1]), q, new THREE.Vector3(s * (0.9 + r() * 0.2), s, s * (0.9 + r() * 0.2)));
-        m.setMatrixAt(i, _m4);
-        m.setColorAt(i, c.setScalar(0.9 + r() * 0.2));
+        const sc = [s * (0.9 + r() * 0.2), s, s * (0.9 + r() * 0.2)];
+        const c = new THREE.Color().setScalar(0.9 + r() * 0.2);
+        // nearest to the plot first, with a little randomness
+        const o = clamp01((Math.hypot(t[0] - 1.5, t[1]) - 8) / 14) * 0.7 + r() * 0.3;
+        return it([t[0], -0.05, t[1]], sc, o, q, c, [t[0], -0.05, t[1]]);
       });
-      m.castShadow = true;
-      m.receiveShadow = true;
-      site.add(m);
+      addPart(name, geo, mat.veg, items, { win: [W0, W1], dur: 0.35, anim: A_POP });
     };
-    mk(spruceGeo(), spruces, 3);
-    mk(birchGeo([0x8fa95a, 0x7d9a4c, 0xa3b968]), birchesGreen, 5);
-    mk(birchGeo([0xd9a441, 0xc98f2e, 0xe2b65a]), birchesOchre, 7);
+    mk('spruces', spruceGeo(), spruces, 3);
+    mk('birchesGreen', birchGeo([0x8fa95a, 0x7d9a4c, 0xa3b968]), birchesGreen, 5);
+    mk('birchesOchre', birchGeo([0xd9a441, 0xc98f2e, 0xe2b65a]), birchesOchre, 7);
     const rocks = [
       [8.8, -6.6, 0.85], [-9.4, 5.8, 1.0], [-10.2, -6.2, 1.2], [3.5, -9.4, 0.55],
-      [13.8, 1.0, 0.9], [-12.8, -3.0, 0.7], [-6.8, 9.2, 0.5], [16.5, -9.5, 0.6],
+      [7.2, -12.6, 0.8], [-12.8, -3.0, 0.7], [-6.8, 9.2, 0.5], [16.5, -9.5, 0.6],
     ];
-    const rg = paint(new THREE.IcosahedronGeometry(1, 0), 0xb4aea4);
-    const rm = new THREE.InstancedMesh(rg, mat.veg, rocks.length);
     const r = mulberry32(9);
-    const q = new THREE.Quaternion();
     const e = new THREE.Euler();
-    rocks.forEach((t, i) => {
-      q.setFromEuler(e.set(r() * 3, r() * 3, r() * 3));
+    const items = rocks.map((t, i) => {
+      const q = new THREE.Quaternion().setFromEuler(e.set(r() * 3, r() * 3, r() * 3));
       const s = t[2];
-      _m4.compose(new THREE.Vector3(t[0], s * 0.15, t[1]), q, new THREE.Vector3(s * (1 + r() * 0.5), s * (0.55 + r() * 0.3), s * (1 + r() * 0.4)));
-      rm.setMatrixAt(i, _m4);
-      rm.setColorAt(i, new THREE.Color().setScalar(0.85 + r() * 0.3));
+      const sc = [s * (1 + r() * 0.5), s * (0.55 + r() * 0.3), s * (1 + r() * 0.4)];
+      return it([t[0], s * 0.15, t[1]], sc, i / (rocks.length - 1), q, new THREE.Color().setScalar(0.85 + r() * 0.3), [t[0], 0, t[1]]);
     });
-    rm.castShadow = true;
-    rm.receiveShadow = true;
-    site.add(rm);
+    addPart('rocks', paint(new THREE.IcosahedronGeometry(1, 0), 0xb4aea4), mat.veg, items, { win: [W0, W1], dur: 0.4, anim: A_POP });
   }
 
   /* ============================================================ BLUEPRINT */
@@ -1750,7 +1764,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const q = orientQ(s > 0 ? dPlus : dMinus, s > 0 ? nPlus : nMinus);
       for (let i = 0; i < n; i++) {
         const x = -GABLE_X + 0.25 + i * ((2 * GABLE_X - 0.5) / (n - 1));
-        items.push(it(roofPt(x, -0.02, s, ROOF_T), [1, slopeLen + 0.03, 1], (i / (n - 1)) * 0.92 + (s < 0 ? 0.08 : 0), q, col(0x2e3234, 0.02)));
+        items.push(it(roofPt(x, -0.02, s, ROOF_T), [1, slopeLen + 0.03, 1], (i / (n - 1)) * 0.92 + (s < 0 ? 0.08 : 0), q, col(0x3a3f42, 0.02)));
       }
     }
     addPart('roofPanels', panelGeo, mat.roof, items, { win: win('tak', 0.08, 0.56), dur: 0.14, anim: A_GROW });
@@ -1758,7 +1772,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   {
     // trims: ridge, gable fascias, eave fascias, gutters, downpipes, flue
     const items = [];
-    const C = col(0x25282a);
+    const C = col(0x2b2e2f);
     const x1 = GABLE_X + 0.02;
     items.push(it([-x1, RIDGE + ROOF_T + 0.035, 0], [0.24, 2 * x1, 0.07], 0.15, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
     for (const sx of [-1, 1]) {
@@ -1775,7 +1789,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       items.push(it([-x1, ep[1] - 0.31, s * 3.69], [0.32, 2 * x1, 0.02], 0.45, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
       items.push(it([-x1, ep[1] - 0.2, s * (EAVE_Z + 0.1)], [0.11, 2 * x1, 0.1], 0.62, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
       for (const sx of [-1, 1]) {
-        items.push(it([sx * 5.7, 0.15, s * (EAVE_Z + 0.1)], [0.08, ep[1] - 0.35, 0.08], 0.78, null, C));
+        const yNeck = ep[1] - 0.62;
+        items.push(it([sx * 5.7, 0.15, s * 3.6], [0.08, yNeck - 0.15, 0.08], 0.78, null, C));
+        const a = new THREE.Vector3(sx * 5.7, yNeck - 0.03, s * 3.6);
+        const dir = new THREE.Vector3(0, ep[1] - 0.24 - a.y, s * (EAVE_Z + 0.1) - a.z);
+        items.push(it(a.toArray(), [0.08, dir.length(), 0.08], 0.8, orientQ(dir, V_X), C));
       }
     }
     const fz = -1.6;
@@ -1880,7 +1898,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   /* ============================================================= CRANE */
   const CRANE_X = -11.5;
   const CRANE_Z = -8.0;
-  const CRANE_H = 15;
+  const CRANE_H = 11.5;
   const crane = (() => {
     const DARK = 0x2b2e2f;
     const GREY = 0x8d8b86;
@@ -2013,7 +2031,16 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   /* ------------------------------------------------------------- paint */
   const SWEEP_MS = 2100;
-  const paintColor = new THREE.Color(DEFAULT_PAINT);
+  const paintColor = new THREE.Color(DEFAULT_PAINT); // what the visitor picked
+  const paintAlbedo = new THREE.Color(); // what the shader gets
+  /** Daylight brightens the sunlit façade, so darker/saturated paints are
+      toned down a little to make the lit wall read like the swatch. */
+  const toAlbedo = (src, out) => {
+    const lum = 0.2126 * src.r + 0.7152 * src.g + 0.0722 * src.b; // linear
+    const k = 0.8 + 0.2 * smooth(range(lum, 0.3, 0.75));
+    return out.setRGB(src.r * k, src.g * k, src.b * k);
+  };
+  toAlbedo(paintColor, paintAlbedo);
   let paintHex = DEFAULT_PAINT;
   const layerPool = [0, 1, 2, 3].map(() => ({ c: new THREE.Color(), t0: 0 }));
   const layers = [];
@@ -2028,14 +2055,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       layers.length = 0;
       paintU.uPaintBase.value.copy(RAW_C);
       const t = range(bpShown, PAINT_START, PAINT_END);
-      C[0].copy(paintColor);
+      C[0].copy(paintAlbedo);
       E[0] = t > 0 ? edgeOf(t) : -1;
       E[1] = E[2] = E[3] = -1;
       return false;
     }
     if (!paintDone) {
       paintDone = true;
-      paintU.uPaintBase.value.copy(paintColor);
+      paintU.uPaintBase.value.copy(paintAlbedo);
       layers.length = 0;
     }
     while (layers.length && (clock - layers[0].t0) * 1000 >= SWEEP_MS) {
@@ -2049,6 +2076,16 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       } else E[i] = -1;
     }
     return layers.length > 0;
+  }
+  /** '#9B2F22' | '9B2F22' | '#abc' | 0x9b2f22 | THREE.Color → Color, or null if invalid */
+  function parsePaint(v) {
+    if (v && v.isColor) return v.clone();
+    if (typeof v === 'number' && isFinite(v)) return new THREE.Color(v & 0xffffff);
+    if (typeof v !== 'string') return null;
+    let h = v.trim().replace(/^#/, '');
+    if (/^[0-9a-f]{3}$/i.test(h)) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+    return new THREE.Color(parseInt(h, 16));
   }
   function pushPaintLayer(color) {
     if (layers.length === 4) {
@@ -2065,7 +2102,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   /* ------------------------------------------------------------- build */
   const INT_DARK = new THREE.Color(0x3a352f);
-  const INT_LIT = new THREE.Color(0xd4c6b2);
+  const INT_LIT = new THREE.Color(0x8a7f71);
   function applyBuild(p) {
     let changed = false;
     for (let i = 0; i < parts.length; i++) if (parts[i].update(p)) changed = true;
@@ -2095,16 +2132,16 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     interior.visible = p >= ST.vinduer.start;
     const lights = smooth(lF);
     fin = lights;
-    pGF.intensity = 26 * lights;
-    pUF.intensity = 18 * lights;
-    pVoid.intensity = 22 * lights;
+    pGF.intensity = 20 * lights;
+    pUF.intensity = 14 * lights;
+    pVoid.intensity = 18 * lights;
     mat.interior.color.lerpColors(INT_DARK, INT_LIT, lights);
     mat.interior.emissiveIntensity = 0.06 * lights;
     mat.lamp.emissiveIntensity = 3.5 * lights;
     mat.glass.emissiveIntensity = 0.05 * lights;
     gableGlassMat.emissiveIntensity = 0.04 * lights;
-    gableGlassMat.opacity = lerp(0.7, 0.5, lights);
-    mat.glass.opacity = lerp(0.74, 0.62, lights);
+    gableGlassMat.opacity = lerp(0.78, 0.66, lights);
+    mat.glass.opacity = lerp(0.8, 0.7, lights);
     mat.sconce.emissiveIntensity = 3 * lights;
     // crane: rises with the foundations, sinks away once the roof is on
     craneS = smooth(range(lG, 0.1, 0.85)) * (1 - smooth(range(lT, 0.62, 0.98)));
@@ -2120,12 +2157,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const lT = range(p, ST.tak.start, ST.tak.end);
     const toHouse = Math.atan2(-(0 - CRANE_Z), 1.5 - CRANE_X);
     let a = toHouse + 0.55 * Math.sin(p * TAU * 2.3 + 0.6);
+    // rises with the jib turned away from the plot, then slews in over it
+    a = lerp(toHouse + 2.2, a, smooth(range(p, ST.grunnmur.start + 0.04, ST.bindingsverk.start + 0.02)));
     a = lerp(a, toHouse - 1.3, smooth(range(lT, 0.45, 0.8)));
     if (!reducedMotion) a += Math.sin(t * 0.21) * 0.025;
     crane.top.rotation.y = a;
     crane.trolley.position.x = 9.5 + 4.5 * (0.5 + 0.5 * Math.sin(p * TAU * 3.1 + 1.0));
-    let len = 5.0 + 2.0 * (0.5 + 0.5 * Math.sin(p * TAU * 4.3));
-    len = lerp(len, 1.2, smooth(range(lT, 0.3, 0.7)));
+    let len = 1.0 + 0.8 * (0.5 + 0.5 * Math.sin(p * TAU * 4.3));
+    len = lerp(len, 0.8, smooth(range(lT, 0.3, 0.7)));
     crane.cable.scale.y = len;
     crane.hook.position.y = -len;
     if (!reducedMotion) crane.hook.rotation.y = Math.sin(t * 0.5) * 0.12;
@@ -2174,7 +2213,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       cam.az += (az - cam.az) * k;
       cam.el += (el - cam.el) * k;
       cam.ly += (ly - cam.ly) * k;
-      cam.d += (d - cam.d) * damp(dt, 1.6);
+      // back off faster than we close in, so a turn never overfills the frame for a moment
+      cam.d += (d - cam.d) * damp(dt, d > cam.d ? 3.4 : 1.6);
     }
     const ce = Math.cos(cam.el);
     const ty = TARGET_Y + cam.ly;
@@ -2295,10 +2335,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     return anim;
   }
 
+  let frameNo = 0;
   function frame(now) {
     raf = 0;
     if (!active || !inView || disposed) return;
     raf = requestAnimationFrame(frame);
+    // phones: the slow idle orbit only needs ~30 fps
+    if (isMobile && lastT && !renderDirty && !playing && !rewinding && bpShown >= 1 && !layers.length && frameNo++ & 1) return;
     let dt = lastT ? (now - lastT) / 1000 : 0.016;
     lastT = now;
     if (dt > 0.1) dt = 0.1;
@@ -2440,25 +2483,33 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       if (immediate) {
         bpShown = bpTarget;
         buildDirty = true;
+        snap = true;
       }
       start();
     },
     /** repaint the walls with a roller sweep (instant if !animate or reduced motion) */
     setPaintColor(hex, { animate = true } = {}) {
-      let c;
-      try {
-        c = new THREE.Color(hex);
-      } catch (e) {
+      if (disposed) return;
+      const c = parsePaint(hex);
+      if (!c) return;
+      if (c.equals(paintColor)) {
+        // same colour again: nothing to do, unless an instant finish was asked for
+        if (!animate && layers.length) {
+          layers.length = 0;
+          paintU.uPaintBase.value.copy(paintAlbedo);
+          renderDirty = true;
+          start();
+        }
         return;
       }
-      if (c.equals(paintColor) && !layers.length) return;
       paintColor.copy(c);
+      toAlbedo(c, paintAlbedo);
       paintHex = '#' + c.getHexString().toUpperCase();
       if (paintDone && bpShown >= 1) {
-        if (animate && !reducedMotion) pushPaintLayer(c);
+        if (animate && !reducedMotion) pushPaintLayer(paintAlbedo);
         else {
           layers.length = 0;
-          paintU.uPaintBase.value.copy(c);
+          paintU.uPaintBase.value.copy(paintAlbedo);
         }
       }
       renderDirty = true;
@@ -2493,7 +2544,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       view.tscroll = clamp01(+t || 0);
     },
     getStage() {
-      const s = STAGES[stageIndexAt(bpShown)];
+      const s = STAGES[stageIdx >= 0 ? stageIdx : stageIndexAt(bpShown)];
       return { id: s.id, label: s.label };
     },
     getStages() {

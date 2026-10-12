@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 64" role="img" aria-labelledby="t">
   <title id="t">Bygg &amp; Renovering Vest AS</title>
-  <g fill="none" stroke="#ECE8E1" stroke-linejoin="miter">
+  <g fill="none" stroke="#121413" stroke-linejoin="miter">
     <!-- Gable mark: house outline, standing cladding, signal window -->
     <path d="M9 56V28L32 9l23 19v28Z" stroke-width="5"/>
     <path d="M21.5 56V35M32 56V35M42.5 56V35" stroke-width="2.6"/>
@@ -8,9 +8,9 @@
     <path d="M84 13v38M84 13h12.5a8.5 8.5 0 0 1 0 17H84M84 30h14a10.5 10.5 0 0 1 0 21H84" stroke-width="5.5" stroke-linecap="square"/>
     <!-- R -->
     <path d="M121 51V13h12.5a8.5 8.5 0 0 1 0 17H121M131 30l10 21" stroke-width="5.5" stroke-linecap="square"/>
-    <!-- V (the roof, upside down) -->
+    <!-- V -->
     <path d="M149 13l11 38 11-38" stroke-width="5.5" stroke-linecap="square"/>
   </g>
   <rect x="28" y="20" width="8" height="8" fill="#FF5A1F"/>
-  <path d="M68 12v40" stroke="#ECE8E1" stroke-opacity=".3" stroke-width="1"/>
+  <path d="M68 12v40" stroke="#121413" stroke-opacity=".25" stroke-width="1"/>
 </svg>

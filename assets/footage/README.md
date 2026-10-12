@@ -1,21 +1,25 @@
-# Footage — «Fra byggeplassen»
+# Footage: «Fra byggeplassen»
 
-The footage reel is the first thing visitors scroll through after the intro. It is
-built from `footage.json` in this folder, so you can add or swap photos and videos
-without touching HTML or JavaScript.
+The gallery under «Fra byggeplassen» is built from `footage.json` in this folder, so you
+can add or swap photos and videos without touching HTML or JavaScript.
 
 ## Quick start
 
-1. Export your photos as JPG or WebP, about **2400 px on the long side** and **under ~400 KB** each.
-2. Name them `01.jpg` … `06.jpg` and drop them in this folder. They show up straight away, with a slow Ken Burns move.
-3. Reload the page. That's all.
+1. Export your photos as JPG or WebP, about **2000 px on the long side** and **under ~400 KB** each.
+2. Save them in this folder, for example `01.jpg` … `06.jpg`.
+3. In `footage.json`, add a `src` line to the card the photo belongs to:
+   `"src": "assets/footage/01.jpg",`
+4. Reload the page. That's all.
 
-Until a file exists, its frame shows a designed placeholder: a big word, duotone
-grain and a “Bilde kommer” tag. It never looks broken.
+A card without `src` shows a coloured illustration of the service with the title and
+caption on top. The shipped `footage.json` has no `src` lines yet, so the live site makes
+no requests for photos that don't exist (no 404s in the console). If a `src` points to a
+file that is missing, the card quietly keeps its illustration, so it never looks broken
+and visitors don't see a «coming soon» tag.
 
 ## footage.json
 
-An array of frames, shown left to right:
+An array of cards, shown in order:
 
 ```json
 [
@@ -24,16 +28,18 @@ An array of frames, shown left to right:
     "src": "assets/footage/01.jpg",
     "title": "Nybygg",
     "place": "Bergen",
-    "caption": "Fra tomt til nøkkelferdig bolig — til avtalt tid og pris.",
-    "alt": "Nytt hus med svart stående kledning i Åsane"
+    "caption": "Fra tomt til nøkkelferdig bolig, til avtalt tid og pris.",
+    "alt": "Nytt hus med stående kledning i Åsane",
+    "icon": "nybygg",
+    "layout": "tall"
   },
   {
     "type": "video",
     "src": "assets/footage/07.mp4",
     "poster": "assets/footage/07-poster.jpg",
     "title": "Takarbeid",
-    "place": "Bergen",
-    "caption": "Falset stål på plass før regnet kommer."
+    "caption": "Falset stål på plass før regnet kommer.",
+    "icon": "tak"
   }
 ]
 ```
@@ -41,21 +47,22 @@ An array of frames, shown left to right:
 | Field     | Required | Notes |
 |-----------|----------|-------|
 | `type`    | no       | `"image"` (default) or `"video"`. |
-| `src`     | yes*     | Path relative to the site root (`index.html`). *A frame with only a `title` shows the designed placeholder. |
-| `title`   | yes      | Big word in the placeholder and the caption title. Keep it short (1–2 words). |
-| `place`   | no       | Small mono label, defaults to `Bergen`. |
-| `caption` | no       | One short line under the frame. |
-| `alt`     | no       | Alt text for screen readers. Defaults to `title — place`. |
+| `src`     | yes*     | Path relative to the site root (`index.html`). *A card with only a `title` shows the illustration. |
+| `title`   | yes      | Short title (one to three words). |
+| `caption` | no       | One short line. |
+| `place`   | no       | Added after the caption when it isn't `Bergen`. |
+| `alt`     | no       | Alt text for screen readers. Defaults to «title, prosjekt i Bergen og omegn». |
 | `poster`  | no       | Video only: still image shown before playback. |
-| `icon`    | no       | Placeholder line drawing: `nybygg`, `tilbygg`, `vvs`, `rehab`, `tak`, `renovering`, `ombygging`. |
-| `layout`  | no       | `"wide"` or `"tall"` frame. If you leave it out, the reel alternates automatically. |
+| `icon`    | no       | Which illustration to show until the photo exists: `nybygg`, `tilbygg`, `pabygg`, `maling`, `oppussing`, `bad`, `tak`, `ombygging`, `rehabilitering`, `elektro`, `tomrer`, `mur`, `sprenging`, `garasje`, `prosjektledelse`. If you leave it out, it is guessed from the title. |
+| `layout`  | no       | `"tall"` or `"wide"` card. If you leave it out, a pattern is used. For a tidy grid on desktop, the spans should fill rows of three. |
 
 **Video tips:** use MP4 (H.264), keep clips short (5–15 s) and silent, and aim for
 **under ~6 MB** each. They play muted and looped while visible. With
 *reduced motion* turned on, they don't autoplay and show controls instead.
 
-You can add up to 24 frames. The reel's length adapts automatically.
+You can add up to 24 cards.
 
 > Note: `footage.json` is loaded with `fetch()`, so the site must be served over
-> http(s) (for example `python3 -m http.server`). If the page is opened
-> as a local `file://`, the six built-in frames in `index.html` are used instead.
+> http(s) (for example `python3 -m http.server`). If the page is opened as a local
+> `file://`, the six built-in cards in `index.html` are used instead. Those cards also
+> carry their illustrations in the HTML, so they look right with JavaScript turned off.

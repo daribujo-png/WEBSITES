@@ -1,50 +1,41 @@
 [
   {
-    "type": "image",
-    "src": "assets/footage/01.jpg",
     "title": "Nybygg",
     "place": "Bergen",
-    "caption": "Fra tomt til nøkkelferdig bolig — til avtalt tid og pris.",
-    "icon": "nybygg"
+    "caption": "Fra tomt til nøkkelferdig bolig, til avtalt tid og pris.",
+    "icon": "nybygg",
+    "layout": "tall"
   },
   {
-    "type": "image",
-    "src": "assets/footage/02.jpg",
     "title": "Tilbygg",
     "place": "Bergen",
-    "caption": "Mer plass — i bredden eller i høyden.",
+    "caption": "Mer plass på bakken, med byggesøknaden ordnet.",
     "icon": "tilbygg"
   },
   {
-    "type": "image",
-    "src": "assets/footage/03.jpg",
+    "title": "Maling",
+    "place": "Bergen",
+    "caption": "Ny farge på gammel kledning, ute og inne.",
+    "icon": "maling"
+  },
+  {
     "title": "Bad & VVS",
     "place": "Bergen",
-    "caption": "Våtrom, rør og sanitær — etter gjeldende forskrifter.",
-    "icon": "vvs"
+    "caption": "Våtrom, rør og sanitær etter gjeldende forskrifter.",
+    "icon": "bad",
+    "layout": "wide"
   },
   {
-    "type": "image",
-    "src": "assets/footage/04.jpg",
-    "title": "Rehabilitering",
-    "place": "Bergen",
-    "caption": "Istandsetting med respekt for originale detaljer.",
-    "icon": "rehab"
-  },
-  {
-    "type": "image",
-    "src": "assets/footage/05.jpg",
     "title": "Tak",
     "place": "Bergen",
-    "caption": "Taktekking, takrenner og nedløp — bygget for vestlandsvær.",
+    "caption": "Taktekking, takrenner og nedløp, bygget for vestlandsvær.",
     "icon": "tak"
   },
   {
-    "type": "image",
-    "src": "assets/footage/06.jpg",
-    "title": "Oppussing",
+    "title": "Påbygg",
     "place": "Bergen",
-    "caption": "Nye overflater, nytt kjøkken, nytt liv i gamle rom.",
-    "icon": "renovering"
+    "caption": "En ekstra etasje på et hus som allerede står.",
+    "icon": "pabygg",
+    "layout": "wide"
   }
 ]
