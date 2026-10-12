@@ -1,33 +1,42 @@
 /**
- * house.js — procedural Three.js scene for Bygg og Renovering Vest AS (Bergen).
+ * house.js — the hero house for Bygg og Renovering Vest AS (Bergen), v2.
  *
- * A modern Norwegian enebolig is built from an empty plot as a PURE FUNCTION of
- * build progress p ∈ [0,1] (scrub forwards and backwards). The same scene also
- * serves the loader (blueprint wireframe tracing itself in), the intro behind
- * the footage reel, and an idle orbit.
+ * A modern Norwegian enebolig on a white "studio table". It draws itself as a
+ * blueprint, then builds itself from an empty plot, and finally gets painted
+ * with a visible roller sweep. After that, visitors can repaint it.
  *
- * Public contract (see createHouseScene):
- *   setLoadProgress(p) setBuildProgress(p) setMode(mode) setPointer(x, y)
- *   getStages() resize() setActive(bool) dispose()
+ * The build state is a PURE FUNCTION of progress p ∈ [0,1] (setBuildProgress),
+ * so it can be scrubbed forwards and backwards. play() just drives p by time.
+ *   p < 0.92        construction (blueprint → grunnmur → … → tak)
+ *   0.92 ≤ p < 1    painting ('maling', then 'ferdig' with the lights coming on)
+ *   p = 1           done
+ *
+ * Public contract (see createHouseScene at the bottom):
+ *   play({ duration }) skipToEnd() setBuildProgress(p, immediate)
+ *   setPaintColor(hex, { animate }) onStage(cb) onComplete(cb)
+ *   setPointer(x, y) setViewShift(x, y) resize() setActive(bool) dispose()
+ * Extras (optional): setScrollOut(t) getStage() getPaintColor() isComplete()
+ *   getStages(); setMode()/setLoadProgress() are kept as no-ops for old callers.
  */
 import * as THREE from 'three';
 import { RoomEnvironment } from '../vendor/addons/RoomEnvironment.js';
 
 /* ======================================================================= */
-/* Stages                                                                  */
+/* Stages + pacing                                                         */
 /* ======================================================================= */
 
+/** ms = share of the autoplay (scaled to the requested duration) */
 const STAGES = [
-  { id: 'tomt', start: 0.0, end: 0.06 },
-  { id: 'grunnmur', start: 0.06, end: 0.16 },
-  { id: 'bindingsverk', start: 0.16, end: 0.3 },
-  { id: 'bjelkelag', start: 0.3, end: 0.38 },
-  { id: 'takstoler', start: 0.38, end: 0.5 },
-  { id: 'kledning', start: 0.5, end: 0.64 },
-  { id: 'vinduer', start: 0.64, end: 0.72 },
-  { id: 'tak', start: 0.72, end: 0.84 },
-  { id: 'innredning', start: 0.84, end: 0.93 },
-  { id: 'nokkelferdig', start: 0.93, end: 1.0 },
+  { id: 'blueprint', start: 0.0, end: 0.06, ms: 1150, label: 'Tegner huset…' },
+  { id: 'grunnmur', start: 0.06, end: 0.16, ms: 650, label: 'Støper grunnmuren…' },
+  { id: 'bindingsverk', start: 0.16, end: 0.29, ms: 850, label: 'Reiser bindingsverket…' },
+  { id: 'bjelkelag', start: 0.29, end: 0.37, ms: 500, label: 'Legger bjelkelaget…' },
+  { id: 'takstoler', start: 0.37, end: 0.48, ms: 750, label: 'Setter opp takstolene…' },
+  { id: 'kledning', start: 0.48, end: 0.62, ms: 800, label: 'Kler veggene med panel…' },
+  { id: 'vinduer', start: 0.62, end: 0.71, ms: 500, label: 'Setter inn vinduer og dør…' },
+  { id: 'tak', start: 0.71, end: 0.92, ms: 950, label: 'Legger taket…' },
+  { id: 'maling', start: 0.92, end: 0.985, ms: 1350, label: 'Maler huset…' },
+  { id: 'ferdig', start: 0.985, end: 1.0, ms: 500, label: 'Ferdig. Velkommen hjem.' },
 ];
 const ST = {};
 for (const s of STAGES) ST[s.id] = s;
@@ -37,6 +46,44 @@ const win = (id, a = 0, b = 1) => {
   const d = s.end - s.start;
   return [s.start + a * d, s.start + b * d];
 };
+const PAINT_START = ST.maling.start;
+const PAINT_END = ST.maling.end;
+
+const MS_TOTAL = STAGES.reduce((a, s) => a + s.ms, 0);
+const T_CUM = new Float32Array(STAGES.length + 1);
+for (let i = 0; i < STAGES.length; i++) T_CUM[i + 1] = T_CUM[i] + STAGES[i].ms / MS_TOTAL;
+T_CUM[STAGES.length] = 1;
+
+/** autoplay: normalized time u → build progress p (stage-weighted pacing) */
+function timeToP(u) {
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  let i = 0;
+  while (i < STAGES.length - 1 && u >= T_CUM[i + 1]) i++;
+  const s = STAGES[i];
+  let l = (u - T_CUM[i]) / (T_CUM[i + 1] - T_CUM[i]);
+  if (i === 0) l = l * (0.45 + 0.55 * l); // ease in from rest
+  else if (i === STAGES.length - 1) l = 1 - (1 - l) * (1 - l); // ease out into the finish
+  return s.start + (s.end - s.start) * l;
+}
+function stageIndexAt(p) {
+  if (p >= 1) return STAGES.length - 1;
+  for (let i = STAGES.length - 1; i >= 0; i--) if (p >= STAGES[i].start) return i;
+  return 0;
+}
+
+/** Norwegian house-paint palette (names for swatch labels) */
+const PAINT_COLORS = [
+  { id: 'falu', name: 'Falurød', hex: '#9B2F22' },
+  { id: 'oker', name: 'Oker', hex: '#D9A441' },
+  { id: 'fjordbla', name: 'Fjordblå', hex: '#2E5C7A' },
+  { id: 'mosegronn', name: 'Mosegrønn', hex: '#56704F' },
+  { id: 'kritthvit', name: 'Kritthvit', hex: '#F4F1EA' },
+  { id: 'antrasitt', name: 'Antrasitt', hex: '#2B2E2F' },
+];
+const DEFAULT_PAINT = '#2E5C7A';
+const RAW_PINE = 0xe2c9a4;
+const ORANGE = 0xff5a1f;
 
 /* ======================================================================= */
 /* Small math helpers (no allocation)                                      */
@@ -47,6 +94,7 @@ const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const range = (v, a, b) => clamp01((v - a) / (b - a));
 const smooth = (t) => t * t * (3 - 2 * t);
 const outCubic = (t) => 1 - (1 - t) * (1 - t) * (1 - t);
+const inOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const outBack = (t) => {
   const c = 1.15;
   const u = t - 1;
@@ -137,6 +185,17 @@ const WALL = {
 };
 const openTop = (o, ua, ub) => (o.top ? Math.max(o.top(ua), o.top(ub)) : o.y1);
 
+/** Paint sweep coordinate: distance along the façade from the front-left
+    corner, going both ways round the house (front → glazed gable, and left
+    gable → back), so both sweeps meet at the back-right corner. 0..19 m. */
+const SWEEP_LEN = 19;
+function sweepD(x, z) {
+  const ex = Math.abs(x) - 5.9;
+  const ez = Math.abs(z) - 3.4;
+  if (ez > ex) return z > 0 ? x + 6 : 13 + x; // front 0..12 · back 7..19
+  return x > 0 ? 15.5 - z : 3.5 - z; // right gable 12..19 · left gable 0..7
+}
+
 /** vertical member at u-range [ua,ub], y-range [ya,yb]: subtract openings → segments */
 function cutColumn(wall, ua, ub, ya, yb, padBelow, padAbove, minLen) {
   let segs = [[ya, yb]];
@@ -215,7 +274,7 @@ function beamGeo(ax, ay, az, bx, by, bz, w, d, zHint = V_UP) {
   return g.applyMatrix4(m);
 }
 function paint(g, hex) {
-  const c = new THREE.Color(hex);
+  const c = hex instanceof THREE.Color ? hex : new THREE.Color(hex);
   const n = g.attributes.position.count;
   const arr = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
@@ -397,6 +456,8 @@ class Part {
 /* Shaders                                                                 */
 /* ======================================================================= */
 
+// Blueprint lines on white: each segment grows from one end; the drawing tip
+// glows orange, then settles to its ink colour.
 const BLUEPRINT_VS = /* glsl */ `
 attribute vec3 aOther;
 attribute float aEnd;
@@ -413,8 +474,8 @@ void main() {
   float f = clamp(age / uWin, 0.0, 1.0);
   vec3 p = aEnd > 0.5 ? mix(aOther, position, f) : position;
   float hot = (f > 0.0) ? 1.0 - smoothstep(0.0, uWin * 2.5, age - uWin) : 0.0;
-  vCol = mix(color, uHot, hot * 0.9);
-  vA = step(0.0001, f) * uOpacity * (1.0 + hot * 1.2);
+  vCol = mix(color, uHot, hot * 0.85);
+  vA = step(0.0001, f) * uOpacity;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
 }`;
 const BLUEPRINT_FS = /* glsl */ `
@@ -441,7 +502,7 @@ void main() {
   vCol = mix(color, uHot, hot);
   vA = step(0.0001, f) * uOpacity;
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = uSize * (0.55 + 0.45 * f + hot * 1.4);
+  gl_PointSize = uSize * (0.6 + 0.4 * f + hot * 0.9);
   gl_Position = projectionMatrix * mv;
 }`;
 const NODES_FS = /* glsl */ `
@@ -450,99 +511,34 @@ varying float vA;
 void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c);
-  float a = smoothstep(0.5, 0.0, d);
-  a = a * a * 0.9 + step(d, 0.13) * 0.6;
+  float ring = smoothstep(0.5, 0.4, d) * smoothstep(0.24, 0.32, d);
+  float dot_ = smoothstep(0.17, 0.1, d);
+  float a = max(ring * 0.9, dot_);
+  if (a < 0.01) discard;
   gl_FragColor = vec4(vCol, a * vA);
   #include <colorspace_fragment>
 }`;
-const RAIN_VS = /* glsl */ `
-attribute float aTail;
-attribute float aSpeed;
-uniform float uTime;
-uniform float uH;
-uniform float uLen;
-uniform float uOpacity;
-varying float vA;
-void main() {
-  float y = mod(position.y - uTime * aSpeed, uH);
-  vec3 p = vec3(position.x - y * 0.09, y + aTail * uLen, position.z - y * 0.03);
-  p.x += aTail * uLen * 0.2;
-  p.z += aTail * uLen * 0.06;
-  vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  float dist = -mv.z;
-  float fade = smoothstep(0.0, 2.0, y) * (1.0 - smoothstep(uH - 4.0, uH, y));
-  fade *= smoothstep(1.5, 5.0, dist) * (1.0 - smoothstep(26.0, 46.0, dist));
-  vA = uOpacity * fade * (1.0 - aTail * 0.85);
-  gl_Position = projectionMatrix * mv;
-}`;
-const RAIN_FS = /* glsl */ `
-uniform vec3 uColor;
-varying float vA;
-void main() {
-  gl_FragColor = vec4(uColor, vA);
-  #include <colorspace_fragment>
-}`;
-const SKY_VS = /* glsl */ `
-varying vec3 vDir;
-void main() {
-  vDir = normalize(position);
-  vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_Position = vec4(p.xy, p.w * 0.99999, p.w);
-}`;
-const SKY_FS = /* glsl */ `
-uniform vec3 uTop;
-uniform vec3 uHorizon;
-uniform vec3 uGlow;
-uniform vec3 uGlowDir;
-uniform float uLevel;
-varying vec3 vDir;
-void main() {
-  vec3 d = normalize(vDir);
-  float h = d.y;
-  vec3 col = mix(uHorizon, uTop, smoothstep(-0.01, 0.42, h));
-  vec2 hd = normalize(d.xz + 1e-5);
-  float g = max(dot(hd, normalize(uGlowDir.xz)), 0.0);
-  col += uGlow * pow(g, 3.0) * (1.0 - smoothstep(0.0, 0.3, abs(h)));
-  col = mix(col, uTop, smoothstep(0.0, -0.12, h));
-  gl_FragColor = vec4(col * uLevel, 1.0);
-  #include <colorspace_fragment>
-}`;
-const MIST_VS = /* glsl */ `
-varying float vY;
-void main() {
-  vY = uv.y;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-const MIST_FS = /* glsl */ `
-uniform vec3 uColor;
-uniform float uOpacity;
-uniform float uLevel;
-varying float vY;
-void main() {
-  float a = pow(1.0 - vY, 2.4) * uOpacity;
-  gl_FragColor = vec4(uColor * uLevel, a);
-  #include <colorspace_fragment>
-}`;
 
 /* ======================================================================= */
-/* Camera paths                                                            */
+/* Camera path                                                             */
 /* ======================================================================= */
 
-// [p, azimuth, camY, radius, lookY, lookX] — azimuth 0 = front (+z), π/2 = glazed gable (+x)
+// [p, azimuth, elevation, lookY offset, distance multiplier]
+// azimuth 0 = front (+z), π/2 = glazed gable (+x). Distance is fitted to the
+// finished house, so the framing never jumps while it grows.
 const CAM_KEYS = [
-  [0.0, 1.0, 1.8, 24.0, 3.4, 0.6],
-  [0.06, 0.92, 2.2, 20.0, 2.0, 0.4],
-  [0.16, 0.74, 4.2, 18.5, 1.7, 0.2],
-  [0.3, 0.42, 8.5, 20.0, 2.5, 0.0],
-  [0.38, 0.2, 13.0, 19.5, 3.0, 0.0],
-  [0.5, 0.02, 9.0, 22.5, 4.4, 0.0],
-  [0.64, 0.34, 4.8, 22.5, 3.8, 0.3],
-  [0.72, 0.8, 4.2, 22.0, 3.7, 0.8],
-  [0.84, 0.42, 12.5, 24.5, 4.3, 0.6],
-  [0.93, 1.12, 3.0, 20.5, 3.4, 1.6],
-  [1.0, 0.84, 4.4, 27.5, 3.8, 1.4],
+  [0.0, 1.02, 0.7, -1.4, 1.0],
+  [0.06, 0.96, 0.54, -1.1, 1.0],
+  [0.16, 0.88, 0.42, -0.7, 1.0],
+  [0.29, 0.8, 0.34, -0.25, 0.99],
+  [0.37, 0.72, 0.38, 0.0, 0.99],
+  [0.48, 0.64, 0.3, 0.0, 0.99],
+  [0.62, 0.62, 0.24, 0.0, 0.99],
+  [0.71, 0.7, 0.32, 0.0, 0.99],
+  [0.92, 0.64, 0.2, 0.0, 0.98],
+  [1.0, 0.7, 0.2, 0.0, 0.98],
 ];
-const camParam = new Float32Array(5);
+const camParam = new Float32Array(4);
 function camAt(p, out) {
   const n = CAM_KEYS.length;
   let i = 0;
@@ -552,8 +548,34 @@ function camAt(p, out) {
   const k2 = CAM_KEYS[i + 1];
   const k3 = CAM_KEYS[i + 2 < n ? i + 2 : n - 1];
   const t = smooth(clamp01((p - k1[0]) / (k2[0] - k1[0])));
-  for (let j = 1; j < 6; j++) out[j - 1] = catmull(k0[j], k1[j], k2[j], k3[j], t);
+  for (let j = 1; j < 5; j++) out[j - 1] = catmull(k0[j], k1[j], k2[j], k3[j], t);
   return out;
+}
+// framing box of the finished house (deck + flue included)
+const FRAME_BOX = [-6.45, 10.0, 0.0, 9.9, -4.0, 4.0];
+const TARGET_X = 1.75;
+const TARGET_Y = 4.5;
+const TARGET_Z = 0;
+/** exact pinhole fit: distance that keeps the box inside ±tanH/±tanV */
+function fitDistance(az, el, ty, tanH, tanV) {
+  const ca = Math.cos(az);
+  const sa = Math.sin(az);
+  const ce = Math.cos(el);
+  const se = Math.sin(el);
+  let D = 0;
+  for (let i = 0; i < 8; i++) {
+    const x = (i & 1 ? FRAME_BOX[1] : FRAME_BOX[0]) - TARGET_X;
+    const y = (i & 2 ? FRAME_BOX[3] : FRAME_BOX[2]) - ty;
+    const z = (i & 4 ? FRAME_BOX[5] : FRAME_BOX[4]) - TARGET_Z;
+    const px = x * ca - z * sa; // · right
+    const py = -x * se * sa + y * ce - z * se * ca; // · up
+    const pz = x * sa * ce + y * se + z * ca * ce; // · toward camera
+    const dx = Math.abs(px) / tanH + pz;
+    const dy = Math.abs(py) / tanV + pz;
+    if (dx > D) D = dx;
+    if (dy > D) D = dy;
+  }
+  return D;
 }
 
 /* ======================================================================= */
@@ -567,9 +589,9 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   try {
     renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: !isMobile,
+      antialias: true,
       alpha: false,
-      powerPreference: 'high-performance',
+      powerPreference: isMobile ? 'default' : 'high-performance',
     });
     if (!renderer.getContext()) throw new Error('no context');
   } catch (err) {
@@ -581,13 +603,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     return null;
   }
 
-  const BG = 0x0b0c0c;
-  const dprCap = isMobile ? 1.25 : 1.75;
+  const BG = 0xffffff;
+  const dprCap = isMobile ? 1.5 : 1.75;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
   renderer.setClearColor(BG, 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -595,10 +617,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(BG);
-  scene.fog = new THREE.FogExp2(BG, 0.0072);
+  // linear fog to pure white; near/far follow the camera distance each frame
+  scene.fog = new THREE.Fog(BG, 60, 160);
 
-  const camera = new THREE.PerspectiveCamera(35, 16 / 9, 0.3, 900);
-  camera.position.set(14, 6, 16);
+  const camera = new THREE.PerspectiveCamera(32, 16 / 9, 1, 500);
+  camera.position.set(24, 12, 28);
 
   const rnd = mulberry32(60425);
 
@@ -614,31 +637,29 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     envTex = null;
   }
   scene.environment = envTex;
-  const ENV_BASE = 0.3;
-  scene.environmentIntensity = ENV_BASE;
+  scene.environmentIntensity = 0.5;
 
-  const hemi = new THREE.HemisphereLight(0xc2cfda, 0x221f1b, 1.05);
+  // daylight: soft sky fill + warm key from front-left + cool kicker
+  const hemi = new THREE.HemisphereLight(0xf2f6fa, 0xd6cdbf, 1.45);
   scene.add(hemi);
-  const key = new THREE.DirectionalLight(0xdfe8ef, 2.1);
-  key.position.set(-15, 15.5, 13);
-  key.target.position.set(0.5, 3, 0);
+  const key = new THREE.DirectionalLight(0xfff2e0, 2.55);
+  key.position.set(-12, 21, 16);
+  key.target.position.set(1.5, 2.5, 0);
   key.castShadow = true;
   key.shadow.mapSize.set(isMobile ? 1024 : 2048, isMobile ? 1024 : 2048);
   const sc = key.shadow.camera;
-  sc.left = -15;
-  sc.right = 15;
-  sc.top = 14;
-  sc.bottom = -12;
-  sc.near = 4;
-  sc.far = 60;
-  key.shadow.bias = -0.00025;
-  key.shadow.normalBias = 0.025;
-  key.shadow.radius = 3;
+  sc.left = -17;
+  sc.right = 17;
+  sc.top = 15;
+  sc.bottom = -13;
+  sc.near = 5;
+  sc.far = 70;
+  key.shadow.bias = -0.0003;
+  key.shadow.normalBias = 0.03;
   scene.add(key, key.target);
-  const rim = new THREE.DirectionalLight(0x93aabd, 0.75);
-  rim.position.set(16, 9, -14);
-  scene.add(rim);
-  const LIGHT_BASE = { hemi: hemi.intensity, key: key.intensity, rim: rim.intensity };
+  const fill = new THREE.DirectionalLight(0xdfe9f3, 0.55);
+  fill.position.set(18, 7, 4);
+  scene.add(fill);
 
   const WARM = 0xffbd80;
   const pGF = new THREE.PointLight(WARM, 0, 11, 2);
@@ -647,14 +668,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   pUF.position.set(-2.2, 5.5, 0);
   const pVoid = new THREE.PointLight(WARM, 0, 10, 2);
   pVoid.position.set(4.7, 4.6, 0);
-  const spot = new THREE.SpotLight(WARM, 0, 18, 0.9, 1, 1.4);
-  spot.position.set(5.3, 5.4, 0);
-  spot.target.position.set(10.5, 0, 0);
-  scene.add(pGF, pUF, pVoid, spot, spot.target);
+  scene.add(pGF, pUF, pVoid);
 
   /* --------------------------------------------------------------- materials */
   const mat = {
-    ground: new THREE.MeshStandardMaterial({ color: 0x151817, roughness: 1 }),
+    ground: new THREE.MeshStandardMaterial({ color: 0xf2f0eb, roughness: 1 }),
     gravel: new THREE.MeshStandardMaterial({
       color: 0xffffff,
       roughness: 1,
@@ -662,54 +680,137 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
     }),
-    concrete: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92 }),
-    wood: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }),
-    clad: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72 }),
-    wrap: new THREE.MeshStandardMaterial({ color: 0xa7acab, roughness: 0.92 }),
-    frame: new THREE.MeshStandardMaterial({ color: 0x18191b, roughness: 0.4, metalness: 0.5 }),
+    concrete: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.78 }),
+    clad: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.66 }),
+    wrap: new THREE.MeshStandardMaterial({ color: 0xbfcad1, roughness: 0.88 }),
+    frame: new THREE.MeshStandardMaterial({ color: 0x1b1c1d, roughness: 0.42, metalness: 0.45 }),
     glass: new THREE.MeshStandardMaterial({
-      color: 0x1c2830,
-      roughness: 0.05,
-      metalness: 0.15,
+      color: 0x22313b,
+      roughness: 0.06,
+      metalness: 0.2,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.74,
       depthWrite: false,
       emissive: 0xffa35c,
       emissiveIntensity: 0,
     }),
-    roof: new THREE.MeshStandardMaterial({ color: 0x2b2f32, roughness: 0.38, metalness: 0.65 }),
-    steel: new THREE.MeshStandardMaterial({ color: 0xa3a9ad, roughness: 0.45, metalness: 0.7 }),
-    interior: new THREE.MeshStandardMaterial({ color: 0x2b2722, roughness: 0.92, emissive: 0xffb06a, emissiveIntensity: 0 }),
-    // (interior colour is blended dark → warm white as the lights come on)
+    roof: new THREE.MeshStandardMaterial({ color: 0x2e3234, roughness: 0.42, metalness: 0.5 }),
+    steel: new THREE.MeshStandardMaterial({ color: 0xaab0b4, roughness: 0.45, metalness: 0.55 }),
+    interior: new THREE.MeshStandardMaterial({ color: 0x3a352f, roughness: 0.92, emissive: 0xffb06a, emissiveIntensity: 0 }),
     furn: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82 }),
     lamp: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6, emissive: 0xffb46e, emissiveIntensity: 0 }),
-    veg: new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.95 }),
-    crane: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.3 }),
+    veg: new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.92 }),
+    crane: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.15 }),
   };
   const gableGlassMat = mat.glass.clone();
   gableGlassMat.side = THREE.DoubleSide;
-  // explicitly env-mapped materials (stronger reflections than the scene default)
-  const ENV_MATS = [
-    [mat.glass, 1.7],
-    [gableGlassMat, 1.7],
-    [mat.roof, 0.85],
-    [mat.frame, 0.7],
-    [mat.steel, 0.6],
-  ];
-  if (envTex) for (const [m, k] of ENV_MATS) {
-    m.envMap = envTex;
-    m.envMapIntensity = k;
+  if (envTex) {
+    for (const [m, k] of [
+      [mat.glass, 1.5],
+      [gableGlassMat, 1.5],
+      [mat.roof, 0.8],
+      [mat.frame, 0.6],
+      [mat.steel, 0.6],
+    ]) {
+      m.envMap = envTex;
+      m.envMapIntensity = k;
+    }
   }
+
+  /* ----------------------------------------- ground: studio table → white */
+  const groundU = {
+    uFadeC: { value: new THREE.Vector2(1.6, 0) },
+    uFadeIn: { value: 11.0 },
+    uFadeOut: { value: 31.0 },
+  };
+  mat.ground.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, groundU);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vGroundXZ;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvGroundXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vGroundXZ;\nuniform vec2 uFadeC;\nuniform float uFadeIn;\nuniform float uFadeOut;')
+      .replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        vec2 gq = (vGroundXZ - uFadeC) * vec2(0.82, 1.0);
+        float gf = smoothstep(uFadeIn, uFadeOut, length(gq));
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0), gf * gf * (3.0 - 2.0 * gf));`,
+      );
+  };
+  mat.ground.customProgramCacheKey = () => 'brv-ground';
+
+  /* ------------------------------- paint: layered roller sweep on the panel */
+  const RAW_C = new THREE.Color(RAW_PINE);
+  const paintU = {
+    uPaintBase: { value: new THREE.Color(RAW_PINE) },
+    uPaintC: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color()] },
+    uPaintE: { value: new Float32Array([-1, -1, -1, -1]) },
+    uPaintWetW: { value: 0.055 },
+  };
+  mat.clad.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, paintU);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec2 aPaint;\nvarying vec2 vPaint;\nvarying float vPaintY;')
+      .replace(
+        '#include <project_vertex>',
+        `#include <project_vertex>
+        vPaint = aPaint;
+        {
+          vec4 pw = vec4(transformed, 1.0);
+          #ifdef USE_INSTANCING
+            pw = instanceMatrix * pw;
+          #endif
+          vPaintY = (modelMatrix * pw).y;
+        }`,
+      );
+    sh.fragmentShader = sh.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        uniform vec3 uPaintBase;
+        uniform vec3 uPaintC[4];
+        uniform float uPaintE[4];
+        uniform float uPaintWetW;
+        varying vec2 vPaint;
+        varying float vPaintY;
+        // top-down per board, boards in order along the façade, slightly ragged
+        vec3 brvPaint(out float wet) {
+          float q = vPaint.x + (9.4 - vPaintY) * 0.0085 + (vPaint.y - 0.5) * 0.016;
+          float aa = max(fwidth(q), 1e-4);
+          vec3 c = uPaintBase;
+          wet = 0.0;
+          for (int i = 0; i < 4; i++) {
+            float e = uPaintE[i];
+            float m = 1.0 - smoothstep(e - aa, e + aa, q);
+            c = mix(c, uPaintC[i], m);
+            float w = m * (1.0 - smoothstep(0.0, uPaintWetW, e - q));
+            wet = max(wet * (1.0 - m), w);
+          }
+          return c;
+        }`,
+      )
+      .replace(
+        '#include <color_fragment>',
+        `#include <color_fragment>
+        float paintWet = 0.0;
+        vec3 paintCol = brvPaint(paintWet);
+        diffuseColor.rgb *= mix(paintCol, paintCol * 1.1 + 0.015, paintWet);`,
+      )
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.16, paintWet);');
+  };
+  mat.clad.customProgramCacheKey = () => 'brv-clad-paint';
 
   const col = (hex, jitter = 0, hue = 0) => {
     const c = new THREE.Color(hex);
     if (jitter || hue) c.offsetHSL((rnd() - 0.5) * hue, 0, (rnd() - 0.5) * jitter);
     return c;
   };
-  const PINE = 0xd6b88d;
-  const PINE_DARK = 0xc7a676;
-  const OSB = 0xc6a26a;
-  const BLACK = 0x1e1f1f;
+  const PINE = 0xd8b989;
+  const PINE_DARK = 0xc9a674;
+  const OSB = 0xcda873;
+  const FRAME_C = 0x1b1c1d;
 
   const parts = [];
   const addPart = (name, geo, material, items, opts) => {
@@ -735,173 +836,123 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const site = new THREE.Group();
   scene.add(site);
 
-  // ground
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(260, 72).rotateX(-Math.PI / 2), mat.ground);
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 72).rotateX(-Math.PI / 2), mat.ground);
   ground.receiveShadow = true;
   site.add(ground);
 
-  // survey grid (fades radially)
+  // soft contact shadow ("ambient occlusion" blob) under the footprint
+  const aoTex = (() => {
+    const N = 64;
+    const data = new Uint8Array(N * N * 4);
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const u = Math.abs((i + 0.5) / N * 2 - 1);
+        const v = Math.abs((j + 0.5) / N * 2 - 1);
+        const dx = Math.max(0, u - 0.55) / 0.45;
+        const dy = Math.max(0, v - 0.45) / 0.55;
+        const d = Math.min(1, Math.hypot(dx, dy));
+        const a = Math.pow(1 - d, 2.2);
+        const k = (j * N + i) * 4;
+        data[k] = data[k + 1] = data[k + 2] = Math.round(a * 255);
+        data[k + 3] = 255;
+      }
+    }
+    const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat);
+    t.magFilter = THREE.LinearFilter;
+    t.minFilter = THREE.LinearFilter;
+    t.needsUpdate = true;
+    return t;
+  })();
+  const aoMat = new THREE.MeshBasicMaterial({
+    color: 0x2b241d,
+    alphaMap: aoTex,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4,
+  });
+  const ao = new THREE.Mesh(unitPlane, aoMat);
+  ao.rotation.x = -Math.PI / 2;
+  ao.position.set(1.2, 0.012, 0);
+  ao.scale.set(19.5, 11.5, 1);
+  ao.renderOrder = 1;
+  ao.visible = false;
+  site.add(ao);
+
+  // survey grid on the plot: drafting paper that fades radially
   const gridMat = new THREE.LineBasicMaterial({
     vertexColors: true,
     transparent: true,
-    opacity: 0.35,
+    opacity: 0,
     depthWrite: false,
     toneMapped: false,
   });
-  {
+  const grid = (() => {
     const pos = [];
     const cols = [];
-    const R = 42;
-    const step = 2;
-    const base = new THREE.Color(0x9fb2bf);
+    const R = 30;
+    const step = 1.5;
+    const base = new THREE.Color(0x6f97b3);
     const pushV = (x, z, major) => {
-      const r = Math.hypot(x, z) / R;
-      const f = Math.pow(Math.max(0, 1 - r), 1.6) * (major ? 1 : 0.5);
-      pos.push(x, 0.016, z);
-      cols.push(base.r * f, base.g * f, base.b * f);
+      const r = Math.hypot(x - 1.5, z) / R;
+      const f = Math.pow(Math.max(0, 1 - r), 1.4) * (major ? 0.55 : 0.28);
+      pos.push(x, 0.018, z);
+      cols.push(base.r, base.g, base.b, f);
     };
     for (let i = -R; i <= R; i += step) {
-      const major = i % 10 === 0;
+      const major = Math.abs(i % 6) < 1e-6;
       for (let j = -R; j < R; j += step) {
         if (Math.hypot(i, j) > R + 2) continue;
-        pushV(i, j, major);
-        pushV(i, j + step, major);
-        pushV(j, i, major);
-        pushV(j + step, i, major);
+        pushV(i + 1.5, j, major);
+        pushV(i + 1.5, j + step, major);
+        pushV(j + 1.5, i, major);
+        pushV(j + step + 1.5, i, major);
       }
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-    const grid = new THREE.LineSegments(g, gridMat);
-    grid.renderOrder = 1;
-    site.add(grid);
-  }
+    g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 4));
+    const l = new THREE.LineSegments(g, gridMat);
+    l.renderOrder = 2;
+    l.visible = false;
+    site.add(l);
+    return l;
+  })();
 
-  // sky dome
-  const skyMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTop: { value: new THREE.Color(0x0b0c0c) },
-      uHorizon: { value: new THREE.Color(0x1c252c) },
-      uGlow: { value: new THREE.Color(0x2c3b46) },
-      uGlowDir: { value: new THREE.Vector3(-0.78, 0, -0.62) },
-      uLevel: { value: 1 },
-    },
-    vertexShader: SKY_VS,
-    fragmentShader: SKY_FS,
-    side: THREE.BackSide,
-    depthWrite: false,
-    fog: false,
-  });
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(500, 32, 16), skyMat);
-  sky.renderOrder = -10;
-  sky.frustumCulled = false;
-  scene.add(sky);
-
-  // layered fjord mountains (ring angle a: x = cos a·R, z = sin a·R)
-  const FJORD_A = Math.atan2(-0.62, -0.78) + TAU;
-  const mountainMats = [];
-  function mountainRing(R, baseH, amp, seed, hex, peaks) {
-    const r = mulberry32(seed);
-    const waves = [];
-    for (let k = 0; k < 11; k++) waves.push({ f: Math.round((2 + r() * 3) * (1 + k * 1.15)), a: (amp / (1 + k * 0.85)) * (0.5 + r() * 0.7), ph: r() * TAU, ridge: k > 3 });
-    const peakList = [];
-    for (let k = 0; k < peaks; k++) peakList.push({ c: r() * TAU, w: 0.05 + r() * 0.12, h: amp * (0.5 + r() * 0.9) });
-    const seg = 240;
-    const pos = [];
-    const idx = [];
-    for (let i = 0; i <= seg; i++) {
-      const a = (i / seg) * TAU;
-      let h = baseH;
-      for (const w of waves) h += w.ridge ? w.a * (0.5 - Math.abs(Math.sin(w.f * a + w.ph))) * 1.4 : w.a * Math.sin(w.f * a + w.ph);
-      for (const pk of peakList) {
-        let d = Math.abs(a - pk.c);
-        d = Math.min(d, TAU - d);
-        h += pk.h * Math.exp(-(d * d) / (2 * pk.w * pk.w));
-      }
-      // open a fjord gap toward the glow on the horizon
-      let dg = Math.abs(a - FJORD_A);
-      dg = Math.min(dg, TAU - dg);
-      h *= 1 - 0.62 * Math.exp(-(dg * dg) / (2 * 0.22 * 0.22));
-      h = Math.max(baseH * 0.2, h);
-      const x = Math.cos(a) * R;
-      const z = Math.sin(a) * R;
-      pos.push(x, -3, z, x, h, z);
-      if (i < seg) {
-        const b = i * 2;
-        idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
-      }
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setIndex(idx);
-    const m = new THREE.MeshBasicMaterial({ color: hex, fog: false, side: THREE.DoubleSide });
-    m.userData.base = m.color.clone();
-    mountainMats.push(m);
-    const mesh = new THREE.Mesh(g, m);
-    mesh.frustumCulled = false;
-    scene.add(mesh);
-  }
-  mountainRing(250, 30, 22, 11, 0x19222a, 5);
-  mountainRing(185, 19, 17, 23, 0x131a1f, 6);
-  mountainRing(135, 9, 11, 37, 0x0e1215, 5);
-
-  const mistMats = [];
-  function mist(R, H, hex, op) {
-    const m = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(hex) }, uOpacity: { value: op }, uLevel: { value: 1 } },
-      vertexShader: MIST_VS,
-      fragmentShader: MIST_FS,
-      transparent: true,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      fog: false,
-    });
-    mistMats.push(m);
-    const g = new THREE.CylinderGeometry(R, R, H, 96, 1, true).translate(0, H / 2 - 2, 0);
-    const mesh = new THREE.Mesh(g, m);
-    mesh.frustumCulled = false;
-    scene.add(mesh);
-  }
-  mist(160, 30, 0x1a2329, 0.75);
-  mist(215, 40, 0x1c252b, 0.6);
-
-  // trees, boulders (vertex-coloured, flat shaded, instanced)
+  // trees + boulders: flat-shaded, coloured like a model railway landscape
   function spruceGeo() {
-    const l = [paint(new THREE.CylinderGeometry(0.09, 0.16, 1.8, 6).translate(0, 0.9, 0), 0x2f241c)];
-    const layers = 6;
+    const l = [paint(new THREE.CylinderGeometry(0.09, 0.16, 1.4, 6).translate(0, 0.7, 0), 0x6b4e36)];
+    const layers = 5;
     for (let i = 0; i < layers; i++) {
       const t = i / (layers - 1);
-      const r = lerp(2.1, 0.45, t);
-      const h = lerp(2.9, 1.7, t);
-      const y = 0.9 + i * 1.25;
-      const c = new THREE.Color(0x14211a).lerp(new THREE.Color(0x1f3326), t);
+      const r = lerp(1.85, 0.45, t);
+      const h = lerp(2.5, 1.6, t);
+      const y = 0.8 + i * 1.1;
+      const c = new THREE.Color(0x3c5a42).lerp(new THREE.Color(0x5f8058), t);
       l.push(paint(new THREE.ConeGeometry(r, h, 7, 1).translate(0, y + h / 2, 0), c));
     }
     return merge(l);
   }
-  function birchGeo() {
-    const l = [paint(new THREE.CylinderGeometry(0.07, 0.13, 6.4, 6).translate(0, 3.2, 0), 0xd5d0c5)];
+  function birchGeo(crown) {
+    const l = [paint(new THREE.CylinderGeometry(0.07, 0.12, 5.2, 6).translate(0, 2.6, 0), 0xefece4)];
     const blobs = [
-      [0, 6.3, 0, 1.45, 0x94773a],
-      [0.75, 5.1, 0.35, 1.05, 0x7f6630],
-      [-0.65, 5.5, -0.4, 1.15, 0xa08038],
-      [0.15, 7.35, 0.1, 0.85, 0x8a6e32],
+      [0, 5.3, 0, 1.35, 0],
+      [0.7, 4.3, 0.35, 1.0, 1],
+      [-0.6, 4.6, -0.4, 1.1, 2],
+      [0.15, 6.2, 0.1, 0.8, 1],
     ];
-    for (const b of blobs) l.push(paint(new THREE.IcosahedronGeometry(b[3], 0).scale(1, 1.25, 1).translate(b[0], b[1], b[2]), b[4]));
+    for (const b of blobs) l.push(paint(new THREE.IcosahedronGeometry(b[3], 0).scale(1, 1.2, 1).translate(b[0], b[1], b[2]), crown[b[4]]));
     return merge(l);
   }
   {
     const spruces = [
-      [-15.5, -7, 1.1], [-19.5, -6.5, 0.92], [-16, -13, 1.25], [-7.5, -16.5, 1.05], [-2.5, -18.5, 1.3],
-      [4, -17, 0.95], [10, -15, 1.12], [16, -11.5, 1.0], [20.5, -5.5, 0.9], [-22, 7, 1.2],
-      [-25, -9, 1.35], [25, -16, 1.25], [-14, 14, 1.0], [-30, 1, 1.4], [30, -24, 1.4], [-6, -27, 1.5],
-      [14, -24, 1.35], [-21, -20, 1.3], [-27, 15, 1.2], [36, -8, 1.3],
+      [-15.5, -1.5, 0.95], [-13.0, 6.5, 0.8], [-4.0, -12.5, 0.95], [3.5, -13.0, 1.05], [10.5, -11.0, 0.85],
+      [16.5, -6.0, 0.9], [-9.5, -14.5, 1.1], [19.5, 2.5, 0.75], [-18.5, -8.0, 1.0], [14.0, -15.5, 1.15],
     ];
-    const birches = [
-      [-11.5, -3.5, 1.0], [-12.5, 6.5, 0.9], [12.5, -8.5, 1.0], [6.5, -12.5, 0.85], [-5.5, -12.5, 1.0],
-      [21, -4, 0.95], [-19, 12, 1.0], [22, -12, 0.9],
-    ];
+    const birchesGreen = [[-11.0, 2.0, 0.85], [13.5, -3.0, 0.8], [-1.5, -10.5, 0.75], [7.5, -9.0, 0.8]];
+    const birchesOchre = [[15.0, 7.5, 0.7], [-17.0, 3.0, 0.8]];
     const mk = (geo, list, seed) => {
       const r = mulberry32(seed);
       const m = new THREE.InstancedMesh(geo, mat.veg, list.length);
@@ -912,19 +963,20 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         const s = t[2];
         _m4.compose(new THREE.Vector3(t[0], -0.05, t[1]), q, new THREE.Vector3(s * (0.9 + r() * 0.2), s, s * (0.9 + r() * 0.2)));
         m.setMatrixAt(i, _m4);
-        m.setColorAt(i, c.setScalar(0.85 + r() * 0.3));
+        m.setColorAt(i, c.setScalar(0.9 + r() * 0.2));
       });
       m.castShadow = true;
       m.receiveShadow = true;
       site.add(m);
     };
     mk(spruceGeo(), spruces, 3);
-    mk(birchGeo(), birches, 5);
+    mk(birchGeo([0x8fa95a, 0x7d9a4c, 0xa3b968]), birchesGreen, 5);
+    mk(birchGeo([0xd9a441, 0xc98f2e, 0xe2b65a]), birchesOchre, 7);
     const rocks = [
-      [8.6, -6.4, 0.9], [-9.2, 5.6, 1.2], [-10.4, -7.6, 1.4], [3.5, -9.6, 0.6],
-      [14, -2.5, 1.1], [-12.5, -2.0, 0.8], [-6.8, 9.5, 0.55], [17, 9, 0.5],
+      [8.8, -6.6, 0.85], [-9.4, 5.8, 1.0], [-10.2, -6.2, 1.2], [3.5, -9.4, 0.55],
+      [13.8, 1.0, 0.9], [-12.8, -3.0, 0.7], [-6.8, 9.2, 0.5], [16.5, -9.5, 0.6],
     ];
-    const rg = paint(new THREE.IcosahedronGeometry(1, 0), 0x3d3e3c);
+    const rg = paint(new THREE.IcosahedronGeometry(1, 0), 0xb4aea4);
     const rm = new THREE.InstancedMesh(rg, mat.veg, rocks.length);
     const r = mulberry32(9);
     const q = new THREE.Quaternion();
@@ -934,68 +986,28 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const s = t[2];
       _m4.compose(new THREE.Vector3(t[0], s * 0.15, t[1]), q, new THREE.Vector3(s * (1 + r() * 0.5), s * (0.55 + r() * 0.3), s * (1 + r() * 0.4)));
       rm.setMatrixAt(i, _m4);
-      rm.setColorAt(i, new THREE.Color().setScalar(0.8 + r() * 0.4));
+      rm.setColorAt(i, new THREE.Color().setScalar(0.85 + r() * 0.3));
     });
     rm.castShadow = true;
     rm.receiveShadow = true;
     site.add(rm);
   }
 
-  // rain
-  const RAIN_N = isMobile ? 700 : 1700;
-  const rainMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uTime: { value: 0 },
-      uH: { value: 24 },
-      uLen: { value: 0.65 },
-      uOpacity: { value: 0 },
-      uColor: { value: new THREE.Color(0xa9bfd0) },
-    },
-    vertexShader: RAIN_VS,
-    fragmentShader: RAIN_FS,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    fog: false,
-  });
-  const rain = (() => {
-    const pos = new Float32Array(RAIN_N * 6);
-    const tail = new Float32Array(RAIN_N * 2);
-    const speed = new Float32Array(RAIN_N * 2);
-    const r = mulberry32(77);
-    for (let i = 0; i < RAIN_N; i++) {
-      const x = (r() - 0.5) * 56;
-      const z = (r() - 0.5) * 56;
-      const y = r() * 24;
-      const s = 10 + r() * 6;
-      pos.set([x, y, z, x, y, z], i * 6);
-      tail[i * 2] = 0;
-      tail[i * 2 + 1] = 1;
-      speed[i * 2] = speed[i * 2 + 1] = s;
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('aTail', new THREE.BufferAttribute(tail, 1));
-    g.setAttribute('aSpeed', new THREE.BufferAttribute(speed, 1));
-    const l = new THREE.LineSegments(g, rainMat);
-    l.frustumCulled = false;
-    l.renderOrder = 5;
-    scene.add(l);
-    return l;
-  })();
-
   /* ============================================================ BLUEPRINT */
+  const INK = new THREE.Color(0x2e5c7a); // fjordblå
+  const INK_LIGHT = new THREE.Color(0x86a9c1);
+  const INK_ACC = new THREE.Color(ORANGE);
   const blueprintU = {
     uReveal: { value: 0 },
     uWin: { value: 0.07 },
     uOpacity: { value: 1 },
-    uHot: { value: new THREE.Color(0xff7a3d) },
+    uHot: { value: new THREE.Color(ORANGE) },
   };
   const nodesU = {
     uReveal: blueprintU.uReveal,
     uWin: blueprintU.uWin,
     uOpacity: { value: 1 },
-    uSize: { value: 7 },
+    uSize: { value: 9 },
     uHot: blueprintU.uHot,
   };
   const lineMat = (u) =>
@@ -1005,7 +1017,6 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       fragmentShader: BLUEPRINT_FS,
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
       toneMapped: false,
       fog: false,
     });
@@ -1036,10 +1047,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   }
 
   const blueprint = (() => {
-    const C_MAJOR = new THREE.Color(0xe6edf2);
-    const C_MINOR = new THREE.Color(0x5f86ab);
-    const C_ACC = new THREE.Color(0xff5a1f);
-    const KC = [C_MAJOR, C_MINOR, C_ACC];
+    const KC = [INK, INK_LIGHT, INK_ACC];
     const segs = [];
     const nodes = [];
     let cur = null;
@@ -1057,7 +1065,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const gy = (a) => yTop(a) + 0.06;
     const roofY = (a) => yTop(a) + ROOF_T + 0.07;
 
-    // 1 — foundation + ground dims
+    // foundation outline
     group(0.0, 0.12, () => {
       const y0 = 0.02;
       L(-6, y0, 3.5, 6, y0, 3.5);
@@ -1070,7 +1078,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       L(6, FT, -3.5, -6, FT, -3.5);
       L(-6, FT, -3.5, -6, FT, 3.5);
     });
-    // 2 — walls box
+    // wall box
     group(0.08, 0.3, () => {
       const c = [[-BX, BZ], [BX, BZ], [BX, -BZ], [-BX, -BZ]];
       for (const [x, z] of c) L(x, FT, z, x, CLAD_TOP, z);
@@ -1085,15 +1093,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         L(a[0], 3.45, a[1], b[0], 3.45, b[1], 1);
       }
     });
-    // 3 — stud lines on every wall (minor), skipping openings
+    // stud lines on every wall, skipping openings
     group(0.16, 0.46, () => {
       for (const w of WALLS) {
         const gable = WALL[w].gable;
         const half = gable ? 3.5 : 6;
         const d = gable ? BX : BZ;
-        const us = [];
-        for (let u = -half + 0.6; u < half - 0.1; u += 0.6) us.push(u);
-        for (const u of us) {
+        for (let u = -half + 0.6; u < half - 0.1; u += 0.6) {
           const top = gable ? gy(Math.abs(u)) - 0.04 : CLAD_TOP;
           for (const s of cutColumn(w, u - 0.01, u + 0.01, FT, top, 0, 0, 0.2)) {
             const a = wp(w, u, s[0], d);
@@ -1103,7 +1109,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         }
       }
     });
-    // 4 — gables + roof outline
+    // gables + roof outline
     group(0.38, 0.58, () => {
       for (const sx of [-1, 1]) {
         L(sx * BX, CLAD_TOP, -BZ, sx * BX, gy(BZ), -BZ);
@@ -1117,13 +1123,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       }
       L(-GABLE_X, roofY(0), 0, GABLE_X, roofY(0), 0);
     });
-    // 5 — roof seams
+    // roof seams
     group(0.5, 0.72, () => {
       for (let x = -GABLE_X + 0.5; x < GABLE_X - 0.1; x += 0.5) {
         for (const sz of [-1, 1]) L(x, roofY(0), 0, x, roofY(EAVE_Z), sz * EAVE_Z, 1);
       }
     });
-    // 6 — openings (with the elevation-drawing "opening" diagonal)
+    // openings (with the elevation-drawing diagonal)
     group(0.6, 0.86, () => {
       for (const o of OPENINGS) {
         const w = o.wall;
@@ -1159,27 +1165,25 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         L(a[0], a[1], a[2], c[0], c[1], c[2], 1);
       }
     });
-    // 7 — deck, dimensions (orange) and figures
+    // deck + dimension lines (orange, ticks only)
     group(0.8, 1.0, () => {
       const y = FT + 0.01;
       L(6.05, y, -3.6, DECK_X1, y, -3.6);
       L(DECK_X1, y, -3.6, DECK_X1, y, 3.6);
       L(DECK_X1, y, 3.6, 6.05, y, 3.6);
       for (let x = 6.55; x < DECK_X1; x += 0.5) L(x, y, -3.6, x, y, 3.6, 1);
-      // front dimension 12 000
       const dz = 5.4;
       const g0 = 0.03;
       L(-6, g0, 3.8, -6, g0, dz + 0.3, 2);
       L(6, g0, 3.8, 6, g0, dz + 0.3, 2);
       L(-6, g0, dz, 6, g0, dz, 2);
       for (const x of [-6, 6]) L(x - 0.18, g0, dz + 0.18, x + 0.18, g0, dz - 0.18, 2);
-      // height dimension at +x, in the gable centre plane
       const hx = 10.6;
       L(hx, 0.02, 0, hx, RIDGE, 0, 2);
       L(GABLE_X + 0.3, RIDGE, 0, hx + 0.35, RIDGE, 0, 2);
       L(DECK_X1 + 0.3, 0.02, 0, hx + 0.35, 0.02, 0, 2);
       for (const yy of [0.02, RIDGE]) L(hx - 0.18, yy - 0.18, 0, hx + 0.18, yy + 0.18, 0, 2);
-      // pitch arc at the front-right eave, gable plane
+      // pitch arc at the front-right eave
       const cx = GABLE_X + 0.02;
       const ey = roofY(EAVE_Z);
       const R = 1.4;
@@ -1194,46 +1198,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         py = ny;
       }
       L(cx, ey, EAVE_Z, cx, ey, EAVE_Z - R - 0.25, 2);
-      // figures (stroke font)
-      const SEGS = {
-        a: [0, 1, 1, 1], b: [1, 1, 1, 0.5], c: [1, 0.5, 1, 0], d: [0, 0, 1, 0], e: [0, 0, 0, 0.5], f: [0, 0.5, 0, 1], g: [0, 0.5, 1, 0.5],
-      };
-      const GL = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
-      const text = (str, o, r, u, h) => {
-        const w = h * 0.55;
-        let x = 0;
-        for (const ch of str) {
-          if (ch === '°') {
-            const s = h * 0.22;
-            const p = [[x, h - s], [x + s, h - s], [x + s, h], [x, h]];
-            for (let i = 0; i < 4; i++) {
-              const A = p[i];
-              const B = p[(i + 1) % 4];
-              L(o[0] + r[0] * A[0] + u[0] * A[1], o[1] + r[1] * A[0] + u[1] * A[1], o[2] + r[2] * A[0] + u[2] * A[1],
-                o[0] + r[0] * B[0] + u[0] * B[1], o[1] + r[1] * B[0] + u[1] * B[1], o[2] + r[2] * B[0] + u[2] * B[1], 2);
-            }
-            x += s * 2;
-            continue;
-          }
-          const g = GL[ch];
-          if (g) for (const sg of g) {
-            const S = SEGS[sg];
-            const ax = x + S[0] * w;
-            const ay = S[1] * h;
-            const bx = x + S[2] * w;
-            const by = S[3] * h;
-            L(o[0] + r[0] * ax + u[0] * ay, o[1] + r[1] * ax + u[1] * ay, o[2] + r[2] * ax + u[2] * ay,
-              o[0] + r[0] * bx + u[0] * by, o[1] + r[1] * bx + u[1] * by, o[2] + r[2] * bx + u[2] * by, 2);
-          }
-          x += w + h * 0.3;
-        }
-      };
-      text('12 000', [-1.15, 0.03, dz + 0.75], [1, 0, 0], [0, 0, -1], 0.42);
-      text('9 190', [hx + 0.55, 3.6, 0], [0, 1, 0], [-1, 0, 0], 0.42);
-      text('40°', [cx, ey + 0.35, EAVE_Z - R - 0.95], [0, 0, -1], [0, 1, 0], 0.32);
     });
 
-    // nodes at key corners
     for (const [x, z] of [[-6, 3.5], [6, 3.5], [6, -3.5], [-6, -3.5]]) {
       N(x, 0.02, z, 0.02, 2);
       N(x * (BX / 6), CLAD_TOP, z * (BZ / 3.5), 0.3);
@@ -1246,6 +1212,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const lines = new THREE.LineSegments(lineGeometry(segs), lineMat(blueprintU));
     lines.frustumCulled = false;
     lines.renderOrder = 6;
+    lines.visible = false;
     scene.add(lines);
 
     const ng = new THREE.BufferGeometry();
@@ -1268,13 +1235,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         fragmentShader: NODES_FS,
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending,
         toneMapped: false,
         fog: false,
       }),
     );
     pts.frustumCulled = false;
     pts.renderOrder = 7;
+    pts.visible = false;
     scene.add(pts);
     return { lines, pts };
   })();
@@ -1293,12 +1260,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const st = [[cx, cz], [cx - sx * 1.4, cz], [cx, cz - sz * 1.4]];
       for (const [x, z] of st) {
         items.push(it([x, 0, z], [0.06, 0.95, 0.06], ci * 0.25 + (k++ % 3) * 0.04, null, col(PINE_DARK, 0.05)));
-        items.push(it([x, 0.93, z], [0.075, 0.1, 0.075], ci * 0.25 + 0.1, null, col(0xff5a1f)));
+        items.push(it([x, 0.93, z], [0.075, 0.1, 0.075], ci * 0.25 + 0.1, null, col(ORANGE)));
       }
       items.push(it([cx - sx * 0.7, 0.68, cz], [1.55, 0.12, 0.025], ci * 0.25 + 0.14, null, col(PINE, 0.05)));
       items.push(it([cx, 0.68, cz - sz * 0.7], [0.025, 0.12, 1.55], ci * 0.25 + 0.16, null, col(PINE, 0.05)));
     });
-    // survey tripod with total station
     const tx = 8.6;
     const tz = -5.6;
     for (let i = 0; i < 3; i++) {
@@ -1309,17 +1275,17 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       items.push(it(foot.toArray(), [0.035, dir.length(), 0.035], 0.85, orientQ(dir, V_UP), col(0xc9a36a)));
     }
     items.push(it([tx, 1.45, tz], [0.24, 0.3, 0.2], 0.95, null, col(0xe0b13a)));
-    addPart('stakes', unitBase, mat.wood, items, { win: win('tomt', 0.08, 0.6), out: win('grunnmur', 0.7, 0.95), dur: 0.3, anim: A_GROW });
+    addPart('stakes', unitBase, mat.wood, items, { win: win('blueprint', 0.35, 1.0), out: win('grunnmur', 0.7, 1.0), dur: 0.3, anim: A_GROW });
   }
   // string lines (orange) — reuse the blueprint tracing shader
   const stringsU = {
     uReveal: { value: 0 },
     uWin: { value: 0.18 },
     uOpacity: { value: 0 },
-    uHot: { value: new THREE.Color(0xffd2b8) },
+    uHot: { value: new THREE.Color(0xffb38f) },
   };
   const strings = (() => {
-    const c = new THREE.Color(0xff5a1f);
+    const c = new THREE.Color(ORANGE);
     const y = 0.74;
     const segs = [
       { a: [-7.3, y, 3.5], b: [7.3, y, 3.5], c, o: 0 },
@@ -1330,12 +1296,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const l = new THREE.LineSegments(lineGeometry(segs), lineMat(stringsU));
     l.frustumCulled = false;
     l.visible = false;
+    l.renderOrder = 6;
     scene.add(l);
     return l;
   })();
 
   /* ========================================================== GRUNNMUR */
-  addPart('gravel', unitBase, mat.gravel, [it([0.6, 0, 0], [16.4, 0.008, 11.2], 0, null, col(0x2b2a27), [0.6, 0, 0])], {
+  addPart('gravel', unitBase, mat.gravel, [it([0.9, 0, 0], [17.2, 0.008, 11.6], 0, null, col(0xdcd6cc), [0.9, 0, 0])], {
     win: win('grunnmur', 0, 0.28),
     dur: 1,
     anim: A_POP,
@@ -1343,15 +1310,15 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   });
   {
     const items = [];
-    const piles = [[-9.0, -5.6, 1.6], [-7.8, 7.0, 1.2], [6.2, -8.8, 1.0]];
+    const piles = [[-9.0, -5.4, 1.5], [-8.2, 7.0, 1.1], [6.2, -8.6, 0.95]];
     const ico = paint(new THREE.IcosahedronGeometry(1, 1), 0xffffff);
     piles.forEach(([x, z, s], i) => {
-      items.push(it([x, -0.05, z], [s * 1.5, s * 0.55, s * 1.2], i / 2, new THREE.Quaternion().setFromAxisAngle(V_UP, i * 1.7), col(0x3f3b35, 0.06), [x, -0.3, z]));
+      items.push(it([x, -0.05, z], [s * 1.5, s * 0.55, s * 1.2], i / 2, new THREE.Quaternion().setFromAxisAngle(V_UP, i * 1.7), col(0xa48d74, 0.05), [x, -0.3, z]));
     });
-    const rubbleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true });
-    addPart('rubble', ico, rubbleMat, items, { win: win('grunnmur', 0.04, 0.38), out: win('nokkelferdig', 0.0, 0.5), dur: 0.5, outDur: 0.6, anim: A_POP });
+    const soilMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true });
+    addPart('soil', ico, soilMat, items, { win: win('grunnmur', 0.04, 0.38), out: win('tak', 0.62, 0.95), dur: 0.5, outDur: 0.6, anim: A_POP });
   }
-  addPart('footing', unitBase, mat.concrete, [it([0, 0, 0], [12.44, 0.16, 7.44], 0, null, col(0x5d5b57))], {
+  addPart('footing', unitBase, mat.concrete, [it([0, 0, 0], [12.44, 0.16, 7.44], 0, null, col(0xa9a6a0))], {
     win: win('grunnmur', 0.16, 0.4),
     dur: 1,
     anim: A_GROW,
@@ -1361,14 +1328,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     unitBase,
     mat.concrete,
     [
-      it([0, 0.16, 3.345], [11.94, 0.44, 0.25], 0, null, col(0x6e6b66)),
-      it([5.845, 0.16, 0], [0.25, 0.44, 6.44], 0.33, null, col(0x6b6863)),
-      it([0, 0.16, -3.345], [11.94, 0.44, 0.25], 0.66, null, col(0x6e6b66)),
-      it([-5.845, 0.16, 0], [0.25, 0.44, 6.44], 1, null, col(0x6b6863)),
+      it([0, 0.16, 3.345], [11.94, 0.44, 0.25], 0, null, col(0xbdbab3)),
+      it([5.845, 0.16, 0], [0.25, 0.44, 6.44], 0.33, null, col(0xb8b5ae)),
+      it([0, 0.16, -3.345], [11.94, 0.44, 0.25], 0.66, null, col(0xbdbab3)),
+      it([-5.845, 0.16, 0], [0.25, 0.44, 6.44], 1, null, col(0xb8b5ae)),
     ],
     { win: win('grunnmur', 0.32, 0.78), dur: 0.45, anim: A_GROW },
   );
-  addPart('slab', unitBase, mat.concrete, [it([0, 0.16, 0], [11.44, 0.438, 6.44], 0, null, col(0x63605b))], {
+  addPart('slab', unitBase, mat.concrete, [it([0, 0.16, 0], [11.44, 0.438, 6.44], 0, null, col(0xb2afa8))], {
     win: win('grunnmur', 0.66, 0.92),
     dur: 1,
     anim: A_GROW,
@@ -1435,7 +1402,6 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     jx.forEach((x, i) => {
       items.push(it([x, GF_TOP, 0], [x === 3.55 ? 0.096 : 0.048, JOIST, 6.804], 0.12 + 0.4 * (i / (jx.length - 1)), null, col(PINE, 0.06)));
     });
-    // OSB sheets
     const x0 = -5.95;
     const x1 = 3.6;
     const z0 = -3.45;
@@ -1480,19 +1446,19 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const trussX = (i) => -5.926 + (i * 11.852) / (TRUSS_N - 1);
   {
     const items = [];
-    for (let i = 1; i < TRUSS_N - 1; i++) items.push(it([trussX(i), EH, 0], [1, 1, 1], i / (TRUSS_N - 1), null, col(0xcfae7d, 0.06)));
-    // hidden once the cathedral ceiling is finished (only ever visible through the glazing by then)
-    addPart('trusses', trussGeo(true, true), mat.wood, items, { win: win('takstoler', 0, 0.82), dur: 0.16, anim: A_SWING, drop: 2.4, swing: 1.25, hideAt: win('innredning', 0.12)[0] });
+    for (let i = 1; i < TRUSS_N - 1; i++) items.push(it([trussX(i), EH, 0], [1, 1, 1], i / (TRUSS_N - 1), null, col(0xd2b07c, 0.06)));
+    // hidden once the roof is closed (then only ever seen through the glazing)
+    addPart('trusses', trussGeo(true, true), mat.wood, items, { win: win('takstoler', 0, 0.82), dur: 0.16, anim: A_SWING, drop: 2.4, swing: 1.25, hideAt: win('tak', 0.45)[0] });
     addPart(
       'gableRafters',
       trussGeo(false, false),
       mat.wood,
-      [it([trussX(0), EH, 0], [1, 1, 1], 0, null, col(0xcfae7d)), it([trussX(TRUSS_N - 1), EH, 0], [1, 1, 1], 1, null, col(0xcfae7d))],
+      [it([trussX(0), EH, 0], [1, 1, 1], 0, null, col(0xd2b07c)), it([trussX(TRUSS_N - 1), EH, 0], [1, 1, 1], 1, null, col(0xd2b07c))],
       { win: win('takstoler', 0, 0.82), dur: 0.16, anim: A_SWING, drop: 2.4, swing: 1.25 },
     );
   }
   {
-    // gable studs + −x chord + ridge board
+    // gable studs + −x chord
     const items = [];
     items.push(it([-5.926, EH, 0], [0.048, 0.148, 2 * SZ], 0, null, col(PINE_DARK)));
     for (const w of ['left', 'right']) {
@@ -1511,14 +1477,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         }
       }
     }
-    // header/sill for the top slot window on the left gable
     items.push(it([-5.926, 7.9, 0], [0.048, 0.2, 0.85], 0.6, null, col(PINE_DARK)));
     items.push(it([-5.926, 6.552, 0], [0.048, 0.048, 0.75], 0.55, null, col(PINE)));
     addPart('gableStuds', unitBase, mat.wood, items, { win: win('takstoler', 0.55, 1), dur: 0.2, anim: A_DROP, drop: 1.2 });
   }
 
   /* ========================================================= KLEDNING */
-  // scaffolding (tubes + planks)
+  // scaffolding (tubes + planks); comes down before the painters start
   {
     const tubeGeo = new THREE.CylinderGeometry(0.026, 0.026, 1, 6).translate(0, 0.5, 0);
     const tubes = [];
@@ -1540,7 +1505,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const HMAX = 8.0;
     const tube = (a, b, o) => {
       const dir = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-      tubes.push(it(a, [1, dir.length(), 1], o / HMAX, orientQ(dir, V_UP), col(0xa9aeb1, 0.06)));
+      tubes.push(it(a, [1, dir.length(), 1], o / HMAX, orientQ(dir, V_UP), col(0xb3b9bd, 0.05)));
     };
     for (let i = 0; i < N; i++) {
       tube([inner[i][0], 0, inner[i][1]], [inner[i][0], 6.7, inner[i][1]], 0);
@@ -1552,20 +1517,19 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         tube([inner[i][0], y, inner[i][1]], [inner[j][0], y, inner[j][1]], y);
         tube([outer[i][0], y, outer[i][1]], [outer[j][0], y, outer[j][1]], y);
         tube([inner[i][0], y, inner[i][1]], [outer[i][0], y, outer[i][1]], y);
-        // planks
         const mx0 = (inner[i][0] + outer[i][0]) / 2;
         const mz0 = (inner[i][1] + outer[i][1]) / 2;
         const mx1 = (inner[j][0] + outer[j][0]) / 2;
         const mz1 = (inner[j][1] + outer[j][1]) / 2;
         const dir = new THREE.Vector3(mx1 - mx0, 0, mz1 - mz0);
-        planks.push(it([mx0, y + 0.03, mz0], [0.6, dir.length(), 0.04], (y + 0.3) / HMAX, orientQ(dir, V_UP), col(0x9d835d, 0.08)));
+        planks.push(it([mx0, y + 0.03, mz0], [0.6, dir.length(), 0.04], (y + 0.3) / HMAX, orientQ(dir, V_UP), col(0xc29a62, 0.08)));
       }
       tube([outer[i][0], 7.1, outer[i][1]], [outer[j][0], 7.1, outer[j][1]], 7.1);
       tube([outer[i][0], 6.6, outer[i][1]], [outer[j][0], 6.6, outer[j][1]], 6.6);
       if (i % 2 === 0) tube([outer[i][0], 0.15, outer[i][1]], [outer[j][0], 4.0, outer[j][1]], 2.0);
     }
     const sw = win('kledning', 0, 0.3);
-    const so = win('innredning', 0, 0.38);
+    const so = win('tak', 0.68, 1.0);
     addPart('scaffoldTubes', tubeGeo, mat.steel, tubes, { win: sw, out: so, dur: 0.3, outDur: 0.35, anim: A_GROW });
     addPart('scaffoldPlanks', unitBase, mat.wood, planks, { win: sw, out: so, dur: 0.3, outDur: 0.35, anim: A_GROW });
   }
@@ -1619,10 +1583,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       anim: A_GROW,
     });
   });
-  // standing cladding: under-boards + over-boards (tømmermannskledning)
+  // standing cladding: under-boards + over-boards (tømmermannskledning).
+  // Instance colour = subtle per-board variation; the paint colour comes from
+  // the shader (raw pine → painted), and aPaint = (sweep position, jitter).
   {
     const under = [];
     const over = [];
+    const tone = (v, j) => new THREE.Color().setScalar(v + (rnd() - 0.5) * j);
     for (const w of WALLS) {
       const gable = WALL[w].gable;
       const wi = wallIndex(w);
@@ -1635,8 +1602,9 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         if (Math.abs(u) + 0.1 > half + 0.01) continue;
         const ua = u - 0.1;
         const ub = u + 0.1;
+        const c = tone(0.86, 0.05);
         for (const s of cutColumn(w, ua, ub, CLAD_BASE, topAt(ua, ub), 0, 0, 0.2)) {
-          under.push(it(wp(w, u, s[0], base + 0.0405), ws(w, 0.2, s[1] - s[0], 0.019), ord(u), null, col(BLACK, 0.025, 0.01)));
+          under.push(it(wp(w, u, s[0], base + 0.0405), ws(w, 0.2, s[1] - s[0], 0.019), ord(u), null, c));
         }
       }
       for (let k = -30; k <= 30; k++) {
@@ -1644,8 +1612,9 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         if (Math.abs(u) + 0.05 > half + 0.01) continue;
         const ua = u - 0.05;
         const ub = u + 0.05;
+        const c = tone(0.98, 0.05);
         for (const s of cutColumn(w, ua, ub, CLAD_BASE, topAt(ua, ub), 0, 0, 0.2)) {
-          over.push(it(wp(w, u, s[0], base + 0.0595), ws(w, 0.1, s[1] - s[0], 0.019), ord(u), null, col(0x232424, 0.03, 0.01)));
+          over.push(it(wp(w, u, s[0], base + 0.0595), ws(w, 0.1, s[1] - s[0], 0.019), ord(u), null, c));
         }
       }
     }
@@ -1653,12 +1622,22 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     for (const sx of [-1, 1]) {
       for (const sz of [-1, 1]) {
         const o = sz > 0 ? (sx > 0 ? 0.25 : 0) : sx > 0 ? 0.5 : 0.75;
-        over.push(it([sx * 5.96, CLAD_BASE, sz * 3.5125], [0.12, CLAD_TOP - CLAD_BASE, 0.025], o, null, col(0x1b1c1c)));
-        over.push(it([sx * 6.0125, CLAD_BASE, sz * 3.465], [0.025, CLAD_TOP - CLAD_BASE, 0.12], o, null, col(0x1b1c1c)));
+        over.push(it([sx * 5.96, CLAD_BASE, sz * 3.5125], [0.12, CLAD_TOP - CLAD_BASE, 0.025], o, null, tone(0.95, 0)));
+        over.push(it([sx * 6.0125, CLAD_BASE, sz * 3.465], [0.025, CLAD_TOP - CLAD_BASE, 0.12], o, null, tone(0.95, 0)));
       }
     }
-    addPart('cladUnder', unitBase, mat.clad, under, { win: win('kledning', 0.26, 0.86), dur: 0.12, anim: A_GROW });
-    addPart('cladOver', unitBase, mat.clad, over, { win: win('kledning', 0.38, 1), dur: 0.12, anim: A_GROW });
+    const withPaint = (items) => {
+      const g = baseBox();
+      const a = new Float32Array(Math.max(1, items.length) * 2);
+      items.forEach((t, i) => {
+        a[i * 2] = clamp01(sweepD(t.p[0], t.p[2]) / SWEEP_LEN);
+        a[i * 2 + 1] = rnd();
+      });
+      g.setAttribute('aPaint', new THREE.InstancedBufferAttribute(a, 2));
+      return g;
+    };
+    addPart('cladUnder', withPaint(under), mat.clad, under, { win: win('kledning', 0.26, 0.86), dur: 0.12, anim: A_GROW });
+    addPart('cladOver', withPaint(over), mat.clad, over, { win: win('kledning', 0.38, 1), dur: 0.12, anim: A_GROW });
   }
 
   /* ========================================================== VINDUER */
@@ -1677,7 +1656,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const yc = (o.y0 + o.y1) / 2;
       const dC = base + 0.01;
       const anchor = wp(w, uc, yc, dC);
-      const bar = (u0, u1, y0, y1, depth = 0.15, dc = dC, color = 0x18191a) =>
+      const bar = (u0, u1, y0, y1, depth = 0.15, dc = dC, color = FRAME_C) =>
         frames.push(it(wp(w, (u0 + u1) / 2, (y0 + y1) / 2, dc), ws(w, u1 - u0, y1 - y0, depth), ord, null, col(color), anchor));
       const t = 0.075;
       const ex = 0.045;
@@ -1686,35 +1665,30 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       bar(o.u0 - ex + t, o.u1 + ex - t, o.y1 + ex - t, o.y1 + ex);
       if (o.kind === 'door') {
         bar(o.u0 - ex + t, o.u1 + ex - t, o.y0, o.y0 + 0.03, 0.15);
-        // slim steel canopy
         bar(o.u0 - 0.35, o.u1 + 0.35, 3.02, 3.07, 0.42, base + 0.22 + 0.06);
-        doors.push(it(wp(w, uc, yc - 0.01, base - 0.015), ws(w, o.u1 - o.u0 - 0.06, o.y1 - o.y0 - 0.05, 0.06), ord, null, col(0x8d6a45), anchor));
-        // vertical pull handle
-        frames.push(it(wp(w, o.u0 + 0.16, yc, base + 0.04), ws(w, 0.035, 1.1, 0.04), ord, null, col(0x9a8f80), anchor));
+        doors.push(it(wp(w, uc, yc - 0.01, base - 0.015), ws(w, o.u1 - o.u0 - 0.06, o.y1 - o.y0 - 0.05, 0.06), ord, null, col(0x9a7550), anchor));
+        frames.push(it(wp(w, o.u0 + 0.16, yc, base + 0.04), ws(w, 0.035, 1.1, 0.04), ord, null, col(0xa59a8a), anchor));
       } else {
         bar(o.u0 - ex + t, o.u1 + ex - t, o.y0 - ex, o.y0 - ex + t);
-        // sill flashing
         bar(o.u0 - ex - 0.02, o.u1 + ex + 0.02, o.y0 - ex - 0.025, o.y0 - ex, 0.2, base + 0.04);
         if (o.y1 - o.y0 > 1.8) bar(o.u0, o.u1, o.y0 + 0.62, o.y0 + 0.67, 0.08, base - 0.01);
-        glass.push(
-          it(wp(w, uc, yc, base - 0.03), [o.u1 - o.u0, o.y1 - o.y0, 1], ord, QW[w], null, anchor),
-        );
+        glass.push(it(wp(w, uc, yc, base - 0.03), [o.u1 - o.u0, o.y1 - o.y0, 1], ord, QW[w], null, anchor));
       }
     }
     addPart('windowFrames', unitCenter, mat.frame, frames, { win: win('vinduer', 0, 0.8), dur: 0.22, anim: A_POP });
     const gp = addPart('windowGlass', unitPlane, mat.glass, glass, { win: win('vinduer', 0.04, 0.84), dur: 0.22, anim: A_POP, cast: false });
-    gp.mesh.renderOrder = 2;
+    gp.mesh.renderOrder = 3;
     addPart('door', unitCenter, mat.wood, doors, { win: win('vinduer', 0.45, 0.95), dur: 0.5, anim: A_POP });
   }
   {
     // glazed gable: frame bars grow, glass rises
     const items = [];
     const xC = SX + 0.01;
-    const vbar = (z, y0, y1, o) => items.push(it([xC, y0, z], [0.15, y1 - y0, 0.08], o, null, col(0x18191a)));
+    const vbar = (z, y0, y1, o) => items.push(it([xC, y0, z], [0.15, y1 - y0, 0.08], o, null, col(FRAME_C)));
     vbar(-GLAZE, 0.6, glazeTop(GLAZE) + 0.04, 0);
     vbar(GLAZE, 0.6, glazeTop(GLAZE) + 0.04, 0.1);
     for (const [z, o] of [[-1.1875, 0.25], [0, 0.32], [1.1875, 0.4]]) vbar(z, 0.65, glazeTop(z), o);
-    const hbar = (y, o, h = 0.07) => items.push(it([xC, y, -GLAZE], [h, 2 * GLAZE, 0.15], o, orientQ(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0)), col(0x18191a)));
+    const hbar = (y, o, h = 0.07) => items.push(it([xC, y, -GLAZE], [h, 2 * GLAZE, 0.15], o, orientQ(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0)), col(FRAME_C)));
     hbar(0.64, 0.05, 0.1);
     hbar(3.45, 0.55);
     hbar(6.25, 0.7);
@@ -1722,10 +1696,9 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const a = new THREE.Vector3(xC, glazeTop(GLAZE), s * GLAZE);
       const b = new THREE.Vector3(xC, glazeTop(0), 0);
       const dir = b.clone().sub(a);
-      items.push(it(a.toArray(), [0.08, dir.length() + 0.04, 0.15], 0.85, orientQ(dir, new THREE.Vector3(1, 0, 0)), col(0x18191a)));
+      items.push(it(a.toArray(), [0.08, dir.length() + 0.04, 0.15], 0.85, orientQ(dir, new THREE.Vector3(1, 0, 0)), col(FRAME_C)));
     }
     addPart('glazeFrame', unitBase, mat.frame, items, { win: win('vinduer', 0.12, 0.7), dur: 0.3, anim: A_GROW });
-    // glass pentagon
     const s = new THREE.Shape();
     s.moveTo(-GLAZE, 0);
     s.lineTo(GLAZE, 0);
@@ -1739,7 +1712,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       anim: A_GROW,
       cast: false,
     });
-    gg.mesh.renderOrder = 2;
+    gg.mesh.renderOrder = 3;
   }
 
   /* ============================================================== TAK */
@@ -1760,14 +1733,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const p = roofPt(-GABLE_X, 0, s, 0.002);
       const n = s > 0 ? nPlus : nMinus;
       const q = orientQ(new THREE.Vector3(1, 0, 0), n);
-      // local X = Y × Z → for +z: x̂ × n+ = d+, for −z: x̂ × n− = −d− (up-slope) → shift origin to the eave
       const origin = s > 0 ? p : roofPt(-GABLE_X, EAVE_Z, s, 0.002);
-      const c = s > 0 ? [origin[0], origin[1], origin[2]] : origin;
-      items.push(it(c, [slopeLen, 2 * GABLE_X, ROOF_T - 0.004], s > 0 ? 0 : 0.35, q, col(0x1d1f20)));
+      items.push(it([origin[0], origin[1], origin[2]], [slopeLen, 2 * GABLE_X, ROOF_T - 0.004], s > 0 ? 0 : 0.35, q, col(0x26292b)));
     }
-    // underlay geometry spans local X ∈ [-0.5, 0.5]; shift to [0,1]
     ug.translate(0.5, 0, 0);
-    addPart('underlay', ug, mat.frame, items, { win: win('tak', 0, 0.32), dur: 0.7, anim: A_GROW });
+    addPart('underlay', ug, mat.frame, items, { win: win('tak', 0, 0.22), dur: 0.7, anim: A_GROW });
   }
   {
     // standing-seam panels: pan + raised seam, base-anchored along the slope
@@ -1780,19 +1750,17 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const q = orientQ(s > 0 ? dPlus : dMinus, s > 0 ? nPlus : nMinus);
       for (let i = 0; i < n; i++) {
         const x = -GABLE_X + 0.25 + i * ((2 * GABLE_X - 0.5) / (n - 1));
-        items.push(it(roofPt(x, -0.02, s, ROOF_T), [1, slopeLen + 0.03, 1], i / (n - 1) * 0.92 + (s < 0 ? 0.08 : 0), q, col(0x2b2f32, 0.02)));
+        items.push(it(roofPt(x, -0.02, s, ROOF_T), [1, slopeLen + 0.03, 1], (i / (n - 1)) * 0.92 + (s < 0 ? 0.08 : 0), q, col(0x2e3234, 0.02)));
       }
     }
-    addPart('roofPanels', panelGeo, mat.roof, items, { win: win('tak', 0.14, 0.86), dur: 0.14, anim: A_GROW });
+    addPart('roofPanels', panelGeo, mat.roof, items, { win: win('tak', 0.08, 0.56), dur: 0.14, anim: A_GROW });
   }
   {
     // trims: ridge, gable fascias, eave fascias, gutters, downpipes, flue
     const items = [];
-    const C = col(0x222527);
+    const C = col(0x25282a);
     const x1 = GABLE_X + 0.02;
-    // ridge cap (grows along x)
     items.push(it([-x1, RIDGE + ROOF_T + 0.035, 0], [0.24, 2 * x1, 0.07], 0.15, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
-    // gable fascias (vindski) along the slopes
     for (const sx of [-1, 1]) {
       for (const s of [1, -1]) {
         const dir = s > 0 ? dPlus : dMinus;
@@ -1801,7 +1769,6 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         items.push(it(p, [0.03, slopeLen + 0.06, 0.34], 0.3 + (sx > 0 ? 0.1 : 0), orientQ(dir, n), C));
       }
     }
-    // eave fascia + gutter + downpipes
     for (const s of [1, -1]) {
       const ep = roofPt(0, EAVE_Z, s, ROOF_T);
       items.push(it([-x1, ep[1] - 0.17, s * (EAVE_Z + 0.03)], [0.3, 2 * x1, 0.03], 0.5, orientQ(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, s)), C));
@@ -1811,15 +1778,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         items.push(it([sx * 5.7, 0.15, s * (EAVE_Z + 0.1)], [0.08, ep[1] - 0.35, 0.08], 0.78, null, C));
       }
     }
-    // square black flue on the back slope
     const fz = -1.6;
     const fy = yTop(1.6) - 0.15;
-    items.push(it([-2.6, fy, fz], [0.24, RIDGE + 0.85 - fy, 0.24], 0.9, null, col(0x161718)));
-    items.push(it([-2.6, RIDGE + 0.85, fz], [0.32, 0.06, 0.32], 1, null, col(0x161718)));
-    addPart('roofTrim', unitBase, mat.roof, items, { win: win('tak', 0.7, 1), dur: 0.3, anim: A_GROW });
+    items.push(it([-2.6, fy, fz], [0.24, RIDGE + 0.85 - fy, 0.24], 0.9, null, col(0x1d1e1f)));
+    items.push(it([-2.6, RIDGE + 0.85, fz], [0.32, 0.06, 0.32], 1, null, col(0x1d1e1f)));
+    addPart('roofTrim', unitBase, mat.roof, items, { win: win('tak', 0.42, 0.66), dur: 0.3, anim: A_GROW });
   }
 
-  /* ======================================================= INNREDNING */
+  /* ======================================================= INTERIOR */
   // interior shell (inward-facing): floor, long walls, sloped ceiling, −x end wall
   const interior = (() => {
     const pos = [];
@@ -1856,31 +1822,26 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   {
     const items = [];
     const F = FT + 0.005;
-    const add = (x, y, z, sx, sy, sz, o, hex, q = null) => items.push(it([x, y, z], [sx, sy, sz], o, q, col(hex), [x, y, z]));
-    // living: sofa + rug facing the glazing
-    add(4.2, F, 0.0, 2.6, 0.012, 3.0, 0.0, 0x6f675c);
-    add(3.75, F, 0.0, 0.95, 0.42, 2.5, 0.2, 0x34363a);
-    add(3.35, F, 0.0, 0.2, 0.82, 2.5, 0.25, 0x2f3134);
+    const add = (x, y, z, sx, sy, sz, o, hex) => items.push(it([x, y, z], [sx, sy, sz], o, null, col(hex), [x, y, z]));
+    add(4.2, F, 0.0, 2.6, 0.012, 3.0, 0.0, 0x8a7f70);
+    add(3.75, F, 0.0, 0.95, 0.42, 2.5, 0.2, 0x3f4a52);
+    add(3.35, F, 0.0, 0.2, 0.82, 2.5, 0.25, 0x37424a);
     add(4.85, F, 0.0, 0.7, 0.36, 0.7, 0.35, 0xb08a5c);
-    // dining table + bench
     add(1.6, F + 0.7, 0.4, 1.0, 0.05, 2.2, 0.4, 0xc9a576);
     add(1.6, F, -0.5, 0.9, 0.7, 0.08, 0.38, 0x9b7a50);
     add(1.6, F, 1.3, 0.9, 0.7, 0.08, 0.38, 0x9b7a50);
-    // kitchen island
     add(-2.4, F, 0.2, 2.8, 0.92, 0.9, 0.5, 0xe2ddd4);
     add(-2.4, F + 0.92, 0.2, 2.9, 0.04, 1.0, 0.55, 0x3a3836);
-    // gallery railing (upper floor edge, black steel)
     add(3.62, UF_BASE + 1.0, 0, 0.04, 0.04, 6.5, 0.6, 0x141414);
     for (let z = -3.0; z <= 3.01; z += 1.0) add(3.62, UF_BASE, z, 0.03, 1.0, 0.03, 0.62, 0x141414);
-    // pendant cords
     for (const [x, z, y] of [[4.7, -1.2, 4.4], [4.7, 0, 4.0], [4.7, 1.2, 4.6]]) add(x, y + 0.25, z, 0.012, yTop(Math.abs(z)) - 0.35 - (y + 0.25), 0.012, 0.7, 0x111111);
     for (const z of [0.0, 1.0]) add(1.6, 2.45, z, 0.012, GF_TOP - 2.45, 0.012, 0.72, 0x111111);
-    addPart('furniture', unitBase, mat.furn, items, { win: win('innredning', 0.22, 0.72), dur: 0.35, anim: A_POP, cast: false });
+    addPart('furniture', unitBase, mat.furn, items, { win: win('tak', 0.3, 0.62), dur: 0.35, anim: A_POP, cast: false });
     const lamps = [];
     for (const [x, z, y] of [[4.7, -1.2, 4.4], [4.7, 0, 4.0], [4.7, 1.2, 4.6]]) lamps.push(it([x, y, z], [0.34, 0.3, 0.34], 0.2, null, null, [x, y + 0.3, z]));
     for (const z of [0.0, 1.0]) lamps.push(it([1.6, 2.2, z], [0.26, 0.25, 0.26], 0.5, null, null, [1.6, 2.45, z]));
     const lampGeo = new THREE.CylinderGeometry(0.35, 0.5, 1, 14).translate(0, 0.5, 0);
-    addPart('lamps', lampGeo, mat.lamp, lamps, { win: win('innredning', 0.2, 0.6), dur: 0.5, anim: A_POP, cast: false });
+    addPart('lamps', lampGeo, mat.lamp, lamps, { win: win('tak', 0.36, 0.6), dur: 0.5, anim: A_POP, cast: false });
   }
   {
     // cantilevered pine deck at the glazed gable
@@ -1889,51 +1850,52 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const along = (dir) => orientQ(dir, V_UP);
     const qX = along(new THREE.Vector3(1, 0, 0));
     const qZ = along(new THREE.Vector3(0, 0, 1));
-    for (const z of [-3.2, -1.1, 1.1, 3.2]) frame.push(it([6.0, FT - 0.13, z], [0.06, DECK_X1 - 6.0, 0.2], 0, qX, col(0x1c1d1e)));
-    frame.push(it([DECK_X1 - 0.014, FT - 0.1, -3.62], [0.028, 7.24, 0.2], 0.5, qZ, col(0xd2b48a, 0.03)));
-    for (const s of [-1, 1]) frame.push(it([6.0, FT - 0.1, s * 3.606], [0.028, DECK_X1 - 6.0, 0.2], 0.4, qX, col(0xd2b48a, 0.03)));
-    addPart('deckFrame', unitBase, mat.wood, frame, { win: win('innredning', 0.28, 0.6), dur: 0.5, anim: A_GROW });
+    for (const z of [-3.2, -1.1, 1.1, 3.2]) frame.push(it([6.0, FT - 0.13, z], [0.06, DECK_X1 - 6.0, 0.2], 0, qX, col(0x2a2b2c)));
+    frame.push(it([DECK_X1 - 0.014, FT - 0.1, -3.62], [0.028, 7.24, 0.2], 0.5, qZ, col(0xd6b88c, 0.03)));
+    for (const s of [-1, 1]) frame.push(it([6.0, FT - 0.1, s * 3.606], [0.028, DECK_X1 - 6.0, 0.2], 0.4, qX, col(0xd6b88c, 0.03)));
+    addPart('deckFrame', unitBase, mat.wood, frame, { win: win('tak', 0.55, 0.75), dur: 0.5, anim: A_GROW });
     const pitch = 0.132;
     const nb = Math.floor((DECK_X1 - 6.04) / pitch);
     for (let i = 0; i < nb; i++) {
       const x = 6.04 + 0.06 + i * pitch;
-      boards.push(it([x, FT - 0.014, -3.6], [0.12, 7.2, 0.028], i / (nb + 2), qZ, col(0xb89a70, 0.08, 0.01)));
+      boards.push(it([x, FT - 0.014, -3.6], [0.12, 7.2, 0.028], i / (nb + 2), qZ, col(0xc9a777, 0.08, 0.01)));
     }
-    // floating step
-    boards.push(it([DECK_X1 + 0.22, 0.3, -1.5], [0.4, 3.0, 0.05], 1, qZ, col(0xb89a70, 0.05)));
-    addPart('deckBoards', unitBase, mat.wood, boards, { win: win('innredning', 0.4, 1.0), dur: 0.16, anim: A_GROW });
+    boards.push(it([DECK_X1 + 0.22, 0.3, -1.5], [0.4, 3.0, 0.05], 1, qZ, col(0xc9a777, 0.05)));
+    addPart('deckBoards', unitBase, mat.wood, boards, { win: win('tak', 0.62, 1.0), dur: 0.16, anim: A_GROW });
   }
 
-  /* ===================================================== NØKKELFERDIG */
+  /* ===================================================== FINISHING */
   {
     const items = [];
     const slabs = [[-4.1, 4.35], [-4.0, 5.2], [-4.15, 6.05], [-3.95, 6.9], [-4.05, 7.75]];
-    slabs.forEach(([x, z], i) => items.push(it([x, 0, z], [1.1, 0.05, 0.6], i / (slabs.length - 1), null, col(0x7f7c76, 0.05), [x, 0, z])));
-    addPart('path', unitBase, mat.concrete, items, { win: win('nokkelferdig', 0.15, 0.7), dur: 0.4, anim: A_POP });
+    slabs.forEach(([x, z], i) => items.push(it([x, 0, z], [1.1, 0.05, 0.6], i / (slabs.length - 1), null, col(0xa8a49c, 0.05), [x, 0, z])));
+    addPart('path', unitBase, mat.concrete, items, { win: win('maling', 0.45, 1.0), dur: 0.4, anim: A_POP });
     const sconceMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0xffbf7a, emissiveIntensity: 0, roughness: 0.5 });
     mat.sconce = sconceMat;
-    const sc = [];
-    for (const x of [-4.85, -3.4]) sc.push(it([x, 2.15, SZ + 0.08], [0.08, 0.3, 0.06], x < -4 ? 0 : 1, null, null, [x, 2.3, SZ + 0.08]));
-    addPart('sconces', unitBase, sconceMat, sc, { win: win('nokkelferdig', 0.25, 0.55), dur: 0.6, anim: A_POP, cast: false });
+    const sc2 = [];
+    for (const x of [-4.85, -3.4]) sc2.push(it([x, 2.15, SZ + 0.08], [0.08, 0.3, 0.06], x < -4 ? 0 : 1, null, null, [x, 2.3, SZ + 0.08]));
+    addPart('sconces', unitBase, sconceMat, sc2, { win: win('vinduer', 0.6, 1.0), dur: 0.6, anim: A_POP, cast: false });
   }
 
   /* ============================================================= CRANE */
+  const CRANE_X = -11.5;
+  const CRANE_Z = -8.0;
+  const CRANE_H = 15;
   const crane = (() => {
-    const ORANGE = 0xd5531c;
-    const DARK = 0x1f2022;
-    const GREY = 0x6b6964;
-    const H = 21;
-    const mw = 1.5;
+    const DARK = 0x2b2e2f;
+    const GREY = 0x8d8b86;
+    const H = CRANE_H;
+    const mw = 1.4;
     const g = new THREE.Group();
-    g.position.set(-15, 0, 1.5);
+    g.position.set(CRANE_X, 0, CRANE_Z);
     const L = [];
-    L.push(paint(boxAt(3.4, 0.9, 3.4, 0, 0.45, 0), GREY));
+    L.push(paint(boxAt(3.2, 0.8, 3.2, 0, 0.4, 0), GREY));
     const c = mw / 2;
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) L.push(paint(boxAt(0.1, H - 0.9, 0.1, sx * c, 0.9 + (H - 0.9) / 2, sz * c), ORANGE));
-    const sec = 1.5;
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) L.push(paint(boxAt(0.1, H - 0.8, 0.1, sx * c, 0.8 + (H - 0.8) / 2, sz * c), ORANGE));
+    const sec = 1.4;
     const faces = [[[-c, -c], [c, -c]], [[c, -c], [c, c]], [[c, c], [-c, c]], [[-c, c], [-c, -c]]];
     let flip = 0;
-    for (let y = 0.9; y < H - 0.2; y += sec) {
+    for (let y = 0.8; y < H - 0.2; y += sec) {
       const y1 = Math.min(H, y + sec);
       for (const [a, b] of faces) {
         L.push(paint(beamGeo(a[0], y, a[1], b[0], y, b[1], 0.05, 0.05), ORANGE));
@@ -1943,26 +1905,25 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       flip++;
     }
     const mast = new THREE.Mesh(merge(L), mat.crane);
+    mast.castShadow = true;
     g.add(mast);
     const top = new THREE.Group();
     top.position.y = H;
     g.add(top);
     const T = [];
-    // slewing unit + cab
-    T.push(paint(boxAt(1.9, 0.5, 1.9, 0, 0.25, 0), DARK));
-    T.push(paint(boxAt(1.2, 1.3, 1.1, 1.0, -0.4, 1.25), DARK));
-    T.push(paint(boxAt(1.22, 0.5, 1.12, 1.0, 0.05, 1.25), 0x8fa3ad));
-    // jib (triangular lattice) along +x
+    T.push(paint(boxAt(1.8, 0.5, 1.8, 0, 0.25, 0), DARK));
+    T.push(paint(boxAt(1.1, 1.2, 1.0, 0.95, -0.35, 1.15), ORANGE));
+    T.push(paint(boxAt(1.12, 0.45, 1.02, 0.95, 0.05, 1.15), 0x9fb6c4));
     const J0 = 0.9;
-    const J1 = 20;
+    const J1 = 17;
     const jy = 0.5;
-    const jh = 1.15;
-    const jw = 0.5;
+    const jh = 1.1;
+    const jw = 0.48;
     for (const sz of [-1, 1]) T.push(paint(boxAt(J1 - J0, 0.08, 0.08, (J0 + J1) / 2, jy, sz * jw), ORANGE));
     T.push(paint(boxAt(J1 - J0, 0.08, 0.08, (J0 + J1) / 2, jy + jh, 0), ORANGE));
     let k = 0;
-    for (let x = J0; x < J1 - 0.1; x += 1.3) {
-      const x1 = Math.min(J1, x + 1.3);
+    for (let x = J0; x < J1 - 0.1; x += 1.25) {
+      const x1 = Math.min(J1, x + 1.25);
       for (const sz of [-1, 1]) {
         if (k % 2) T.push(paint(beamGeo(x, jy, sz * jw, x1, jy + jh, 0, 0.04, 0.04), ORANGE));
         else T.push(paint(beamGeo(x, jy + jh, 0, x1, jy, sz * jw, 0.04, 0.04), ORANGE));
@@ -1970,37 +1931,35 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       T.push(paint(beamGeo(x, jy, -jw, x, jy, jw, 0.035, 0.035, new THREE.Vector3(0, 1, 0)), ORANGE));
       k++;
     }
-    // counter-jib + counterweights
-    for (const sz of [-1, 1]) T.push(paint(boxAt(6.2, 0.1, 0.1, -3.9, jy, sz * 0.55), ORANGE));
-    for (let x = -1.2; x > -7; x -= 1.2) T.push(paint(beamGeo(x, jy, -0.55, x, jy, 0.55, 0.05, 0.05), ORANGE));
-    T.push(paint(boxAt(1.4, 1.6, 1.3, -6.0, jy - 0.4, 0), GREY));
-    T.push(paint(boxAt(2.4, 0.06, 1.2, -3.8, jy + 0.06, 0), 0x3a3b3c));
-    // cat head + pendants
-    const CH = 5.2;
+    for (const sz of [-1, 1]) T.push(paint(boxAt(5.6, 0.1, 0.1, -3.6, jy, sz * 0.52), ORANGE));
+    for (let x = -1.2; x > -6.4; x -= 1.2) T.push(paint(beamGeo(x, jy, -0.52, x, jy, 0.52, 0.05, 0.05), ORANGE));
+    T.push(paint(boxAt(1.3, 1.5, 1.2, -5.6, jy - 0.4, 0), GREY));
+    T.push(paint(boxAt(2.2, 0.06, 1.1, -3.5, jy + 0.06, 0), 0x4a4c4d));
+    const CH = 4.6;
     for (const sz of [-1, 1]) {
-      T.push(paint(beamGeo(-0.6, 0.5, sz * 0.6, 0, CH, 0, 0.09, 0.09), ORANGE));
-      T.push(paint(beamGeo(0.6, 0.5, sz * 0.6, 0, CH, 0, 0.09, 0.09), ORANGE));
+      T.push(paint(beamGeo(-0.6, 0.5, sz * 0.55, 0, CH, 0, 0.09, 0.09), ORANGE));
+      T.push(paint(beamGeo(0.6, 0.5, sz * 0.55, 0, CH, 0, 0.09, 0.09), ORANGE));
     }
-    T.push(paint(beamGeo(0, CH, 0, 13.5, jy + jh, 0, 0.035, 0.035), 0x9a9a9a));
-    T.push(paint(beamGeo(0, CH, 0, -6.6, jy + 0.1, 0, 0.035, 0.035), 0x9a9a9a));
+    T.push(paint(beamGeo(0, CH, 0, 11.5, jy + jh, 0, 0.035, 0.035), 0x7a7a7a));
+    T.push(paint(beamGeo(0, CH, 0, -6.0, jy + 0.1, 0, 0.035, 0.035), 0x7a7a7a));
     const head = new THREE.Mesh(merge(T), mat.crane);
+    head.castShadow = true;
     top.add(head);
-    // trolley + hook
     const trolley = new THREE.Group();
     trolley.position.y = jy;
     top.add(trolley);
-    trolley.add(new THREE.Mesh(paint(boxAt(0.8, 0.3, 1.1, 0, -0.1, 0), DARK), mat.crane));
+    trolley.add(new THREE.Mesh(paint(boxAt(0.8, 0.3, 1.0, 0, -0.1, 0), DARK), mat.crane));
     const cable = new THREE.Mesh(paint(boxAt(0.03, 1, 0.03, 0, -0.5, 0), 0x2a2a2a), mat.crane);
     trolley.add(cable);
     const hook = new THREE.Group();
     trolley.add(hook);
-    hook.add(new THREE.Mesh(paint(boxAt(0.36, 0.55, 0.26, 0, -0.28, 0), 0xe0a52a), mat.crane));
-    // load: a strapped bundle of pine
+    hook.add(new THREE.Mesh(paint(boxAt(0.34, 0.5, 0.24, 0, -0.26, 0), 0xf2b630), mat.crane));
     const LD = [];
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) LD.push(paint(boxAt(0.14, 0.14, 4.2, (i - 1.5) * 0.15, -1.6 + j * 0.15, 0), i % 2 ? 0xd3b385 : 0xc9a676));
-    LD.push(paint(beamGeo(-0.25, -0.6, 0, 0, -1.25, -1.5, 0.02, 0.02), 0x222222));
-    LD.push(paint(beamGeo(0.25, -0.6, 0, 0, -1.25, 1.5, 0.02, 0.02), 0x222222));
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) LD.push(paint(boxAt(0.14, 0.14, 4.0, (i - 1.5) * 0.15, -1.55 + j * 0.15, 0), i % 2 ? 0xdcbc8c : 0xd0ad7a));
+    LD.push(paint(beamGeo(-0.25, -0.55, 0, 0, -1.2, -1.4, 0.02, 0.02), 0x333333));
+    LD.push(paint(beamGeo(0.25, -0.55, 0, 0, -1.2, 1.4, 0.02, 0.02), 0x333333));
     const load = new THREE.Mesh(merge(LD), mat.crane);
+    load.castShadow = true;
     hook.add(load);
     g.visible = false;
     scene.add(g);
@@ -2013,282 +1972,345 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => allMaterials.add(m));
   });
 
-  let mode = 'loader';
   let bpTarget = 0;
   let bpShown = 0;
-  let lpTarget = 0;
-  let lpShown = 0;
   let active = true;
+  let inView = true;
   let disposed = false;
   let raf = 0;
   let lastT = 0;
   let clock = 0;
-  let modeT = 0;
   let snap = true;
   let buildDirty = true;
+  let renderDirty = true;
+  // autoplay
+  let playing = false;
+  let playMs = 0;
+  let playDur = 8000;
+  let rewinding = false;
+  let rewindFrom = 0;
+  let rewindMs = 0;
+  let rewindDur = 1100;
+  // stages / completion
+  let stageIdx = -1;
+  let completeFired = false;
+  const stageCbs = new Set();
+  const completeCbs = new Set();
+  // camera
   const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
-  const lvl = { env: 0.3, ghost: 1, rain: 0, grid: 0.25, shiftX: 0, shiftY: 0 };
-  let userShift = null;
-  const camPos = new THREE.Vector3();
-  const camLook = new THREE.Vector3();
-  const tgtPos = new THREE.Vector3();
-  const tgtLook = new THREE.Vector3();
-  const _fwd = new THREE.Vector3();
-  const _right = new THREE.Vector3();
+  const view = { sx: 0, sy: 0, tsx: 0, tsy: 0, scroll: 0, tscroll: 0 };
+  const cam = { az: 0, el: 0, ly: 0, d: 40 };
+  let idleT = 0;
+  let idleBlend = 0;
   let viewW = 1;
   let viewH = 1;
   let appliedShiftX = 0;
   let appliedShiftY = 0;
+  let tanHalfV = Math.tan((camera.fov * Math.PI) / 360);
   let craneS = 0;
-  let craneP = 0;
   let fin = 0;
-  let lights = 0;
+  const lastCam = new Float32Array(6);
 
-  const INT_DARK = new THREE.Color(0x2b2722);
-  const INT_LIT = new THREE.Color(0xc9baa5);
+  /* ------------------------------------------------------------- paint */
+  const SWEEP_MS = 2100;
+  const paintColor = new THREE.Color(DEFAULT_PAINT);
+  let paintHex = DEFAULT_PAINT;
+  const layerPool = [0, 1, 2, 3].map(() => ({ c: new THREE.Color(), t0: 0 }));
+  const layers = [];
+  let paintDone = false; // repaint queue owns the paint (build finished)
+  const edgeOf = (t) => -0.05 + 1.27 * t;
+
+  function updatePaint() {
+    const E = paintU.uPaintE.value;
+    const C = paintU.uPaintC.value;
+    if (bpShown < 1) {
+      paintDone = false;
+      layers.length = 0;
+      paintU.uPaintBase.value.copy(RAW_C);
+      const t = range(bpShown, PAINT_START, PAINT_END);
+      C[0].copy(paintColor);
+      E[0] = t > 0 ? edgeOf(t) : -1;
+      E[1] = E[2] = E[3] = -1;
+      return false;
+    }
+    if (!paintDone) {
+      paintDone = true;
+      paintU.uPaintBase.value.copy(paintColor);
+      layers.length = 0;
+    }
+    while (layers.length && (clock - layers[0].t0) * 1000 >= SWEEP_MS) {
+      paintU.uPaintBase.value.copy(layers[0].c);
+      layers.shift();
+    }
+    for (let i = 0; i < 4; i++) {
+      if (i < layers.length) {
+        C[i].copy(layers[i].c);
+        E[i] = edgeOf(clamp01(((clock - layers[i].t0) * 1000) / SWEEP_MS));
+      } else E[i] = -1;
+    }
+    return layers.length > 0;
+  }
+  function pushPaintLayer(color) {
+    if (layers.length === 4) {
+      paintU.uPaintBase.value.copy(layers[0].c);
+      layers.shift();
+    }
+    // reuse a pooled layer object that is not in use
+    let slot = null;
+    for (const l of layerPool) if (!layers.includes(l)) slot = l;
+    slot.c.copy(color);
+    slot.t0 = clock;
+    layers.push(slot);
+  }
+
+  /* ------------------------------------------------------------- build */
+  const INT_DARK = new THREE.Color(0x3a352f);
+  const INT_LIT = new THREE.Color(0xd4c6b2);
   function applyBuild(p) {
     let changed = false;
     for (let i = 0; i < parts.length; i++) if (parts[i].update(p)) changed = true;
-    const lT = range(p, ST.tomt.start, ST.tomt.end);
+    const lB = range(p, ST.blueprint.start, ST.blueprint.end);
     const lG = range(p, ST.grunnmur.start, ST.grunnmur.end);
-    const lI = range(p, ST.innredning.start, ST.innredning.end);
-    const lN = range(p, ST.nokkelferdig.start, ST.nokkelferdig.end);
+    const lT = range(p, ST.tak.start, ST.tak.end);
+    const lF = range(p, ST.ferdig.start - 0.02, 1);
+    // blueprint: draws during the blueprint stage, fades as the frame goes up
+    blueprintU.uReveal.value = range(lB, 0, 0.92) * (1 + blueprintU.uWin.value * 4.5);
+    const ghost = 1 - smooth(range(p, ST.grunnmur.start + 0.02, ST.takstoler.end));
+    blueprintU.uOpacity.value = ghost;
+    nodesU.uOpacity.value = ghost;
+    blueprint.lines.visible = p > 0 && ghost > 0.003;
+    blueprint.pts.visible = blueprint.lines.visible;
+    // survey grid: fades in with the drawing, out as the house rises
+    const gridA = smooth(range(lB, 0, 0.35)) * (1 - smooth(range(p, ST.grunnmur.start, ST.bjelkelag.end)));
+    gridMat.opacity = gridA;
+    grid.visible = gridA > 0.003;
     // string lines
-    stringsU.uReveal.value = range(lT, 0.42, 1.0) * 1.2;
+    stringsU.uReveal.value = range(lB, 0.55, 1.0) * 1.2 + range(lG, 0, 0.2) * 0.3;
     stringsU.uOpacity.value = 0.95 * (1 - range(lG, 0.72, 0.95));
-    strings.visible = lT > 0.42 && lG < 0.95;
+    strings.visible = lB > 0.55 && lG < 0.95;
+    // contact shadow under the footprint
+    aoMat.opacity = 0.3 * smooth(range(lG, 0.15, 0.9));
+    ao.visible = aoMat.opacity > 0.002;
     // interior + lights
     interior.visible = p >= ST.vinduer.start;
-    lights = smooth(range(lI, 0.18, 0.8));
-    fin = smooth(lN);
-    const L = lights * (1 + 0.35 * fin);
-    pGF.intensity = 30 * L;
-    pUF.intensity = 22 * L;
-    pVoid.intensity = 26 * L;
-    spot.intensity = 7 * L;
+    const lights = smooth(lF);
+    fin = lights;
+    pGF.intensity = 26 * lights;
+    pUF.intensity = 18 * lights;
+    pVoid.intensity = 22 * lights;
     mat.interior.color.lerpColors(INT_DARK, INT_LIT, lights);
-    mat.interior.emissiveIntensity = 0.07 * L;
-    mat.lamp.emissiveIntensity = 4 * L;
-    mat.glass.emissiveIntensity = 0.08 * L;
-    mat.glass.opacity = lerp(0.55, 0.3, lights);
-    gableGlassMat.emissiveIntensity = 0.06 * L;
-    gableGlassMat.opacity = lerp(0.5, 0.26, lights);
-    mat.sconce.emissiveIntensity = 4 * smooth(range(lN, 0.3, 0.7));
-    // crane presence (pure function of p)
-    craneS = smooth(range(lG, 0.25, 1.0)) * (1 - smooth(range(lN, 0.15, 0.85)));
-    craneP = p;
+    mat.interior.emissiveIntensity = 0.06 * lights;
+    mat.lamp.emissiveIntensity = 3.5 * lights;
+    mat.glass.emissiveIntensity = 0.05 * lights;
+    gableGlassMat.emissiveIntensity = 0.04 * lights;
+    gableGlassMat.opacity = lerp(0.7, 0.5, lights);
+    mat.glass.opacity = lerp(0.74, 0.62, lights);
+    mat.sconce.emissiveIntensity = 3 * lights;
+    // crane: rises with the foundations, sinks away once the roof is on
+    craneS = smooth(range(lG, 0.1, 0.85)) * (1 - smooth(range(lT, 0.62, 0.98)));
     return changed;
   }
 
   function updateCrane(t) {
     const s = craneS;
     crane.g.visible = s > 0.002;
-    if (!crane.g.visible) return;
-    crane.g.scale.setScalar(Math.max(0.001, s));
-    const p = craneP;
-    const lN = range(p, ST.nokkelferdig.start, ST.nokkelferdig.end);
-    const toHouse = Math.atan2(1.5, 15);
-    let a = toHouse + 0.85 * Math.sin(p * TAU * 2.3 + 0.6);
-    a = lerp(a, toHouse + Math.PI * 0.85, smooth(range(lN, 0, 0.45)));
-    if (!reducedMotion) a += Math.sin(t * 0.21) * 0.03;
+    if (!crane.g.visible) return false;
+    crane.g.position.y = -(1 - s) * (CRANE_H + 6);
+    const p = bpShown;
+    const lT = range(p, ST.tak.start, ST.tak.end);
+    const toHouse = Math.atan2(-(0 - CRANE_Z), 1.5 - CRANE_X);
+    let a = toHouse + 0.55 * Math.sin(p * TAU * 2.3 + 0.6);
+    a = lerp(a, toHouse - 1.3, smooth(range(lT, 0.45, 0.8)));
+    if (!reducedMotion) a += Math.sin(t * 0.21) * 0.025;
     crane.top.rotation.y = a;
-    crane.trolley.position.x = 11 + 5.5 * (0.5 + 0.5 * Math.sin(p * TAU * 3.1 + 1.0));
-    let len = 6.5 + 2.2 * (0.5 + 0.5 * Math.sin(p * TAU * 4.3));
-    len = lerp(len, 1.2, smooth(range(lN, 0, 0.4)));
+    crane.trolley.position.x = 9.5 + 4.5 * (0.5 + 0.5 * Math.sin(p * TAU * 3.1 + 1.0));
+    let len = 5.0 + 2.0 * (0.5 + 0.5 * Math.sin(p * TAU * 4.3));
+    len = lerp(len, 1.2, smooth(range(lT, 0.3, 0.7)));
     crane.cable.scale.y = len;
     crane.hook.position.y = -len;
     if (!reducedMotion) crane.hook.rotation.y = Math.sin(t * 0.5) * 0.12;
-    crane.load.visible = p > ST.bindingsverk.start && p < ST.tak.start;
+    crane.load.visible = p > ST.bindingsverk.start && p < ST.tak.start + 0.03;
+    return true;
   }
 
-  function setCameraTargets() {
-    const aspect = camera.aspect || 1;
-    const fit = aspect >= 1.25 ? 1 : Math.min(2.1, Math.pow(1.25 / aspect, 0.72));
-    const T = reducedMotion ? 0 : clock;
-    let az;
-    let y;
-    let r;
-    let ly;
-    let lx;
-    if (mode === 'loader') {
-      az = 0.86 + Math.sin(T * 0.16) * 0.38;
-      y = 6.4;
-      r = 23;
-      ly = 4.2;
-      lx = 0.8;
-    } else if (mode === 'intro') {
-      az = 0.62 + Math.sin(T * 0.045) * 0.3;
-      y = 17;
-      r = 38;
-      ly = 1.6;
-      lx = 0.8;
-    } else if (mode === 'idle') {
-      az = 0.86 + T * 0.035;
-      y = 7.0;
-      r = 28;
-      ly = 3.7;
-      lx = 1.2;
+  /* ------------------------------------------------------------ camera */
+  function updateCamera(dt) {
+    camAt(bpShown, camParam);
+    let az = camParam[0];
+    let el = camParam[1];
+    let ly = camParam[2];
+    const dm = camParam[3];
+    // idle orbit after completion (gentle sway, starts from zero offset)
+    if (bpShown >= 1 && !playing && !rewinding) {
+      if (!reducedMotion) idleT += dt;
+      idleBlend = Math.min(1, idleBlend + dt * 0.5);
     } else {
-      camAt(bpShown, camParam);
-      az = camParam[0] + (reducedMotion ? 0 : Math.sin(T * 0.08) * 0.025);
-      y = camParam[1];
-      r = camParam[2];
-      ly = camParam[3];
-      lx = camParam[4];
+      idleT = 0;
+      idleBlend = 0;
     }
-    if (fit > 1) {
-      r *= fit;
-      y = y + (fit - 1) * 2.2;
-      ly = ly + (fit - 1) * 0.6;
+    if (!reducedMotion) {
+      az += smooth(idleBlend) * (Math.sin(idleT * 0.12) * 0.2);
+      el += smooth(idleBlend) * (Math.sin(idleT * 0.085) * 0.025);
+      az += ptr.x * 0.16;
+      el += ptr.y * 0.045;
+      az += view.scroll * 0.42;
+      el += view.scroll * 0.1;
     }
-    tgtPos.set(lx + Math.sin(az) * r, y, Math.cos(az) * r);
-    tgtLook.set(lx, ly, 0);
-  }
-
-  const MT = new Float32Array(6);
-  function modeTargets() {
-    const portrait = camera.aspect < 1;
-    let env = 1;
-    let ghost = 0;
-    let rainT = 0.45;
-    let grid = 0.14;
-    let sx = 0;
-    let sy = 0;
-    const g = 1 - smooth(range(bpShown, 0.05, 0.72));
-    if (mode === 'loader') {
-      env = 0.1;
-      ghost = 1;
-      rainT = 0;
-      grid = 0.3;
-    } else if (mode === 'intro') {
-      ghost = 0.7;
-      rainT = 0.45;
-      grid = 0.42;
-    } else if (mode === 'idle') {
-      ghost = 0.5 * g;
-      rainT = 0.6;
-      grid = lerp(0.14, 0.4, g);
+    if (el < 0.06) el = 0.06;
+    // fit the finished house into the area left by the framing shift
+    const aw = Math.max(0.3, 1 - 2 * Math.abs(view.sx));
+    const ah = Math.max(0.3, 1 - 2 * Math.abs(view.sy));
+    const margin = 1.1;
+    const tanV = (tanHalfV * ah) / margin;
+    const tanH = (tanHalfV * camera.aspect * aw) / margin;
+    const d = fitDistance(az, el, TARGET_Y + ly, tanH, tanV) * dm;
+    if (snap) {
+      cam.az = az;
+      cam.el = el;
+      cam.ly = ly;
+      cam.d = d;
     } else {
-      ghost = 0.62 * g;
-      rainT = 0.34 + 0.3 * fin;
-      grid = lerp(0.13, 0.42, 1 - smooth(range(bpShown, 0.04, 0.32)));
-      if (portrait) sy = 0.1;
-      else sx = 0.09;
+      const k = damp(dt, playing || rewinding ? 2.6 : 2.0);
+      cam.az += (az - cam.az) * k;
+      cam.el += (el - cam.el) * k;
+      cam.ly += (ly - cam.ly) * k;
+      cam.d += (d - cam.d) * damp(dt, 1.6);
     }
-    if (userShift) {
-      sx = userShift.x;
-      sy = userShift.y;
-    }
-    MT[0] = env;
-    MT[1] = ghost;
-    MT[2] = rainT;
-    MT[3] = grid;
-    MT[4] = sx;
-    MT[5] = sy;
-    return MT;
+    const ce = Math.cos(cam.el);
+    const ty = TARGET_Y + cam.ly;
+    camera.position.set(TARGET_X + Math.sin(cam.az) * ce * cam.d, ty + Math.sin(cam.el) * cam.d, TARGET_Z + Math.cos(cam.az) * ce * cam.d);
+    camera.lookAt(TARGET_X, ty, TARGET_Z);
+    scene.fog.near = cam.d + 14;
+    scene.fog.far = cam.d + 80;
+    // did anything move enough to need a new frame?
+    const moved =
+      Math.abs(lastCam[0] - cam.az) > 1e-5 ||
+      Math.abs(lastCam[1] - cam.el) > 1e-5 ||
+      Math.abs(lastCam[2] - cam.d) > 1e-4 ||
+      Math.abs(lastCam[3] - cam.ly) > 1e-5;
+    lastCam[0] = cam.az;
+    lastCam[1] = cam.el;
+    lastCam[2] = cam.d;
+    lastCam[3] = cam.ly;
+    return moved;
   }
 
   function applyViewShift(force) {
-    if (!force && Math.abs(lvl.shiftX - appliedShiftX) < 1e-4 && Math.abs(lvl.shiftY - appliedShiftY) < 1e-4) return;
-    appliedShiftX = lvl.shiftX;
-    appliedShiftY = lvl.shiftY;
+    if (!force && Math.abs(view.sx - appliedShiftX) < 1e-4 && Math.abs(view.sy - appliedShiftY) < 1e-4) return false;
+    appliedShiftX = view.sx;
+    appliedShiftY = view.sy;
     if (Math.abs(appliedShiftX) < 1e-4 && Math.abs(appliedShiftY) < 1e-4) camera.clearViewOffset();
-    else camera.setViewOffset(viewW, viewH, -appliedShiftX * viewW, appliedShiftY * viewH, viewW, viewH);
+    // positive x → house moves right, positive y → house moves down
+    else camera.setViewOffset(viewW, viewH, -appliedShiftX * viewW, -appliedShiftY * viewH, viewW, viewH);
+    return true;
   }
 
+  /* ------------------------------------------------------------ events */
+  function emitStage(i) {
+    if (i === stageIdx) return;
+    stageIdx = i;
+    const s = STAGES[i];
+    const ev = { id: s.id, label: s.label };
+    stageCbs.forEach((cb) => {
+      try {
+        cb(ev);
+      } catch (e) {
+        /* ignore listener errors */
+      }
+    });
+  }
+  function checkComplete() {
+    if (bpShown >= 1) {
+      if (!completeFired) {
+        completeFired = true;
+        completeCbs.forEach((cb) => {
+          try {
+            cb();
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      }
+    } else if (bpShown < 1 - 1e-6) completeFired = false;
+  }
+
+  /* -------------------------------------------------------------- tick */
   function tick(dt) {
     clock += dt;
-    modeT += dt;
-    // build progress (smoothed toward target; state is a pure function of bpShown)
-    const prev = bpShown;
-    if (snap) bpShown = bpTarget;
-    else {
-      bpShown += (bpTarget - bpShown) * damp(dt, reducedMotion ? 14 : 5.5);
-      if (Math.abs(bpTarget - bpShown) < 2e-5) bpShown = bpTarget;
+    let anim = false;
+    // drive progress
+    if (rewinding) {
+      rewindMs += dt * 1000;
+      const t = clamp01(rewindMs / rewindDur);
+      bpTarget = bpShown = rewindFrom * (1 - inOutCubic(t));
+      buildDirty = true;
+      anim = true;
+      if (t >= 1) {
+        rewinding = false;
+        playing = true;
+        playMs = 0;
+      }
+    } else if (playing) {
+      playMs += dt * 1000;
+      const u = clamp01(playMs / playDur);
+      bpTarget = bpShown = timeToP(u);
+      buildDirty = true;
+      anim = true;
+      if (u >= 1) playing = false;
+    } else {
+      const prev = bpShown;
+      if (snap) bpShown = bpTarget;
+      else {
+        bpShown += (bpTarget - bpShown) * damp(dt, reducedMotion ? 16 : 6);
+        if (Math.abs(bpTarget - bpShown) < 2e-5) bpShown = bpTarget;
+      }
+      if (bpShown !== prev) buildDirty = true;
     }
-    if (bpShown !== prev || buildDirty) {
+    if (buildDirty) {
       if (applyBuild(bpShown)) renderer.shadowMap.needsUpdate = true;
       buildDirty = false;
+      anim = true;
+      if (!rewinding) emitStage(stageIndexAt(bpShown));
     }
-    // loader reveal
-    const lpGoal = mode === 'loader' ? lpTarget : 1;
-    lpShown = snap ? lpGoal : lpShown + (lpGoal - lpShown) * damp(dt, mode === 'loader' ? 9 : 3);
-    if (Math.abs(lpGoal - lpShown) < 1e-4) lpShown = lpGoal;
-    blueprintU.uReveal.value = lpShown * (1 + blueprintU.uWin.value * 4.5);
-    // mode-dependent levels
-    const mt = modeTargets();
-    const envT = mt[0];
-    const ghostT = mt[1];
-    const rainT = mt[2];
-    const gridT = mt[3];
-    const sxT = mt[4];
-    const syT = mt[5];
-    const k = snap ? 1 : damp(dt, 2.4);
-    lvl.env += (envT - lvl.env) * k;
-    lvl.ghost += (ghostT - lvl.ghost) * (snap ? 1 : damp(dt, 3));
-    lvl.rain += (rainT - lvl.rain) * k;
-    lvl.grid += (gridT - lvl.grid) * k;
-    lvl.shiftX += (sxT - lvl.shiftX) * (snap ? 1 : damp(dt, 2));
-    lvl.shiftY += (syT - lvl.shiftY) * (snap ? 1 : damp(dt, 2));
-    applyViewShift(false);
-    const dusk = 1 - 0.25 * fin;
-    hemi.intensity = LIGHT_BASE.hemi * lvl.env * dusk;
-    key.intensity = LIGHT_BASE.key * lvl.env * dusk;
-    rim.intensity = LIGHT_BASE.rim * lvl.env;
-    scene.environmentIntensity = ENV_BASE * lvl.env;
-    for (let i = 0; i < ENV_MATS.length; i++) ENV_MATS[i][0].envMapIntensity = ENV_MATS[i][1] * lvl.env;
-    const sl = 0.25 + 0.75 * lvl.env;
-    skyMat.uniforms.uLevel.value = sl;
-    for (let i = 0; i < mountainMats.length; i++) mountainMats[i].color.copy(mountainMats[i].userData.base).multiplyScalar(sl);
-    for (let i = 0; i < mistMats.length; i++) mistMats[i].uniforms.uLevel.value = sl;
-    blueprintU.uOpacity.value = lvl.ghost;
-    nodesU.uOpacity.value = lvl.ghost;
-    blueprint.lines.visible = lvl.ghost > 0.003 && lpShown > 0;
-    blueprint.pts.visible = blueprint.lines.visible;
-    gridMat.opacity = lvl.grid;
-    rainMat.uniforms.uOpacity.value = lvl.rain * 0.42;
-    rain.visible = !reducedMotion && lvl.rain > 0.01;
-    if (!reducedMotion) rainMat.uniforms.uTime.value = clock;
-    updateCrane(clock);
-    // pointer (smoothed)
-    const pk = snap ? 1 : damp(dt, 3.5);
-    ptr.x += (ptr.tx - ptr.x) * pk;
-    ptr.y += (ptr.ty - ptr.y) * pk;
-    // camera
-    setCameraTargets();
-    if (snap) {
-      camPos.copy(tgtPos);
-      camLook.copy(tgtLook);
-    } else {
-      const base = mode === 'build' ? 3.2 : 2.0;
-      const lam = lerp(1.25, base, smooth(clamp01(modeT / 2.2)));
-      const ck = damp(dt, lam);
-      camPos.lerp(tgtPos, ck);
-      camLook.lerp(tgtLook, ck);
+    if (updatePaint()) anim = true;
+    if (updateCrane(clock)) {
+      renderer.shadowMap.needsUpdate = true;
+      anim = true;
     }
-    _fwd.subVectors(camLook, camPos);
-    const dist = _fwd.length();
-    _right.set(-_fwd.z, 0, _fwd.x).normalize();
-    const par = (reducedMotion ? 0.45 : 1) * dist * 0.035;
-    camera.position.copy(camPos).addScaledVector(_right, ptr.x * par);
-    camera.position.y += ptr.y * par * 0.55;
-    camera.lookAt(camLook.x + _right.x * ptr.x * par * 0.25, camLook.y, camLook.z + _right.z * ptr.x * par * 0.25);
+    // pointer + framing (smoothed)
+    const pk = snap ? 1 : damp(dt, 3.2);
+    const rm = reducedMotion ? 0 : 1;
+    ptr.x += (ptr.tx * rm - ptr.x) * pk;
+    ptr.y += (ptr.ty * rm - ptr.y) * pk;
+    const vk = snap ? 1 : damp(dt, 3);
+    view.sx += (view.tsx - view.sx) * vk;
+    view.sy += (view.tsy - view.sy) * vk;
+    view.scroll += (view.tscroll - view.scroll) * (snap ? 1 : damp(dt, 4));
+    if (Math.abs(view.tsx - view.sx) < 1e-5) view.sx = view.tsx;
+    if (Math.abs(view.tsy - view.sy) < 1e-5) view.sy = view.tsy;
+    if (applyViewShift(false)) anim = true;
+    if (updateCamera(dt)) anim = true;
+    checkComplete();
     snap = false;
+    return anim;
   }
 
   function frame(now) {
     raf = 0;
-    if (!active || disposed) return;
+    if (!active || !inView || disposed) return;
     raf = requestAnimationFrame(frame);
     let dt = lastT ? (now - lastT) / 1000 : 0.016;
     lastT = now;
     if (dt > 0.1) dt = 0.1;
     if (dt < 0) dt = 0;
-    tick(dt);
-    renderer.render(scene, camera);
+    const moving = tick(dt);
+    if (moving || renderDirty) {
+      renderer.render(scene, camera);
+      renderDirty = false;
+    }
   }
   function start() {
-    if (raf || !active || disposed || document.hidden) return;
+    if (raf || !active || !inView || disposed || document.hidden) return;
     lastT = 0;
     raf = requestAnimationFrame(frame);
   }
@@ -2303,29 +2325,41 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     stop();
   };
   canvas.addEventListener('webglcontextlost', onLost);
-  // keep the drawing buffer in sync even if the host forgets to call resize()
   let ro = null;
   if (typeof ResizeObserver !== 'undefined') {
     ro = new ResizeObserver(() => resize());
     ro.observe(canvas);
   }
+  // belt and braces: never render while the canvas is scrolled away
+  let io = null;
+  if (typeof IntersectionObserver !== 'undefined') {
+    io = new IntersectionObserver((entries) => {
+      const e = entries[entries.length - 1];
+      inView = !!(e && e.isIntersecting);
+      if (inView) start();
+      else stop();
+    });
+    io.observe(canvas);
+  }
 
   function resize() {
     if (disposed) return;
-    const w = Math.max(1, canvas.clientWidth || window.innerWidth || 1);
-    const h = Math.max(1, canvas.clientHeight || window.innerHeight || 1);
+    const w = Math.max(1, canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || window.innerWidth || 1);
+    const h = Math.max(1, canvas.clientHeight || (canvas.parentElement && canvas.parentElement.clientHeight) || window.innerHeight || 1);
     viewW = w;
     viewH = h;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = camera.aspect < 1 ? 44 : camera.aspect < 1.3 ? 39 : 35;
+    camera.fov = camera.aspect < 0.8 ? 38 : camera.aspect < 1.3 ? 34 : 30;
+    tanHalfV = Math.tan((camera.fov * Math.PI) / 360);
     camera.updateProjectionMatrix();
     applyViewShift(true);
-    nodesU.uSize.value = 7 * renderer.getPixelRatio();
+    nodesU.uSize.value = 9 * renderer.getPixelRatio();
+    renderDirty = true;
   }
 
-  // compile every program up-front (avoids hitches when parts first appear mid-scroll)
+  // compile every program up-front (avoids hitches when parts first appear)
   resize();
   {
     const hidden = [];
@@ -2344,55 +2378,154 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   }
   applyBuild(0);
   for (const p of parts) p.lastL = -1;
+  if (reducedMotion) {
+    bpTarget = bpShown = 1;
+  }
   buildDirty = true;
   start();
 
+  function finishNow() {
+    playing = false;
+    rewinding = false;
+    bpTarget = bpShown = 1;
+    buildDirty = true;
+    snap = true;
+    layers.length = 0;
+    paintDone = false; // base re-seeded from the current colour on the next tick
+    renderDirty = true;
+    start();
+  }
+
   /* ================================================================ API */
   const api = {
-    /** loader: blueprint edges trace in (0..1) */
-    setLoadProgress(p) {
-      lpTarget = clamp01(+p || 0);
+    /** auto-build from 0 → built → painted. Restarts (with a quick rewind) if called again. */
+    play({ duration = 8000, rewind = true } = {}) {
+      if (disposed) return;
+      if (reducedMotion) {
+        finishNow();
+        return;
+      }
+      playDur = Math.max(1000, +duration || 8000);
+      completeFired = false;
+      layers.length = 0;
+      if (rewind && bpShown > 0.08) {
+        rewinding = true;
+        rewindFrom = bpShown;
+        rewindMs = 0;
+        rewindDur = 650 + 650 * bpShown;
+        playing = false;
+        idleBlend = 0;
+        stageIdx = -1;
+        emitStage(0);
+      } else {
+        rewinding = false;
+        playing = true;
+        playMs = 0;
+        bpTarget = bpShown = 0;
+        buildDirty = true;
+        stageIdx = -1;
+      }
+      start();
     },
-    /** build state is a pure function of p (internally smoothed). Pass immediate=true to jump. */
+    /** jump to the finished, painted house */
+    skipToEnd() {
+      if (disposed) return;
+      finishNow();
+    },
+    /** build state is a pure function of p (smoothed unless immediate). Cancels autoplay. */
     setBuildProgress(p, immediate = false) {
+      playing = false;
+      rewinding = false;
       bpTarget = clamp01(+p || 0);
       if (immediate) {
         bpShown = bpTarget;
         buildDirty = true;
       }
+      start();
     },
-    /** 'loader' | 'intro' | 'build' | 'idle'; opts.immediate snaps camera + levels */
-    setMode(m, opts) {
-      if (m !== 'loader' && m !== 'intro' && m !== 'build' && m !== 'idle') return;
-      if (m !== mode) modeT = 0;
-      mode = m;
-      if (opts && opts.immediate) snap = true;
+    /** repaint the walls with a roller sweep (instant if !animate or reduced motion) */
+    setPaintColor(hex, { animate = true } = {}) {
+      let c;
+      try {
+        c = new THREE.Color(hex);
+      } catch (e) {
+        return;
+      }
+      if (c.equals(paintColor) && !layers.length) return;
+      paintColor.copy(c);
+      paintHex = '#' + c.getHexString().toUpperCase();
+      if (paintDone && bpShown >= 1) {
+        if (animate && !reducedMotion) pushPaintLayer(c);
+        else {
+          layers.length = 0;
+          paintU.uPaintBase.value.copy(c);
+        }
+      }
+      renderDirty = true;
+      start();
+    },
+    /** cb({ id, label }) on every stage change; returns an unsubscribe function */
+    onStage(cb) {
+      if (typeof cb !== 'function') return () => {};
+      stageCbs.add(cb);
+      return () => stageCbs.delete(cb);
+    },
+    /** cb() once the build + paint is finished (again after each replay) */
+    onComplete(cb) {
+      if (typeof cb !== 'function') return () => {};
+      completeCbs.add(cb);
+      return () => completeCbs.delete(cb);
     },
     /** normalized pointer -1..1 (x right, y up) */
     setPointer(x, y) {
       ptr.tx = Math.max(-1, Math.min(1, +x || 0));
       ptr.ty = Math.max(-1, Math.min(1, +y || 0));
     },
+    /** screen-space framing shift in fractions of the canvas (x>0 → right, y>0 → down).
+        The house is refitted into the remaining space. null resets. */
+    setViewShift(x, y) {
+      view.tsx = x == null ? 0 : Math.max(-0.35, Math.min(0.35, +x || 0));
+      view.tsy = y == null ? 0 : Math.max(-0.35, Math.min(0.35, +y || 0));
+      start();
+    },
+    /** optional: 0 = hero fully in view … 1 = scrolled out; the house turns and settles */
+    setScrollOut(t) {
+      view.tscroll = clamp01(+t || 0);
+    },
+    getStage() {
+      const s = STAGES[stageIndexAt(bpShown)];
+      return { id: s.id, label: s.label };
+    },
     getStages() {
-      return STAGES.map((s) => ({ id: s.id, start: s.start, end: s.end }));
+      return STAGES.map((s) => ({ id: s.id, label: s.label, start: s.start, end: s.end }));
+    },
+    getPaintColor() {
+      return paintHex;
+    },
+    isComplete() {
+      return bpShown >= 1;
     },
     resize,
     setActive(on) {
       active = !!on;
-      if (active) start();
-      else stop();
+      if (active) {
+        renderDirty = true;
+        start();
+      } else stop();
     },
-    /** optional: override the screen-space framing shift (fractions of the viewport; null = default) */
-    setViewShift(x, y) {
-      userShift = x == null ? null : { x: +x || 0, y: +y || 0 };
-    },
+    /** v1 leftovers, kept as harmless no-ops */
+    setMode() {},
+    setLoadProgress() {},
     dispose() {
       if (disposed) return;
       stop();
       disposed = true;
+      stageCbs.clear();
+      completeCbs.clear();
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onLost);
       if (ro) ro.disconnect();
+      if (io) io.disconnect();
       const geos = new Set();
       scene.traverse((o) => {
         if (o.geometry) geos.add(o.geometry);
@@ -2403,6 +2536,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       unitBase.dispose();
       unitCenter.dispose();
       unitPlane.dispose();
+      aoTex.dispose();
       if (envTex) envTex.dispose();
       for (const p of parts) p.mesh.dispose();
       renderer.dispose();
@@ -2411,4 +2545,4 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   return api;
 }
 
-export { STAGES };
+export { STAGES, PAINT_COLORS, DEFAULT_PAINT };
