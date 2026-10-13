@@ -45,7 +45,7 @@ export function ReferenceMeta({ reference, className }: { reference: Reference; 
 export function ReferencesSection() {
   return (
     <Section id={sectionIds.references} tone="paper" labelledBy="referanser-title">
-      <SectionHeader id="referanser-title" title={referencesCopy.title} lede={referencesCopy.lede} />
+      <SectionHeader id="referanser-title" title={referencesCopy.title} lede={referencesCopy.lede} layout="stack" size="m" />
 
       <ul className="grid-page mt-16 gap-y-14 lg:mt-24">
         {references.map((ref, i) => (

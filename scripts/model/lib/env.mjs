@@ -48,9 +48,9 @@ function groundColor(x, z, h, slope) {
   const dx = x - HOUSE_CENTRE.x;
   const dz = z - HOUSE_CENTRE.z;
   const rr = Math.sqrt(dx * dx + dz * dz);
-  const lawn = col("#5a6347");
-  const meadow = col("#585f44");
-  const moss = col("#4c543c");
+  const lawn = col("#5f6353");
+  const meadow = col("#5c5f4e");
+  const moss = col("#4f5345");
   const heather = col("#5d5249");
   const rock = col("#76787a");
   const n = noise2.fbm(x / 9, z / 9, 3);
@@ -65,7 +65,7 @@ function groundColor(x, z, h, slope) {
   return c;
 }
 
-export const LAWN = "#5a6347";
+export const LAWN = "#5f6353";
 
 /** Rectangle (grid aligned) removed from the terrain grid and filled with an exact collar. */
 function holeRect() {
@@ -458,7 +458,7 @@ export function buildBirch(name, x, z, seed) {
     seed: seed * 19,
     count: 230,
     size: [0.22, 0.4],
-    tints: ["#7a8650", "#838e58", "#727f4a", "#8c955f"],
+    tints: ["#6a6f58", "#70745d", "#666b55", "#767a62"],
     detail: 0,
     shell: [0.6, 1.0],
     flatten: 0.78,
@@ -521,7 +521,7 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
     const rx = 2.4 + r() * 1.2;
     return { c, r: V(rx, rx * (0.72 + r() * 0.15), rx) };
   });
-  const tints = ["#45593a", "#4d6240", "#41543a", "#536845", "#4a5d3c"];
+  const tints = ["#4a5445", "#505a4a", "#475043", "#565f4d", "#4d5647"];
   canopy(leaf, lobes, {
     seed: seed * 31,
     count: 430,
@@ -531,7 +531,7 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
     clumpNormal: 0.22,
     shell: [0.78, 0.98],
     flatten: 0.82,
-    core: { k: 0.74, tint: "#2e3b28" },
+    core: { k: 0.74, tint: "#30372f" },
     variance: 0.08,
   });
   canopy(leaf, lobes, {

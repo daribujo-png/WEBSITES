@@ -70,6 +70,51 @@ export function scrollToTarget(target: string | HTMLElement | number, opts: { of
   window.scrollTo({ top: y + (opts.offset ?? 0), behavior: reduce ? "auto" : "smooth" });
 }
 
+/**
+ * Move the keyboard focus starting point to the target of an in-page link,
+ * so the next Tab continues inside that section (WCAG 2.4.3). Next's <Link>
+ * scrolls same-page hash links itself and leaves focus on the link, and an
+ * arrival from another route (/tjenester/ → /#slik-bygger-vi) has no focus
+ * at all. The target gets tabindex="-1" and is focused without scrolling.
+ */
+function focusHashTarget(hash: string) {
+  if (!hash || hash === "#") return;
+  let el: HTMLElement | null = null;
+  try {
+    el = document.getElementById(decodeURIComponent(hash.slice(1)));
+  } catch {
+    return;
+  }
+  if (!el) return;
+  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+  el.focus({ preventScroll: true });
+}
+
+function HashFocus() {
+  const pathname = usePathname();
+  // Arrivals with a hash (also after a route change).
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const id = window.setTimeout(() => focusHashTarget(window.location.hash), 150);
+    return () => window.clearTimeout(id);
+  }, [pathname]);
+  // Same-page hash links anywhere (header, menu, footer, in-page).
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target instanceof Element ? e.target.closest<HTMLAnchorElement>("a[href*='#']") : null;
+      if (!a || a.target === "_blank") return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || !url.hash) return;
+      // After Next/Lenis have started the scroll and any menu has closed.
+      window.setTimeout(() => focusHashTarget(url.hash), 150);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+  return null;
+}
+
 function RouteSync() {
   const pathname = usePathname();
   useEffect(() => {
@@ -161,6 +206,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   return (
     <>
       <RouteSync />
+      <HashFocus />
       {children}
     </>
   );

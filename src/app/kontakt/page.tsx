@@ -12,7 +12,7 @@ export default function KontaktPage() {
     <>
       <PageHero title={contactCopy.headline} lede={contactCopy.lede} crumbs={[{ name: contactCopy.title, path: "/kontakt/" }]} />
 
-      <Section id="kontakt" tone="paper" spacing="bottom" aria-label={contactCopy.title}>
+      <Section id="kontakt" tone="paper" spacing="bottom">
         <div className="grid-page gap-y-16">
           <ContactDetails headingLevel="h2" className="col-span-full lg:col-span-4" />
           <div className="col-span-full lg:col-span-7 lg:col-start-6">

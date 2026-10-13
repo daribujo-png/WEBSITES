@@ -33,6 +33,8 @@ export function Picture({
   style,
 }: PictureProps) {
   const fallback = largestSource(asset.sources.webp) ?? largestSource(asset.sources.avif);
+  // The client's own photos get the shared, slightly muted grade (DESIGN.md §5); renders and logos never do.
+  const own = (asset as { origin?: string }).origin === "own";
   return (
     <picture className={cn(fill ? "absolute inset-0 block" : "block", className)} style={style}>
       {asset.sources.avif.length > 0 ? (
@@ -51,7 +53,7 @@ export function Picture({
         fetchPriority={priority ? "high" : "auto"}
         decoding="async"
         style={placeholderStyle(asset.placeholder)}
-        className={cn(fill ? "h-full w-full object-cover" : "h-auto w-full", imgClassName)}
+        className={cn(fill ? "h-full w-full object-cover" : "h-auto w-full", own && "photo-own", imgClassName)}
       />
     </picture>
   );

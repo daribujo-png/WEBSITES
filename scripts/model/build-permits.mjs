@@ -17,14 +17,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const OUT = path.join(ROOT, "public/models");
 
 const MATERIALS = {
-  permit_existing: { color: "#d2ccc1", roughness: 0.9 },
-  permit_existing_roof: { color: "#a9a398", roughness: 0.85 },
+  permit_existing: { color: "#d9d3c7", roughness: 0.9 },
+  permit_existing_roof: { color: "#c9c2b5", roughness: 0.85 },
   permit_window: { color: "#5d625f", roughness: 0.4 },
-  permit_new: { color: "#b08b5e", roughness: 0.7 },
-  permit_new_roof: { color: "#8c6c46", roughness: 0.65 },
+  permit_new: { color: "#a88e6e", roughness: 0.7 },
+  permit_new_roof: { color: "#977e60", roughness: 0.65 },
   permit_accent: { color: "#c9a86a", roughness: 0.35, metallic: 0.6 },
-  permit_ground: { color: "#c4bcae", roughness: 1 },
-  permit_ground_section: { color: "#b7ad9c", roughness: 1 },
+  permit_ground: { color: "#f7f5f0", roughness: 1 },
+  permit_ground_section: { color: "#e4dfd5", roughness: 1 },
   permit_opening: { color: "#2b2a27", roughness: 0.8 },
 };
 

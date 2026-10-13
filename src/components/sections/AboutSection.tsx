@@ -1,12 +1,13 @@
 /**
- * Om oss on the home page: who we are, what we stand for and the trades we
- * have in-house. Shared blocks (values, trades) are reused on /om-oss/.
+ * Om oss on the home page: who we are, three short paragraphs, a link to
+ * /om-oss/ and the trades as one sentence. Values and the full trades list
+ * (ValuesList, TradesList) live on /om-oss/ only.
  */
 import type { CSSProperties } from "react";
 import { about, sectionIds, trades, values } from "@/content/site";
 import { Section, MagneticButton, RevealText, Hairline } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { sectionStrings } from "./strings";
+import { lowerFirst, sectionStrings } from "./strings";
 
 export function ValuesList({ headingLevel = "h3", className }: { headingLevel?: "h3" | "h4"; className?: string }) {
   const Heading = headingLevel;
@@ -44,6 +45,12 @@ export function TradesList({ headingLevel = "h3", className }: { headingLevel?: 
   );
 }
 
+/** "Prosjektledelse, tømrer, elektro, VVS, maler, mur og betong og sprenging." */
+function tradeSentence(): string {
+  const names = trades.map((t, i) => (i === 0 ? t.name : lowerFirst(t.name)));
+  return `${names.slice(0, -1).join(", ")} og ${names[names.length - 1]}.`;
+}
+
 export function AboutSection() {
   return (
     <Section id={sectionIds.about} tone="chalk" labelledBy="om-oss-title">
@@ -75,11 +82,10 @@ export function AboutSection() {
         </MagneticButton>
       </div>
 
-      <h3 className="t-display-m mt-24 lg:mt-36">{about.valuesTitle}</h3>
-      <ValuesList headingLevel="h4" className="mt-10 lg:mt-14" />
-
-      <h3 className="t-display-m mt-24 lg:mt-36">{about.tradesTitle}</h3>
-      <TradesList headingLevel="h4" className="mt-10 lg:mt-14" />
+      <p data-reveal="up" className="t-lead mt-16 max-w-[52rem] border-t border-line pt-8 lg:mt-24">
+        <span className="text-fg-muted">{about.tradesTitle}: </span>
+        {tradeSentence()}
+      </p>
     </Section>
   );
 }

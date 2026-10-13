@@ -87,6 +87,13 @@ export function BuildSequence() {
           </div>
         </div>
       </div>
+      {/* Outside the stage/gallery swap, so focus is never lost when the stage gives way. */}
+      <a
+        href="#slik-bygger-vi-slutt"
+        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-gutter focus-visible:z-(--z-overlay) focus-visible:inline-flex focus-visible:min-h-11 focus-visible:items-center focus-visible:bg-snow focus-visible:px-4 focus-visible:text-night"
+      >
+        {buildSequenceCopy.skipLink}
+      </a>
       {stage ? (
         <div className={cn(cssGate && "hidden js:motion-safe:block")}>
           <BuildStage onNoWebGL={onNoWebGL} />
@@ -97,6 +104,7 @@ export function BuildSequence() {
           <BuildGallery note={noWebGL ? buildSequenceCopy.webglFallback : null} />
         </div>
       ) : null}
+      <div id="slik-bygger-vi-slutt" tabIndex={-1} className="outline-none" />
     </section>
   );
 }

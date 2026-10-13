@@ -70,8 +70,8 @@ interface SectionHeaderProps {
   title: string;
   lede?: string;
   as?: "h1" | "h2" | "h3";
-  /** "split": title left, lede bottom-right on desktop. "stack": lede under title. */
-  layout?: "split" | "stack";
+  /** "split": title left, lede bottom-right on desktop. "stack": lede under title. "center": both centred. */
+  layout?: "split" | "stack" | "center";
   /** Display size of the title. */
   size?: "xl" | "l" | "m";
   immediate?: boolean;
@@ -94,6 +94,22 @@ export function SectionHeader({
   immediate,
   className,
 }: SectionHeaderProps) {
+  if (layout === "center") {
+    return (
+      <header className={cn("flex flex-col items-center gap-6 text-center lg:gap-8", className)}>
+        <RevealText as={as} id={id} text={title} immediate={immediate} className={cn(titleSize[size], "max-w-[14ch]")} />
+        {lede ? (
+          <p
+            data-reveal="up"
+            style={{ "--reveal-delay": "180ms" } as CSSProperties}
+            className="t-lead max-w-[32rem] text-fg-muted"
+          >
+            <TextWithMissing text={lede} />
+          </p>
+        ) : null}
+      </header>
+    );
+  }
   return (
     <header
       className={cn(

@@ -126,6 +126,11 @@
   --header-h: 4rem;
   --actionbar-h: 4rem;
 
+  /* Photo grade for origin "own" (.photo-own). */
+  --photo-saturate: 0.82;
+  --photo-contrast: 1.03;
+  --photo-brightness: 0.98;
+
   --dur-fast: 200ms;
   --dur-base: 450ms;
   --dur-slow: 900ms;
@@ -252,6 +257,17 @@
     html {
       scroll-padding-bottom: calc(var(--actionbar-h) + env(safe-area-inset-bottom, 0px) + 1rem);
     }
+  }
+
+  /* Own client photos only: one calm grade so snapshots sit with the paper palette. */
+  .photo-own {
+    filter: saturate(var(--photo-saturate)) contrast(var(--photo-contrast)) brightness(var(--photo-brightness));
+  }
+
+  /* Sections focused as the target of an in-page link (HashFocus) need no ring. */
+  [tabindex="-1"]:focus:not(:focus-visible),
+  section[tabindex="-1"]:focus {
+    outline: none;
   }
 
   h1,
@@ -572,5 +588,18 @@
   .skip-link,
   [data-print-hide] {
     display: none !important;
+  }
+}
+
+/* Short viewports (landscape phones, 400 % zoom): the header scrolls away with
+   the page and the action bar gets slimmer, so the fixed chrome takes well
+   under half of the screen (WCAG 1.4.10). Unlayered, so it beats the :root
+   tokens above and the header's `fixed` utility. */
+@media (max-height: 30rem) {
+  :root {
+    --actionbar-h: 2.75rem;
+  }
+  [data-site-header] {
+    position: absolute;
   }
 }

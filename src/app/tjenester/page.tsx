@@ -22,7 +22,7 @@ export default function TjenesterPage() {
         </MagneticButton>
       </PageHero>
 
-      <Section tone="paper" spacing="bottom" aria-label={servicesCopy.title}>
+      <Section tone="paper" spacing="bottom">
         <ul className="grid-page gap-y-16 border-t border-line pt-14 md:gap-y-20 lg:pt-20">
           {services.map((service, i) => (
             <li

@@ -51,8 +51,9 @@ const REGION =
 
 const btn =
   "pointer-events-auto inline-flex min-h-11 items-center gap-2 border px-3.5 t-small transition-colors duration-(--dur-base) ease-weight focus-visible:outline-offset-2";
-const btnIdle = "border-line-strong bg-night/60 text-fg hover:border-fg";
-const btnOn = "border-fg bg-fg text-night";
+const btnIdle = "border-line-strong bg-night/60 text-fg-muted hover:border-fg/60 hover:text-fg";
+/* Pressed: a quiet slate chip with a snow hairline, never the brightest thing on the stage. */
+const btnOn = "border-fg/60 bg-slate text-fg";
 
 function useStageUi(store: StageStore): StageUi {
   return useSyncExternalStore(store.subscribeUi, store.getUi, store.getUi);
@@ -200,13 +201,6 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
 
   return (
     <>
-      <a
-        href="#slik-bygger-vi-slutt"
-        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-gutter focus-visible:z-(--z-overlay) focus-visible:inline-flex focus-visible:min-h-11 focus-visible:items-center focus-visible:bg-snow focus-visible:px-4 focus-visible:text-night"
-      >
-        {buildSequenceCopy.skipLink}
-      </a>
-
       {/* All steps and model points for screen readers (the visual panel below is decorative). */}
       <ol className="sr-only">
         {buildSteps.map((s) => (
@@ -266,17 +260,27 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
 
           {/* Melt the stage into the page above and below, and keep copy readable. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[15%] bg-linear-to-b from-night via-night/70 to-transparent lg:h-[22%]" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-linear-to-t from-night to-transparent lg:h-[24%] lg:via-night/60" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 hidden w-[48%] bg-linear-to-r from-night via-night/75 to-transparent lg:block" />
+          {/* Day light is brighter, so the scrims under the copy and the rail get denser (≥ 4.5:1 for mist text). */}
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-linear-to-t from-night to-transparent",
+              ui.light === "day" ? "lg:h-[30%] lg:via-night/85" : "lg:h-[24%] lg:via-night/60",
+            )}
+          />
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-y-0 left-0 hidden bg-linear-to-r from-night to-transparent lg:block",
+              ui.light === "day" ? "w-[58%] via-night/85 via-55%" : "w-[48%] via-night/75",
+            )}
+          />
 
           <StageHotspots store={store} step={step} active={ui.active} ready={ui.ready && !ui.failed} />
 
           {/* Top bar: credit (desktop) and view controls. */}
           <div className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+0.75rem)] z-(--z-raised) lg:top-[calc(var(--header-h)+1.25rem)]">
-            <div className="container-page flex items-start justify-between gap-6">
-              <p className="t-caption hidden max-w-[26rem] text-fg-muted lg:block">
-                <span className="text-fg">{referenceHouse.credit}.</span> {referenceHouse.shortNote}
-              </p>
+            <div className="container-page flex items-start justify-end gap-6">
               {ui.ready && !ui.failed ? <StageControls store={store} ui={ui} /> : null}
               {ui.failed ? (
                 <p role="status" className="t-caption max-w-[22rem] text-fg-muted lg:text-right">
@@ -298,17 +302,19 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
           <div className="absolute inset-x-0 bottom-0 z-(--z-raised) hidden pb-7 lg:block">
             <div className="container-page">
               <DesktopRail active={ui.active} onJump={jumpTo} fillRef={(el) => (fillRefs.current[1] = el)} />
-              {dragEnabled ? (
-                <p className="t-caption mt-3 flex items-center justify-end gap-2 text-fg-muted" aria-hidden="true">
-                  <Icon.DragHorizontal size={14} />
-                  {hero.dragHint}
-                </p>
-              ) : null}
+              <div className="mt-3 flex items-center justify-between gap-6 t-caption text-fg-muted">
+                <p>{referenceHouse.credit}</p>
+                {dragEnabled ? (
+                  <p className="flex items-center gap-2" aria-hidden="true">
+                    <Icon.DragHorizontal size={14} />
+                    {hero.dragHint}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div id="slik-bygger-vi-slutt" tabIndex={-1} className="outline-none" />
     </>
   );
 }
@@ -360,12 +366,12 @@ function StepCopy({ active }: { active: number }) {
         return (
           <div
             key={s.id}
+            data-step-copy={on ? "active" : undefined}
             style={{ gridArea: "1 / 1" }}
             className={cn(
               "transition-[opacity,transform] ease-weight",
-              on
-                ? "translate-y-0 opacity-100 duration-(--dur-slower) delay-100"
-                : "translate-y-3 opacity-0 duration-(--dur-base)",
+              // The outgoing step hides at once, so the copy never shows another step than the rail.
+              on ? "translate-y-0 opacity-100 duration-(--dur-slow)" : "translate-y-3 opacity-0 duration-0",
             )}
           >
             <p className="t-display-s text-fg lg:t-display-m">{s.title}</p>
@@ -409,7 +415,13 @@ interface RailProps {
 function DesktopRail({ active, onJump, fillRef }: RailProps) {
   const onKey = useRailKeys(active, onJump);
   return (
-    <nav aria-label={buildSequenceCopy.rail.label} className="pointer-events-auto">
+    <nav aria-label={buildSequenceCopy.rail.label} aria-describedby="bygg-rail-hint" className="group/rail pointer-events-auto relative">
+      <p
+        id="bygg-rail-hint"
+        className="t-caption pointer-events-none absolute bottom-full left-0 mb-3 text-fg-muted opacity-0 transition-opacity duration-(--dur-fast) group-focus-within/rail:opacity-100"
+      >
+        {buildSequenceCopy.rail.keysHint}
+      </p>
       <div aria-hidden="true" className="relative h-px bg-line">
         <div ref={fillRef} className="absolute inset-0 origin-left bg-brass" style={{ transform: "scaleX(0.045)" }} />
       </div>
@@ -421,7 +433,7 @@ function DesktopRail({ active, onJump, fillRef }: RailProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "absolute top-[-3px] left-1/2 size-[7px] -translate-x-1/2 rounded-full border transition-colors duration-(--dur-base)",
+                  "absolute top-[-3px] left-1/2 size-[7px] -translate-x-1/2 rounded-full border",
                   i <= active ? "border-brass bg-brass" : "border-line-strong bg-night",
                 )}
               />
@@ -433,7 +445,7 @@ function DesktopRail({ active, onJump, fillRef }: RailProps) {
                 aria-label={buildSequenceCopy.rail.jumpTo(s.title)}
                 aria-current={on ? "step" : undefined}
                 className={cn(
-                  "mt-1 min-h-11 px-1 pt-3 text-center text-[0.75rem] leading-tight transition-colors duration-(--dur-base) xl:t-caption",
+                  "mt-1 min-h-11 px-1 pt-3 text-center text-[0.75rem] leading-tight xl:t-caption",
                   on ? "text-fg" : "text-fg-muted hover:text-fg",
                 )}
               >
@@ -450,7 +462,10 @@ function DesktopRail({ active, onJump, fillRef }: RailProps) {
 function MobileRail({ active, onJump, fillRef }: RailProps) {
   const onKey = useRailKeys(active, onJump);
   return (
-    <nav aria-label={buildSequenceCopy.rail.label} className="pointer-events-auto mt-2 -mx-2 flex items-center gap-1 lg:hidden">
+    <nav aria-label={buildSequenceCopy.rail.label} aria-describedby="bygg-rail-hint-m" className="pointer-events-auto mt-2 -mx-2 flex items-center gap-1 lg:hidden">
+      <span id="bygg-rail-hint-m" className="sr-only">
+        {buildSequenceCopy.rail.keysHint}
+      </span>
       <button
         type="button"
         onClick={() => onJump(active - 1)}
@@ -479,7 +494,7 @@ function MobileRail({ active, onJump, fillRef }: RailProps) {
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "block rounded-full transition-[background-color,width,height] duration-(--dur-base)",
+                    "block rounded-full",
                     i === active ? "size-2.5 bg-brass" : i < active ? "size-1.5 bg-fg" : "size-1.5 bg-line-strong",
                   )}
                 />

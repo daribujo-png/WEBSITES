@@ -1,6 +1,6 @@
 /**
  * Home: the whole story in the order of the brief.
- * Hero → Alt under ett tak → Slik bygger vi (3D) → Tjenester → Fra tegning
+ * Hero → Alt under ett tak → Slik bygger vi (3D) → Tjenester → (photo) → Fra tegning
  * til nøkkel → Byggesøknad → Før og etter → Referanser → Om oss → Kontakt.
  */
 import { pageMetadata } from "@/lib/seo";
@@ -10,6 +10,7 @@ import {
   BeforeAfterSection,
   ContactSection,
   Hero,
+  Interlude,
   Intro,
   PermitsSection,
   ProcessSection,
@@ -26,6 +27,7 @@ export default function Home() {
       <Intro />
       <BuildSequence />
       <ServicesSection />
+      <Interlude />
       <ProcessSection />
       <PermitsSection />
       <BeforeAfterSection />

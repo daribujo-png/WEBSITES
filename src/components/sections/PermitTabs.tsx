@@ -44,12 +44,14 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
     }
   };
 
+  const current = types[active];
+
   return (
-    <div className="grid-page mt-16 gap-y-10 lg:mt-24">
+    <div className="grid-page mt-16 gap-y-8 lg:mt-24 lg:grid-rows-[auto_1fr] lg:gap-y-10">
       <div
         role="tablist"
         aria-label={label}
-        className="col-span-full flex flex-wrap gap-2 lg:col-span-4 lg:flex-col lg:gap-0 lg:border-t lg:border-line"
+        className="col-span-full flex flex-wrap gap-2 lg:col-span-4 lg:row-start-1 lg:flex-col lg:gap-0 lg:border-t lg:border-line"
       >
         {types.map((type, i) => {
           const selected = i === active;
@@ -69,7 +71,7 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
               onKeyDown={(e) => onKeyDown(e, i)}
               className={cn(
                 "group/tab relative flex min-h-11 items-center rounded-sm border px-4 text-left t-small transition-colors duration-(--dur-base) ease-weight",
-                "lg:min-h-0 lg:rounded-none lg:border-0 lg:border-b lg:border-line lg:px-0 lg:py-5 lg:t-display-s",
+                "lg:min-h-0 lg:rounded-none lg:border-0 lg:border-b lg:border-line lg:px-0 lg:py-4 lg:font-display lg:text-[clamp(1.625rem,1rem+0.85vw,2rem)] lg:leading-[1.1] lg:font-[350] lg:tracking-[-0.015em]",
                 selected
                   ? "border-fg bg-fg text-tone lg:bg-transparent lg:text-fg"
                   : "border-line-strong text-fg hover:border-fg lg:text-fg-muted lg:hover:text-fg",
@@ -88,7 +90,22 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
         })}
       </div>
 
-      <div className="col-span-full lg:col-span-7 lg:col-start-6">
+      {/* The diagram of the selected type. Its description is in the panel text (sr-only). */}
+      <figure className="group/permit col-span-full lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1">
+        <div className="relative bg-paper-deep lg:max-w-[43rem]">
+          <PermitDiagram key={current.id} type={current.id} />
+        </div>
+        <figcaption className="t-caption mt-3 flex flex-wrap justify-between gap-x-6 gap-y-1 text-fg-muted lg:max-w-[43rem]">
+          <span>{note}</span>
+          {/* Only once the live 3D diagram is ready (desktop, mouse, WebGL, motion allowed). */}
+          <span aria-hidden="true" className="hidden lg:group-has-[[data-ready]]/permit:inline">
+            {dragHint}
+          </span>
+        </figcaption>
+      </figure>
+
+      {/* Panels: the explanation sits right under the tabs on desktop, so what changed is in view. */}
+      <div className="col-span-full lg:col-span-4 lg:row-start-2">
         {types.map((type, i) => {
           const selected = i === active;
           return (
@@ -101,21 +118,9 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
               tabIndex={0}
               className="focus-visible:outline-offset-8"
             >
-              <figure className="group/permit">
-                <div className="relative bg-paper-deep">
-                  {selected ? <PermitDiagram type={type.id} /> : null}
-                </div>
-                <figcaption className="t-caption mt-3 flex flex-wrap justify-between gap-x-6 gap-y-1 text-fg-muted">
-                  <span>{note}</span>
-                  {/* Only once the live 3D diagram is ready (desktop, mouse, WebGL, motion allowed). */}
-                  <span aria-hidden="true" className="hidden lg:group-has-[[data-ready]]/permit:inline">
-                    {dragHint}
-                  </span>
-                  <span className="sr-only">{type.diagramAlt}</span>
-                </figcaption>
-              </figure>
-              <h3 className="t-display-s mt-8">{type.title}</h3>
+              <h3 className="t-title">{type.title}</h3>
               <p className="t-body mt-3 max-w-prose text-fg-muted">{type.body}</p>
+              <p className="sr-only">{type.diagramAlt}</p>
             </div>
           );
         })}

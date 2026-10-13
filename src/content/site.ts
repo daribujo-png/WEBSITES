@@ -48,7 +48,7 @@ export const company = {
     clientPhotos: "egne prosjektbilder",
     privacyOwner: "kontaktperson for personvern",
     privacyApproval: "godkjenning av personvernerklæringen",
-    formEndpoint: "adresse til skjematjeneste (NEXT_PUBLIC_FORM_ENDPOINT)",
+    formEndpoint: "skjematjeneste",
     clientHouse: "kundens eget hus: tegninger, bilder eller 3D-modell",
   },
 } as const;
@@ -88,7 +88,7 @@ export const cta = {
 
 export const ui = {
   skipLink: "Hopp til innholdet",
-  homeLabel: "Bygg og Renovering Vest, til forsiden",
+  homeLabel: "Bygg og Renovering Vest AS, til forsiden",
   mainNavLabel: "Hovedmeny",
   menuOpen: "Meny",
   menuClose: "Lukk",
@@ -124,13 +124,20 @@ export const hero = {
   dragHint: "Dra for å se huset fra en annen side",
 } as const;
 
+/* Home: full-bleed photo between Tjenester and "Fra tegning til nøkkel" ----------------------- */
+
+export const interlude = {
+  photoKey: "arbeid-over-bergen-bred" satisfies PhotoKey,
+  caption: "På jobb over Bergen.",
+} as const;
+
 /* Home: intro ("Alt under ett tak") -------------------------------------------------------- */
 
 export const intro = {
   title: "Alt under ett tak",
   lede: "Vi er erfarne håndverkere fra flere firmaer som er slått sammen til ett. Derfor har vi alle fagene et byggeprosjekt trenger i samme bedrift.",
-  /** Supporting photo (own worksite photo over Bergen). */
-  photoKey: "arbeid-over-bergen-bred" satisfies PhotoKey,
+  /** Supporting photo (own project: a fourplex we worked on). */
+  photoKey: "firemannsbolig" satisfies PhotoKey,
   body: [
     "Tømrerarbeid, elektro, VVS, maling, mur og betong og sprenging gjør vi selv. Vi tar hele jobben som totalentreprise, eller den delen du trenger.",
     "Du får én prosjektleder. Prosjektlederen samordner fagene, holder tidsplanen og er den du snakker med fra første samtale til overlevering.",
@@ -398,9 +405,14 @@ export const missingFacts: MissingFact[] = [
     key: "clientPhotos",
     label: "egne prosjektbilder",
     where: [
-      "Tjenester uten egne bilder: ny bolig, bytte dører og vinduer, oppussing av bad, VVS og maling (viser 3D-gjengivelser)",
+      "Tjenester uten egne bilder: ny bolig, bytte dører og vinduer, VVS og maling (viser 3D-gjengivelser)",
       "Referanser: rekkehus, Vestheim og Kjerrgarden",
     ],
+  },
+  {
+    key: "bathPhotos",
+    label: "egne badbilder",
+    where: ["Tjenester: oppussing av bad (viser 3D-gjengivelser)"],
   },
   {
     key: "privacyOwner",
@@ -420,7 +432,7 @@ export const missingFacts: MissingFact[] = [
   },
   {
     key: "formEndpoint",
-    label: "adresse til skjematjeneste (NEXT_PUBLIC_FORM_ENDPOINT)",
+    label: "skjematjeneste",
     where: ["Kontakt: skjemaet faller tilbake til e-post til den er satt"],
   },
   {

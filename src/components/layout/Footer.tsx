@@ -24,8 +24,8 @@ export function Footer() {
 
         <div className="grid-page gap-y-10 border-b border-line pb-12 lg:items-end">
           <div className="col-span-full lg:col-span-8">
-            <Logo className="h-8 lg:h-10" />
-            <p className="mt-10 t-display-m">{footer.tagline}</p>
+            <p className="t-display-m">{footer.tagline}</p>
+            <Logo variant="footer" className="mt-10 w-full max-w-[12.5rem]" />
           </div>
           <div className="col-span-full flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
             <MagneticButton href={cta.primaryHref} icon="arrow">
@@ -35,7 +35,7 @@ export function Footer() {
         </div>
 
         <div className="grid-page gap-y-12 pt-12">
-          <section aria-labelledby="footer-contact" className="col-span-full md:col-span-4 lg:col-span-4">
+          <div className="col-span-full md:col-span-4 lg:col-span-4">
             <h3 id="footer-contact" className="t-small font-medium text-fg-muted font-sans">
               {footer.contactTitle}
             </h3>
@@ -66,7 +66,7 @@ export function Footer() {
                 </address>
               </li>
             </ul>
-          </section>
+          </div>
 
           <nav aria-labelledby="footer-services" className="col-span-full md:col-span-4 lg:col-span-4">
             <h3 id="footer-services" className="t-small font-medium text-fg-muted font-sans">
@@ -83,7 +83,7 @@ export function Footer() {
             </ul>
           </nav>
 
-          <section aria-labelledby="footer-company" className="col-span-full md:col-span-8 lg:col-span-4">
+          <div className="col-span-full md:col-span-8 lg:col-span-4">
             <h3 id="footer-company" className="t-small font-medium text-fg-muted font-sans">
               {footer.companyTitle}
             </h3>
@@ -115,7 +115,7 @@ export function Footer() {
                 </dd>
               </div>
             </dl>
-          </section>
+          </div>
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-line pt-6 t-caption text-fg-muted md:flex-row md:justify-between md:gap-10">

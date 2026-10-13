@@ -55,6 +55,7 @@ export function BeforeAfterPairFigure({ pair, sizes = "(min-width: 64rem) 45vw, 
         after={<Picture asset={assets.after} sizes={sizes} fill />}
         caption={
           <>
+            <span className="t-caption mb-3 block">{beforeAfterCopy.lede}</span>
             <Heading className="t-title block text-fg">{pair.title}</Heading>
             <span className="mt-2 block">{pair.caption}</span>
             <span className="t-caption mt-3 block">
@@ -72,7 +73,7 @@ export function BeforeAfterSection() {
   if (pairs.length === 0) return null;
   return (
     <Section id={sectionIds.beforeAfter} tone="chalk" labelledBy="for-etter-title">
-      <SectionHeader id="for-etter-title" title={beforeAfterCopy.title} lede={beforeAfterCopy.lede} />
+      <SectionHeader id="for-etter-title" title={beforeAfterCopy.title} />
       <div className="grid-page mt-16 gap-y-16 lg:mt-24">
         {pairs.map((pair, i) => (
           <div

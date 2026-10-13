@@ -1,6 +1,6 @@
 /**
  * "Alt under ett tak": one project manager and every trade in-house.
- * Big title, own worksite photo, two short paragraphs and three points
+ * Big title, own project photo, two short paragraphs and three points
  * separated by hairlines (no numbering).
  */
 import type { CSSProperties } from "react";
@@ -16,10 +16,10 @@ export function Intro() {
       <div className="grid-page mt-16 gap-y-12 lg:mt-24">
         <MediaFigure
           media={{ kind: "photo", key: intro.photoKey }}
-          sizes="(min-width: 90rem) 49rem, (min-width: 64rem) 55vw, calc(100vw - 2rem)"
-          aspect="1380 / 800"
+          sizes="(min-width: 90rem) 42rem, (min-width: 64rem) 48vw, calc(100vw - 2rem)"
+          aspect="4 / 3"
           parallax
-          className="col-span-full lg:col-span-7"
+          className="col-span-full lg:col-span-6"
         />
         <div className="col-span-full flex flex-col gap-6 md:col-span-6 lg:col-span-4 lg:col-start-9 lg:justify-end lg:pb-10">
           {intro.body.map((p, i) => (

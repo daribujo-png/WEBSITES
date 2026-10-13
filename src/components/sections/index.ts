@@ -1,6 +1,7 @@
 /** Page sections (SECTIONS agent). Server components unless noted. */
 export { Hero } from "./Hero";
 export { Intro } from "./Intro";
+export { Interlude } from "./Interlude";
 export { ServicesSection } from "./ServicesSection";
 export { ProcessSection } from "./ProcessSection";
 export { PermitsSection } from "./PermitsSection";

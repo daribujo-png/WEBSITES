@@ -22,17 +22,17 @@ export function Hero() {
       data-tone="night"
       data-header="dark"
       aria-labelledby="hero-title"
-      className="relative isolate flex flex-col overflow-hidden lg:min-h-[max(100svh,46rem)] lg:justify-end"
+      className="relative isolate flex min-h-[calc(100svh-var(--actionbar-h))] flex-col overflow-hidden lg:min-h-[max(100svh,46rem)] lg:justify-end"
     >
       {/* Stage: the house. In flow on phones, full-bleed behind the copy on desktop. */}
-      <div className="relative h-[60svh] min-h-[22rem] w-full lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
+      <div className="relative h-[54svh] min-h-[19rem] w-full lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
         <HeroDrift className="absolute inset-0">
           <HeroHouse className="absolute inset-0 h-full w-full" />
         </HeroDrift>
         {/* Scrims keep the copy readable (night/70 or darker under text). */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-night via-night/70 to-transparent lg:h-[70%] lg:via-night/75"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-linear-to-t from-night via-night/70 to-transparent lg:h-[70%] lg:via-night/75"
         />
         <div
           aria-hidden="true"
@@ -51,8 +51,8 @@ export function Hero() {
 
       {/* Desktop: the copy overlays the stage, so let pointer events through to the
           house (gentle drag) everywhere except on links and buttons. */}
-      <div className="relative z-(--z-raised) container-page -mt-20 pb-10 lg:pointer-events-none lg:mt-0 lg:pt-[calc(var(--header-h)+4rem)] lg:pb-12 lg:[&_a]:pointer-events-auto lg:[&_button]:pointer-events-auto">
-        <div className="grid-page gap-y-8 lg:items-end">
+      <div className="relative z-(--z-raised) container-page -mt-24 pb-8 lg:pointer-events-none lg:mt-0 lg:pt-[calc(var(--header-h)+4rem)] lg:pb-12 lg:[&_a]:pointer-events-auto lg:[&_button]:pointer-events-auto">
+        <div className="grid-page gap-y-5 lg:items-end lg:gap-y-8">
           <IntroText
             as="h1"
             id="hero-title"
@@ -70,10 +70,10 @@ export function Hero() {
 
         <div
           style={introUp(240).style}
-          className={cn(introUp(240).className, "mt-10 flex flex-col gap-6 lg:mt-14 lg:flex-row lg:items-center lg:justify-between")}
+          className={cn(introUp(240).className, "mt-7 flex flex-col gap-4 lg:mt-14 lg:flex-row lg:items-center lg:justify-between")}
         >
           <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
-            <MagneticButton href={hero.cta.href} variant="accent" size="lg" icon="arrow">
+            <MagneticButton href={hero.cta.href} variant="accent" size="lg" icon="arrow" data-hero-cta="">
               {hero.cta.label}
             </MagneticButton>
             <a
@@ -84,7 +84,8 @@ export function Hero() {
               <Icon.ArrowDown size={16} />
             </a>
           </div>
-          <ul className="flex flex-wrap items-center gap-x-8 gap-y-2 t-small">
+          {/* Below lg the action bar already holds phone and e-mail. */}
+          <ul className="hidden flex-wrap items-center gap-x-8 gap-y-2 t-small lg:flex">
             <li>
               <a href={company.phoneHref} aria-label={ui.callLabel} className="inline-flex min-h-11 items-center gap-2">
                 <Icon.Phone size={17} />
@@ -101,7 +102,7 @@ export function Hero() {
         </div>
 
         {/* Honest credit: the house is an architect's design we modelled, not one we built. */}
-        <p className="t-caption mt-10 max-w-prose border-t border-line pt-5 text-fg-muted lg:mt-12">
+        <p className="t-caption mt-6 max-w-prose border-t border-line pt-4 text-fg-muted lg:mt-12 lg:pt-5">
           <span className="text-fg">{referenceHouse.title}.</span> {referenceHouse.credit}.{" "}
           {referenceHouse.shortNote}{" "}
           <Link href="/om-oss/#referansehuset" className={cn("inline-flex min-h-6 items-center", underlined)}>

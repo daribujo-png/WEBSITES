@@ -17,7 +17,7 @@ export default function PersonvernPage() {
     <>
       <PageHero title={privacy.title} lede={privacy.lede} crumbs={[{ name: privacy.title, path: "/personvern/" }]} />
 
-      <Section tone="paper" spacing="bottom" aria-label={privacy.title}>
+      <Section tone="paper" spacing="bottom">
         <div className="grid-page gap-y-12 border-t border-line pt-12">
           <nav aria-label={sectionStrings.tocLabel} className="col-span-full lg:col-span-3">
             <ul className="t-small grid gap-1 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">

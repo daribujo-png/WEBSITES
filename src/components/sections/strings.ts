@@ -34,6 +34,10 @@ export const sectionStrings = {
   termsTitle: "Ordene vi bruker",
   /** Service page: heading over the image set. */
   imagesTitle: "Bilder",
+  /** Service page: label of the second image set. */
+  moreImagesTitle: "Flere bilder",
+  /** Service page: visually hidden heading over the body text. */
+  aboutServiceTitle: "Om tjenesten",
   /** Service page: heading over a render before/after slider. */
   illustrationTitle: "Fra råbygg til ferdig",
   /** CTA band on service pages and subpages. */

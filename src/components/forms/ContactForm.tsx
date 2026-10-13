@@ -87,6 +87,7 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
+  const resultRef = useRef<HTMLParagraphElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [summaryCount, setSummaryCount] = useState(0);
@@ -118,9 +119,12 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
     if (attempt > 0) summaryRef.current?.focus();
   }, [attempt]);
 
-  // Move focus to the confirmation when the message is sent.
+  // Move focus to the result (sent, mail fallback or error), so screen-reader
+  // and keyboard users land on what happened. The focused title is the
+  // announcement; the live region is not used for these, to avoid saying it twice.
   useEffect(() => {
     if (status === "sent") successRef.current?.focus();
+    else if (status === "mailto" || status === "error") resultRef.current?.focus();
   }, [status]);
 
   const readValues = (): ContactValues => {
@@ -171,15 +175,15 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
     const result = await submitContact(values);
     if (result.status === "sent") {
       form.reset();
-      setLive(contactForm.success.title);
+      setLive("");
       setStatus("sent");
     } else if (result.status === "mailto") {
       setMailtoHref(result.href);
-      setLive(contactForm.mailto.title);
+      setLive("");
       setStatus("mailto");
     } else {
       setMailtoHref(buildMailtoHref(values));
-      setLive(contactForm.failure.title);
+      setLive("");
       setStatus("error");
     }
   };
@@ -251,6 +255,7 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
         <div
           ref={summaryRef}
           tabIndex={-1}
+          role="group"
           aria-labelledby="kontaktskjema-feil"
           className="mt-8 border border-danger p-5 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
@@ -348,14 +353,17 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
             </Link>
           </p>
         </div>
-        <MagneticButton type="submit" icon="arrow" size="lg" disabled={status === "submitting"} className="shrink-0">
+        {/* aria-disabled, not disabled: a disabled button drops keyboard focus to <body>. */}
+        <MagneticButton type="submit" icon="arrow" size="lg" aria-disabled={status === "submitting" || undefined} className="shrink-0">
           {status === "submitting" ? contactForm.submitting : contactForm.submit}
         </MagneticButton>
       </div>
 
       {status === "mailto" ? (
-        <div role="status" className="mt-8 border-l border-fg pl-5">
-          <p className="t-title">{contactForm.mailto.title}</p>
+        <div className="mt-8 border-l border-fg pl-5">
+          <p ref={resultRef} tabIndex={-1} className="t-title outline-none">
+            {contactForm.mailto.title}
+          </p>
           <p className="t-body mt-2 text-fg-muted">{contactForm.mailto.body}</p>
           <p className="mt-4">
             <a
@@ -370,8 +378,8 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
       ) : null}
 
       {status === "error" ? (
-        <div role="alert" className="mt-8 border-l border-danger pl-5">
-          <p className="t-title flex items-center gap-2 text-danger">
+        <div className="mt-8 border-l border-danger pl-5">
+          <p ref={resultRef} tabIndex={-1} className="t-title flex items-center gap-2 text-danger outline-none">
             <Alert size={20} className="shrink-0" />
             {contactForm.failure.title}
           </p>

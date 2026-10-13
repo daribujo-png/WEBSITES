@@ -28,7 +28,7 @@ import {
   resolveMedia,
   serviceMedia,
 } from "@/components/sections";
-import { sectionStrings } from "@/components/sections/strings";
+import { lowerFirst, sectionStrings } from "@/components/sections/strings";
 import { underlined } from "@/components/sections/styles";
 
 export const dynamicParams = false;
@@ -86,6 +86,11 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
     : undefined;
   const [firstParagraph, ...restParagraphs] = service.body;
   const missingLabel = `bilder av ${service.title.toLowerCase()}`;
+  const leadIsLarge = (resolveMedia(lead)?.asset.width ?? 0) >= 1400;
+  const imagesNote =
+    service.slug === "oppussing-av-bad"
+      ? servicesCopy.imagesNote.replace("[MANGLER: egne prosjektbilder]", "[MANGLER: egne badbilder]")
+      : servicesCopy.imagesNote;
 
   return (
     <>
@@ -106,28 +111,37 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
         </MagneticButton>
       </PageHero>
 
-      {/* Image set */}
-      <Section tone="paper" spacing="none" aria-label={sectionStrings.imagesTitle}>
+      {/* Image set. Sources narrower than 1600 px (all photos so far) stay at
+          5 of 12 columns so they are never shown larger than they are. */}
+      <Section tone="paper" spacing="none" aria-label={`${sectionStrings.imagesTitle} av ${lowerFirst(service.title)}`}>
         <div className="grid-page gap-y-8 lg:items-end">
           <MediaFigure
             media={lead}
             priority
-            sizes="(min-width: 90rem) 56rem, (min-width: 64rem) 62vw, calc(100vw - 2rem)"
+            sizes={
+              leadIsLarge
+                ? "(min-width: 90rem) 49rem, (min-width: 64rem) 55vw, calc(100vw - 2rem)"
+                : "(min-width: 90rem) 34rem, (min-width: 64rem) 40vw, calc(100vw - 2rem)"
+            }
             aspect="4 / 3"
             missingLabel={missingLabel}
-            className="col-span-full lg:col-span-8"
+            className={leadIsLarge ? "col-span-full lg:col-span-7" : "col-span-full md:col-span-6 lg:col-span-5"}
           />
           <MediaFigure
             media={second}
             sizes="(min-width: 90rem) 26rem, (min-width: 64rem) 30vw, 60vw"
             aspect="4 / 5"
             missingLabel={missingLabel}
-            className="col-span-3 col-start-2 md:col-span-4 md:col-start-5 lg:col-span-4 lg:col-start-9"
+            className={
+              leadIsLarge
+                ? "col-span-3 col-start-2 md:col-span-4 md:col-start-5 lg:col-span-4 lg:col-start-9"
+                : "col-span-3 col-start-2 md:col-span-4 md:col-start-5 lg:col-span-4 lg:col-start-8"
+            }
           />
         </div>
         {!ownPhotos ? (
           <p className="t-small mt-6 max-w-prose text-fg-muted">
-            <TextWithMissing text={servicesCopy.imagesNote} />
+            <TextWithMissing text={imagesNote} />
           </p>
         ) : null}
       </Section>
@@ -137,7 +151,7 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
         <div className="grid-page gap-y-14">
           <div className="col-span-full lg:col-span-7 lg:col-start-6 lg:row-start-1">
             <h2 id="om-tjenesten" className="sr-only">
-              {service.title}
+              {sectionStrings.aboutServiceTitle}
             </h2>
             <p data-reveal="up" className="t-lead">
               <TextWithMissing text={firstParagraph} />
@@ -201,7 +215,7 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
 
       {/* More images (photos beyond the first two, then renders) */}
       {gallery.length > 0 ? (
-        <Section tone="paper" spacing="bottom" aria-label={sectionStrings.imagesTitle}>
+        <Section tone="paper" spacing="bottom" aria-label={sectionStrings.moreImagesTitle}>
           <Hairline className="mb-14" />
           <div className="grid-page gap-y-12">
             {gallery.map((m, i) => (

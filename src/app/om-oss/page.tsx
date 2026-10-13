@@ -16,7 +16,7 @@ export default function OmOssPage() {
     <>
       <PageHero title={about.headline} lede={about.lede} crumbs={[{ name: about.title, path: "/om-oss/" }]} />
 
-      <Section tone="paper" spacing="bottom" aria-label={about.title}>
+      <Section tone="paper" spacing="bottom">
         <MediaFigure
           media={{ kind: "photo", key: about.photoKey }}
           priority

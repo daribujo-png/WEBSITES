@@ -29,7 +29,7 @@ export type ButtonSize = "sm" | "md" | "lg";
 type IconName = "arrow" | "arrow-up-right" | "phone" | "mail";
 
 const base =
-  "group/btn relative inline-flex select-none items-center justify-center gap-3 rounded-sm font-sans font-medium whitespace-nowrap transition-[background-color,color,border-color] duration-(--dur-base) ease-weight disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
+  "group/btn relative inline-flex select-none items-center justify-center gap-3 rounded-sm font-sans font-medium max-w-full whitespace-normal text-left sm:whitespace-nowrap transition-[background-color,color,border-color] duration-(--dur-base) ease-weight disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const sizes: Record<ButtonSize, string> = {
   sm: "min-h-10 px-4 t-small",

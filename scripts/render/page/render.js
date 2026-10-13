@@ -76,6 +76,7 @@ async function load() {
         o.receiveShadow = true;
       }
     });
+    addPermitEdges(permits);
   }
   window.meta = meta;
   window.__scene = scene; // debug handle for the harness (inspect visibility/clipping from Playwright)
@@ -347,6 +348,23 @@ function applyShot(shot) {
     house.visible = false;
     permits.visible = true;
     permits.children.forEach((c) => (c.visible = c.name === `permit_${shot.permit}`));
+  }
+}
+
+/** Diagram edges: ink hairlines on the existing house, brass on the new part (same as the live canvas). */
+function addPermitEdges(root) {
+  const meshes = [];
+  root.traverse((o) => {
+    if (o.isMesh && /^permit_(existing|new)/.test(o.material.name)) meshes.push(o);
+  });
+  for (const m of meshes) {
+    const isNew = m.material.name.startsWith("permit_new");
+    const line = new THREE.LineSegments(
+      new THREE.EdgesGeometry(m.geometry, 30),
+      new THREE.LineBasicMaterial({ color: isNew ? "#c9a86a" : "#1d2326", transparent: true, opacity: isNew ? 0.9 : 0.35 }),
+    );
+    line.name = `${m.name}_kant`;
+    m.add(line);
   }
 }
 

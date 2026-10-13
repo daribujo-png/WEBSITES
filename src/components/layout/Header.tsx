@@ -68,7 +68,7 @@ function useHeaderTone(pathname: string) {
 }
 
 function Wordmark() {
-  return <Logo className="h-[1.6rem] xl:h-8" />;
+  return <Logo variant="header" className="h-7" />;
 }
 
 export function Header() {
@@ -151,6 +151,7 @@ export function Header() {
         data-tone={dark ? "night" : "paper"}
         data-tone-transparent={transparent ? "" : undefined}
         data-print-hide=""
+        data-site-header=""
         className={cn(
           "fixed inset-x-0 top-0 z-(--z-header) h-(--header-h) border-b transition-[background-color,border-color,color] duration-(--dur-base) ease-weight",
           transparent ? "border-transparent" : "border-line",

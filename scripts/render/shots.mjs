@@ -204,12 +204,8 @@ export function buildShots(content) {
   svc(
     "oppussing-av-bad",
     {
-      alt: "Badet sett ovenfra i snitt: membranen og sluket synes der gulvflisene ikke er lagt ennå.",
-      state: {
-        ...BATH_SECTION,
-        clip: [...BATH_SECTION.clip, { normal: [-0.951, 0, -0.309], constant: 3.4, nodes: "interior_bad_flis_gulv" }],
-        hideNodes: [...BATH_SECTION.hideNodes, "interior_bad_glassvegg"],
-      },
+      alt: "Snitt gjennom huset i varmt lys: kjøkken og trapp i første etasje, rommene i andre etasje.",
+      state: { lighting: "stage", step: "interior", clip: SECTION, lightingOverrides: { interiorLights: 4 }, camera: S.interior },
     },
     {
       alt: "Ferdig bad med dusj, servant og varmt lys.",
@@ -223,26 +219,27 @@ export function buildShots(content) {
       state: { lighting: "stage", step: "installasjoner", xray: { keep: ["installasjoner"] }, hideNodes: ["installasjoner_el"], camera: cam([-12, 8, 14], [0.5, 3.2, -0.5], 32), bloom: [0.55, 0.45, 0.6] },
     },
     {
-      alt: "Rørføringer i vegg og bjelkelag ved badet.",
+      alt: "Røntgenvisning fra den andre siden: vannrør, avløp og varme gjennom begge etasjer.",
       state: {
         lighting: "stage",
         step: "installasjoner",
         xray: { keep: ["installasjoner"] },
         hideNodes: ["installasjoner_el"],
-        camera: cam([-6, 10, 12], [2.5, 3.0, -1.2], 30),
-        bloom: [0.3, 0.4, 0.75],
+        camera: cam([-2.5, 12.5, 17], [0.8, 3.4, 0.2], 30),
+        bloom: [0.45, 0.45, 0.65],
       },
     },
   );
+  const housePaint = cam([-11.5, 3.4, 15.5], [0, 3.6, 0.5], 36);
   svc(
     "maling",
     {
-      alt: "Stående trekledning, ubehandlet.",
-      state: { lighting: "day", claddingRaw: true, camera: cam([6.4, 1.9, 9.6], [3.6, 2.4, 3.2], 34) },
+      alt: "Huset med stående trekledning, ubehandlet.",
+      state: { lighting: "day", claddingRaw: true, camera: housePaint },
     },
     {
-      alt: "Den samme fasaden ferdig behandlet.",
-      state: { lighting: "day", camera: cam([6.4, 1.9, 9.6], [3.6, 2.4, 3.2], 34) },
+      alt: "Det samme huset med kledningen ferdig behandlet.",
+      state: { lighting: "day", camera: housePaint },
     },
   );
 

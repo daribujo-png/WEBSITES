@@ -214,7 +214,7 @@ export const buildSteps: BuildStep[] = [
     id: "interior",
     title: "Interiør og bad",
     railLabel: "Interiør",
-    body: "Vegger og himlinger kles, gulv legges, og bad, kjøkken og trapp bygges inn. Til slutt sparkler og maler maleren alle flatene.",
+    body: "Vegger og himlinger kles, gulv legges, og bad, kjøkken og trapp bygges inn. Til slutt sparkler og maler vi alle flatene.",
     trades: ["tomrer", "mur-betong", "vvs", "elektro", "maler"],
     hotspots: [
       {
@@ -290,6 +290,7 @@ export const buildSequenceCopy = {
     jumpTo: (title: string) => `Gå til steget ${title}`,
     previous: "Forrige steg",
     next: "Neste steg",
+    keysHint: "Bruk piltastene for å bytte steg.",
   },
   controls: {
     groupLabel: "Visning",

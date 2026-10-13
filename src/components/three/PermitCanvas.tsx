@@ -37,6 +37,24 @@ export interface PermitCanvasProps {
 
 const POSTER_ASPECT = 4 / 3;
 
+/** Diagram edges, as on the posters: ink hairlines on the existing house, brass on the new part. */
+function addEdges(root: THREE.Object3D) {
+  const meshes: THREE.Mesh[] = [];
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    const name = (m.material as THREE.Material | undefined)?.name ?? "";
+    if (m.isMesh && /^permit_(existing|new)/.test(name)) meshes.push(m);
+  });
+  for (const m of meshes) {
+    const isNew = (m.material as THREE.Material).name.startsWith("permit_new");
+    const line = new THREE.LineSegments(
+      new THREE.EdgesGeometry(m.geometry, 30),
+      new THREE.LineBasicMaterial({ color: isNew ? "#c9a86a" : "#1d2326", transparent: true, opacity: isNew ? 0.9 : 0.35 }),
+    );
+    m.add(line);
+  }
+}
+
 function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
   const gltf = useModel(PERMITS_GLB);
   const gl = useThree((s) => s.gl);
@@ -56,6 +74,7 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
         m.receiveShadow = true;
       }
     });
+    addEdges(root);
     const pivot = new THREE.Group();
     pivot.add(root);
     return pivot;
@@ -86,6 +105,18 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
   }, [scene, gl, env, lit]);
 
   useEffect(() => input.subscribe(() => invalidate()), [input, invalidate]);
+
+  useEffect(
+    () => () =>
+      model.traverse((o) => {
+        const l = o as THREE.LineSegments;
+        if (l.isLineSegments) {
+          l.geometry.dispose();
+          (l.material as THREE.Material).dispose();
+        }
+      }),
+    [model],
+  );
 
   useEffect(
     () => () => {

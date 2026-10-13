@@ -279,11 +279,11 @@ export function buildFinished(layer) {
       seed: 900 + i * 7,
       count: 34 * n,
       size: [0.08, 0.15],
-      tints: ["#46573a", "#4d5d3e", "#56633f"],
+      tints: ["#4b5447", "#50584a", "#565d4c"],
       detail: 0,
       shell: [0.6, 0.95],
       flatten: 0.85,
-      core: { k: 0.72, tint: "#2f3c28" },
+      core: { k: 0.72, tint: "#31382f" },
       variance: 0.1,
     });
   });
