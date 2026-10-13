@@ -7,6 +7,7 @@
  * static SVG house in index.html takes over through the very same contract:
  *   play() skipToEnd() setBuildProgress() setPaintColor() onStage() onComplete()
  *   setPointer() setViewShift() resize() setActive() dispose()
+ * plus onPaintEnd() (a repaint sweep has finished) and `ready` (shaders compiled).
  * Add ?svg to the URL to force the SVG house (handy for testing).
  */
 
@@ -63,8 +64,8 @@ const LABELS = {
   grunnmur: 'Støper grunnmuren…',
   bindingsverk: 'Reiser bindingsverket…',
   bjelkelag: 'Legger bjelkelaget…',
-  takstoler: 'Løfter takstolene på plass…',
-  kledning: 'Kler veggene med panel…',
+  takstoler: 'Setter opp takstolene…',
+  kledning: 'Setter opp kledningen…',
   vinduer: 'Setter inn vinduer og dør…',
   tak: 'Legger taket…',
   maling: 'Maler huset i {farge}…',
@@ -84,10 +85,14 @@ const dom = {
   house: $('#hero-house'),
   svg: $('#hero-house-svg'),
   caption: $('#build-caption-text'),
+  status: $('#hero-status'),
   replay: $('#replay'),
   replayLabel: $('#replay-label'),
   hint: $('#paint-hint'),
   swatches: $$('.swatch'),
+  swatchRow: $('.paint__swatches'),
+  swash: $('.hero__swash'),
+  gallerySection: $('#prosjekter'),
   gallery: $('#gallery-grid'),
   form: $('#contact-form'),
   formStatus: $('#form-status'),
@@ -126,11 +131,23 @@ const hero = {
   visible: true,
   captionTimer: 0,
   completeGuard: 0,
+  nudged: false,
 };
 
+const HINT_BUILDING = 'Du kan velge farge mens vi bygger.';
+
+function swatchFor(hex) {
+  return dom.swatches.find((s) => (s.dataset.color || '').toLowerCase() === String(hex).toLowerCase());
+}
+/** the colour's name as on the swatch ("Fjordblå"), for the start of a sentence */
 function colorName(hex) {
-  const b = dom.swatches.find((s) => (s.dataset.color || '').toLowerCase() === String(hex).toLowerCase());
-  return b ? b.querySelector('.swatch__name').textContent.trim() : 'ny farge';
+  const b = swatchFor(hex);
+  return b ? b.querySelector('.swatch__name').textContent.trim() : 'Ny farge';
+}
+/** the colour inside a sentence, lower case and neuter ("malt i fjordblått") */
+function colorInline(hex) {
+  const b = swatchFor(hex);
+  return (b && b.dataset.inline) || colorName(hex).toLowerCase();
 }
 
 function setCaption(text) {
@@ -139,24 +156,57 @@ function setCaption(text) {
 function setHint(text) {
   if (dom.hint && dom.hint.textContent !== text) dom.hint.textContent = text;
 }
+/** the one live region in the hero: only key moments, never every build step */
+function announce(text) {
+  if (!dom.status) return;
+  if (dom.status.textContent === text) dom.status.textContent = '';
+  dom.status.textContent = text;
+}
 function setReplayLabel() {
   if (dom.replayLabel) dom.replayLabel.textContent = hero.complete ? 'Bygg på nytt' : 'Vis ferdig hus';
+}
+
+/** the brush stroke under «alt.» takes the house colour (and is painted in with a wipe) */
+function paintSwash(hex, wipe = true) {
+  if (!dom.hero) return;
+  dom.hero.style.setProperty('--paint', hex);
+  dom.hero.classList.add('has-paint');
+  if (!wipe || reducedMotion || !dom.swash) return;
+  dom.swash.classList.remove('is-wiping');
+  void dom.swash.getBoundingClientRect();
+  dom.swash.classList.add('is-wiping');
+}
+function clearSwash() {
+  if (!dom.hero) return;
+  dom.hero.classList.remove('has-paint');
+  if (dom.swash) dom.swash.classList.remove('is-wiping');
+}
+
+/** a replay started: back to the building state */
+function resetToBuilding() {
+  hero.complete = false;
+  clearTimeout(hero.captionTimer);
+  if (dom.hero) dom.hero.classList.remove('is-built');
+  clearSwash();
+  setReplayLabel();
+  setCaption(LABELS.blueprint);
+  setHint(HINT_BUILDING);
+  hero.building = true;
+  announce('Huset bygges. Du kan velge farge.');
 }
 
 function onStage(ev) {
   const id = ev && ev.id;
   if (!id) return;
+  if (id !== 'ferdig' && hero.complete) resetToBuilding();
   hero.stage = id;
-  if (id !== 'ferdig' && hero.complete) {
-    // a replay started
-    hero.complete = false;
-    if (dom.hero) dom.hero.classList.remove('is-built');
-    setReplayLabel();
-    setHint('Velg en farge nå, så maler vi huset i den.');
-  }
   clearTimeout(hero.captionTimer);
-  const label = LABELS[id] ? LABELS[id].replace('{farge}', colorName(hero.color)) : (ev.label || '');
+  const label = LABELS[id] ? LABELS[id].replace('{farge}', colorInline(hero.color)) : (ev.label || '');
   if (label) setCaption(label);
+  if (id === 'maling') {
+    setHint('');
+    paintSwash(hero.color, true);
+  }
 }
 
 function onComplete() {
@@ -164,10 +214,30 @@ function onComplete() {
   if (hero.complete) return;
   hero.complete = true;
   hero.stage = 'ferdig';
-  if (dom.hero) dom.hero.classList.add('is-built');
+  if (dom.hero) {
+    dom.hero.classList.add('is-built');
+    if (!dom.hero.classList.contains('has-paint')) paintSwash(hero.color, true);
+  }
   setCaption(LABELS.ferdig);
   setReplayLabel();
-  setHint('Trykk på en farge, så maler vi huset på nytt.');
+  setHint('');
+  if (hero.building) announce(LABELS.ferdig);
+  hero.building = false;
+  // the first time the house is done: nudge the colour swatches once
+  if (!hero.nudged && !reducedMotion && dom.swatchRow) {
+    hero.nudged = true;
+    dom.swatchRow.classList.add('is-nudging');
+    setTimeout(() => dom.swatchRow.classList.remove('is-nudging'), 2400);
+  }
+}
+
+/** a repaint sweep reached the last board */
+function onPaintEnd() {
+  if (!hero.complete) return;
+  clearTimeout(hero.captionTimer);
+  const text = `Ferdig malt i ${colorInline(hero.color)}.`;
+  setCaption(text);
+  announce(text);
 }
 
 function adopt(impl, kind) {
@@ -182,6 +252,7 @@ function adopt(impl, kind) {
 
   if (Scene.has('onStage')) Scene.unsubs.push(Scene.call('onStage', onStage) || (() => {}));
   if (Scene.has('onComplete')) Scene.unsubs.push(Scene.call('onComplete', onComplete) || (() => {}));
+  if (Scene.has('onPaintEnd')) Scene.unsubs.push(Scene.call('onPaintEnd', onPaintEnd) || (() => {}));
 
   Scene.call('resize');
   applyViewShift(true);
@@ -197,8 +268,7 @@ function adopt(impl, kind) {
     Scene.call('skipToEnd');
     onComplete();
   } else {
-    setCaption(LABELS.blueprint);
-    setHint('Velg en farge nå, så maler vi huset i den.');
+    resetToBuilding();
     Scene.call('play', { duration: 8000 });
   }
 }
@@ -237,6 +307,10 @@ async function initScene() {
     if (typeof mod.createHouseScene !== 'function') throw new Error('createHouseScene() mangler i house.js');
     const impl = mod.createHouseScene({ canvas: dom.canvas, reducedMotion, isMobile });
     if (!impl) throw new Error('WebGL-konteksten kunne ikke opprettes');
+    // wait for the shaders (compiled off the main thread where the driver allows it)
+    if (impl.ready && typeof impl.ready.then === 'function') {
+      await Promise.race([impl.ready.catch(() => {}), new Promise((r) => setTimeout(r, 4000))]);
+    }
     clearTimeout(slowTimer);
     if (fallbackTaken) { try { impl.dispose && impl.dispose(); } catch (e) { /* ignore */ } return; }
     adopt(impl, 'webgl');
@@ -253,6 +327,7 @@ if (dom.canvas) {
     clearTimeout(lostTimer);
     lostTimer = setTimeout(() => useFallback('WebGL-konteksten gikk tapt'), 2500);
   });
+  // house.js rebuilds its reflections and shadows on restore and carries on
   dom.canvas.addEventListener('webglcontextrestored', () => clearTimeout(lostTimer));
 }
 
@@ -268,28 +343,32 @@ function setupHeroControls() {
     btn.addEventListener('click', () => {
       const hex = btn.dataset.color;
       if (!hex) return;
-      const name = colorName(hex);
-      const same = hex.toLowerCase() === hero.color.toLowerCase();
+      // a second tap on the colour that is already on (or going on) the house changes nothing
+      if (hex.toLowerCase() === hero.color.toLowerCase()) return;
       selectSwatch(btn);
       hero.color = hex;
       clearTimeout(hero.captionTimer);
 
       if (hero.complete) {
-        if (same) return;
         Scene.call('setPaintColor', hex, { animate: !reducedMotion });
+        paintSwash(hex, true);
         if (reducedMotion) {
-          setCaption(`Ferdig malt i ${name}.`);
+          onPaintEnd();
         } else {
-          setCaption(`Maler huset i ${name}…`);
-          hero.captionTimer = setTimeout(() => {
-            if (hero.complete && hero.color === hex) setCaption(`Ferdig malt i ${name}.`);
-          }, 1700);
+          setCaption(`Maler huset i ${colorInline(hex)}…`);
+          // the scene says when the roller is done; a timer only if it can't
+          if (!Scene.has('onPaintEnd')) hero.captionTimer = setTimeout(onPaintEnd, 1700);
         }
       } else {
         // Still building: the colour is used when the painters get to it.
         Scene.call('setPaintColor', hex, { animate: false });
-        if (hero.stage === 'maling') setCaption(`Maler huset i ${name}…`);
-        else setHint(`${name} er valgt. Vi maler når veggene er klare.`);
+        if (hero.stage === 'maling' || hero.stage === 'ferdig') {
+          setCaption(`Maler huset i ${colorInline(hex)}…`);
+          setHint('');
+          paintSwash(hex, false);
+        } else {
+          setHint(`${colorName(hex)} er valgt. Vi maler når veggene er klare.`);
+        }
       }
     });
   });
@@ -299,11 +378,7 @@ function setupHeroControls() {
       if (!Scene.impl) return;
       clearTimeout(hero.captionTimer);
       if (hero.complete) {
-        hero.complete = false;
-        if (dom.hero) dom.hero.classList.remove('is-built');
-        setReplayLabel();
-        setCaption(LABELS.blueprint);
-        setHint('Velg en farge nå, så maler vi huset i den.');
+        resetToBuilding();
         Scene.call('play', { duration: 8000 });
       } else {
         Scene.call('skipToEnd');
@@ -319,32 +394,49 @@ function setupHeroControls() {
    Hero framing, pointer, visibility, scroll-out
    -------------------------------------------------------------------------- */
 let lastShift = '';
+const desktopHero = mq('(min-width: 900px)');
 /**
- * Frame the 3D house inside .hero__house. house.js fits the house into the part of the
- * canvas left over by the shift: for a shift s along an axis, that region spans from 2s
- * (as a fraction) to the far edge. Horizontally we anchor that region to the box's near
- * edge, so the house never runs into the headline; vertically we centre it on the box.
- * The same numbers feed a soft white scrim behind the copy (CSS vars on .hero).
+ * Frame the 3D house. The canvas only covers the stage (plus a soft fade band), so the
+ * GPU doesn't draw pixels that sit under the white scrim. house.js gets the exact region,
+ * in fractions of the canvas, that the house should be fitted into:
+ *   desktop: from the left edge of .hero__house to the right edge of the screen, from just
+ *            under the nav bar to the bottom of the box (the colour controls sit below);
+ *   phones:  the full width, from the top of the box to its bottom.
+ * The same numbers feed the CSS (--stage-left / --stage-top) that sizes the canvas and its scrim.
  */
 function applyViewShift(force) {
   if (!dom.hero || !dom.house) return;
   const h = dom.hero.getBoundingClientRect();
   const b = dom.house.getBoundingClientRect();
   if (!h.width || !h.height || !b.width) return;
-  const left = b.left - h.left;
-  const right = h.right - b.right;
-  dom.hero.style.setProperty('--stage-left', `${Math.round(left)}px`);
+  dom.hero.style.setProperty('--stage-left', `${Math.round(b.left - h.left)}px`);
   dom.hero.style.setProperty('--stage-top', `${Math.round(b.top - h.top)}px`);
-  if (!Scene.has('setViewShift')) return;
-  let sx = (b.left + b.width / 2 - (h.left + h.width / 2)) / h.width;
-  if (b.width < h.width * 0.85) sx = sx >= 0 ? left / (2 * h.width) : -right / (2 * h.width);
-  const sy = (b.top + b.height / 2 - (h.top + h.height / 2)) / h.height;
-  sx = clamp(sx, -0.35, 0.35);
-  const syc = clamp(sy, -0.35, 0.35);
-  const key = `${sx.toFixed(3)},${syc.toFixed(3)}`;
+  if (!Scene.has('setViewShift') || !dom.canvas) return;
+  const c = dom.canvas.getBoundingClientRect(); // after the vars above: forces the new layout
+  if (!c.width || !c.height) return;
+  const navH = parseFloat(getComputedStyle(html).getPropertyValue('--nav-h')) || 76;
+  let l;
+  let r;
+  let t;
+  let btm;
+  if (desktopHero.matches) {
+    l = b.left - c.left;
+    r = c.width;
+    t = Math.max(b.top - c.top - 24, h.top + navH + 8 - c.top);
+    btm = b.bottom - c.top + 8;
+  } else {
+    l = 0;
+    r = c.width;
+    t = b.top - c.top - 6;
+    btm = b.bottom - c.top + 4;
+  }
+  const region = { left: l / c.width, right: r / c.width, top: t / c.height, bottom: btm / c.height };
+  const sx = clamp((region.left + region.right) / 2 - 0.5, -0.35, 0.35);
+  const sy = clamp((region.top + region.bottom) / 2 - 0.5, -0.35, 0.35);
+  const key = [region.left, region.right, region.top, region.bottom].map((v) => v.toFixed(3)).join(',');
   if (!force && key === lastShift) return;
   lastShift = key;
-  Scene.call('setViewShift', sx, syc);
+  Scene.call('setViewShift', sx, sy, region);
 }
 
 function setupHeroObservers() {
@@ -460,6 +552,8 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
 
   const cbStage = new Set();
   const cbDone = new Set();
+  const cbPaint = new Set();
+  const SWEEP_MS = 1500;
   let p = 0;
   let color = DEFAULT_COLOR;
   let base = RAW;
@@ -474,8 +568,9 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
   let elapsed = 0;
   let rewindFrom = 0;
   let lastNow = 0;
-  // repaint sweep (after completion)
+  // repaint sweep (after completion); a colour picked mid-sweep waits its turn
   let sweep = null; // { from, to, t }
+  let pending = null;
   let lastVb = '';
 
   const local = (id) => clamp((p - STAGE[id].start) / (STAGE[id].end - STAGE[id].start));
@@ -600,17 +695,21 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
     const lit = (0.62 * easeOut(local('ferdig'))).toFixed(3);
     lits.forEach((n) => { n.style.opacity = lit; });
 
-    // stage events
-    const i = stageIndexAt(p);
-    if (i !== stageIdx) {
-      stageIdx = i;
-      const ev = { id: STAGES[i].id, label: LABELS[STAGES[i].id] || '' };
-      cbStage.forEach((cb) => { try { cb(ev); } catch (e) { console.warn(e); } });
+    // stage events (not while rewinding for a replay: that would read the build backwards)
+    if (mode !== 'rewind') {
+      const i = stageIndexAt(p);
+      if (i !== stageIdx) emitStage(i);
     }
     if (p >= 1 && !completeFired && mode !== 'rewind') {
       completeFired = true;
       cbDone.forEach((cb) => { try { cb(); } catch (e) { console.warn(e); } });
     }
+  }
+
+  function emitStage(i) {
+    stageIdx = i;
+    const ev = { id: STAGES[i].id, label: LABELS[STAGES[i].id] || '' };
+    cbStage.forEach((cb) => { try { cb(ev); } catch (e) { console.warn(e); } });
   }
 
   function tick(now) {
@@ -632,10 +731,18 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
       if (u >= 1) { p = 1; mode = 'idle'; } else more = true;
     }
     if (sweep) {
-      sweep.t += dt / 1300;
+      sweep.t += dt / SWEEP_MS;
       if (sweep.t >= 1) {
         base = sweep.to;
-        sweep = null;
+        if (pending) {
+          sweep = { from: base, to: pending, t: 0 };
+          pending = null;
+          more = true;
+        } else {
+          sweep = null;
+          const ev = { color: base };
+          cbPaint.forEach((cb) => { try { cb(ev); } catch (e) { console.warn(e); } });
+        }
       } else more = true;
     }
     render();
@@ -649,6 +756,7 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
   function finishNow() {
     mode = 'idle';
     sweep = null;
+    pending = null;
     p = 1;
     render();
   }
@@ -662,11 +770,20 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
       if (disposed) return;
       completeFired = false;
       sweep = null;
+      pending = null;
       if (rm) { finishNow(); return; }
       playDur = Math.max(1000, +duration || 8000);
       elapsed = 0;
       lastNow = 0;
-      if (p > 0.05) { mode = 'rewind'; rewindFrom = p; stageIdx = -1; } else { mode = 'play'; p = 0; }
+      if (p > 0.05) {
+        // rewind quietly: one «blueprint» event now, the rest as the new build goes up
+        mode = 'rewind';
+        rewindFrom = p;
+        emitStage(0);
+      } else {
+        mode = 'play';
+        p = 0;
+      }
       kick();
     },
     skipToEnd() { if (!disposed) finishNow(); },
@@ -680,15 +797,22 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
     setPaintColor(hex, { animate = true } = {}) {
       if (!/^#[0-9a-f]{6}$/i.test(String(hex))) return;
       const done = p >= 1 && mode === 'idle';
-      if (done && animate && !rm && hex.toLowerCase() !== base.toLowerCase()) {
-        sweep = { from: sweep ? sweep.to : base, to: hex, t: 0 };
+      const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+      if (done && animate && !rm) {
         color = hex;
+        if (sweep) {
+          // the roller finishes the coat it is on, then paints the newest pick
+          pending = same(hex, sweep.to) ? null : hex;
+          return;
+        }
+        if (same(hex, base)) return;
+        sweep = { from: base, to: hex, t: 0 };
         lastNow = 0;
         kick();
         return;
       }
       color = hex;
-      if (done) { sweep = null; base = hex; }
+      if (done) { sweep = null; pending = null; base = hex; }
       render();
     },
     onStage(cb) {
@@ -700,6 +824,11 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
       if (typeof cb !== 'function') return () => {};
       cbDone.add(cb);
       return () => cbDone.delete(cb);
+    },
+    onPaintEnd(cb) {
+      if (typeof cb !== 'function') return () => {};
+      cbPaint.add(cb);
+      return () => cbPaint.delete(cb);
     },
     setPointer(x, y) {
       if (rm || !host) return;
@@ -719,6 +848,7 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
       raf = 0;
       cbStage.clear();
       cbDone.clear();
+      cbPaint.clear();
     },
   };
 }
@@ -826,7 +956,7 @@ function setupMenu() {
    Reveals + marquee
    -------------------------------------------------------------------------- */
 function setupReveals() {
-  $$('.svc-grid, .steps, .gallery__grid, .contact__list').forEach((grid) => {
+  $$('.svc-grid, .gallery__grid, .contact__list').forEach((grid) => {
     Array.from(grid.children).forEach((c, i) => c.style.setProperty('--d', `${((i % 4) * 0.08).toFixed(2)}s`));
   });
   // Gallery cards sit in a horizontal scroller on phones: they reveal together (see revealGallery).
@@ -848,82 +978,54 @@ function setupReveals() {
 
 function setupMarquee() {
   const m = $('.marquee');
-  if (!m || !('IntersectionObserver' in window)) return;
+  if (!m) return;
+  // WCAG 2.2.2: the moving text can be paused (and it also pauses on hover and focus)
+  const btn = $('.marquee__toggle', m);
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const stop = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(stop));
+      m.classList.toggle('is-stopped', stop);
+    });
+  }
+  if (!('IntersectionObserver' in window)) return;
   const io = new IntersectionObserver(([e]) => m.classList.toggle('is-paused', !e.isIntersecting));
   io.observe(m);
 }
 
 /* --------------------------------------------------------------------------
    Fra byggeplassen: gallery from assets/footage/footage.json
-   Missing photos never look broken: each card keeps a coloured illustration.
+   The section ships hidden. It only appears (with its nav and footer links) once
+   at least MIN_SHOTS real photos or videos have loaded. No placeholders, ever.
    -------------------------------------------------------------------------- */
-const ICON_ALIASES = {
-  vvs: 'bad', 'bad-vvs': 'bad', rehab: 'rehabilitering', restaurering: 'rehabilitering',
-  renovering: 'oppussing', maler: 'maling', tomrer: 'tomrer', 'tømrer': 'tomrer', 'påbygg': 'pabygg',
-  grunnarbeid: 'sprenging', betong: 'mur', terrasse: 'garasje', prosjekt: 'prosjektledelse',
-};
-const ICON_TINT = {
-  nybygg: 'tint-fjord', tilbygg: 'tint-oker', pabygg: 'tint-mose', maling: 'tone-falu', oppussing: 'tint-pine',
-  bad: 'tint-fjord', tak: 'tint-falu', ombygging: 'tint-fjord', rehabilitering: 'tint-kritt', elektro: 'tint-oker',
-  tomrer: 'tint-pine', mur: 'tint-orange', sprenging: 'tint-orange', garasje: 'tint-mose', prosjektledelse: 'tint-orange',
-};
-const TINT_CYCLE = ['tint-fjord', 'tint-oker', 'tone-falu', 'tint-pine', 'tint-falu', 'tint-mose'];
+const MIN_SHOTS = 3;
 const LAYOUT_CYCLE = ['tall', '', '', 'wide', '', 'wide'];
-
-function illustrationKey(item) {
-  const raw = String(item.icon || '').toLowerCase();
-  if (raw && $(`.svc-grid [data-illus="${ICON_ALIASES[raw] || raw}"]`)) return ICON_ALIASES[raw] || raw;
-  const t = String(item.title || '').toLowerCase();
-  if (/bad|vvs|rør/.test(t)) return 'bad';
-  if (/påbygg|etasje/.test(t)) return 'pabygg';
-  if (/tilbygg/.test(t)) return 'tilbygg';
-  if (/mal/.test(t)) return 'maling';
-  if (/rehab|restaur/.test(t)) return 'rehabilitering';
-  if (/oppuss|renover|kjøkken/.test(t)) return 'oppussing';
-  if (/ombygg/.test(t)) return 'ombygging';
-  if (/tak/.test(t)) return 'tak';
-  if (/elektr/.test(t)) return 'elektro';
-  if (/mur|betong/.test(t)) return 'mur';
-  if (/spreng|grunn/.test(t)) return 'sprenging';
-  if (/garasje|terrasse|carport/.test(t)) return 'garasje';
-  if (/tømrer|snekker/.test(t)) return 'tomrer';
-  return 'nybygg';
-}
-
-function addArt(card, key) {
-  if ($('.shot__art', card)) return;
-  const src = $(`.svc-grid [data-illus="${key}"]`);
-  if (!src) return;
-  const art = el('div', 'shot__art');
-  art.setAttribute('aria-hidden', 'true');
-  const clone = src.cloneNode(true);
-  clone.removeAttribute('data-illus');
-  art.appendChild(clone);
-  const fig = $('figure', card);
-  if (fig) fig.prepend(art);
-}
+const safeSrc = (v) => {
+  const src = String(v || '').trim();
+  return src && !/^(javascript|vbscript|data):/i.test(src) ? src : '';
+};
 
 function renderGallery(items) {
   const frag = document.createDocumentFragment();
   items.forEach((item, i) => {
-    const key = illustrationKey(item);
     const layout = item.layout === 'wide' || item.layout === 'tall' ? item.layout : LAYOUT_CYCLE[i % LAYOUT_CYCLE.length];
-    const tint = ICON_TINT[key] || TINT_CYCLE[i % TINT_CYCLE.length];
-    const li = el('li', `shot ${layout ? `shot--${layout} ` : ''}${tint}`);
-    li.dataset.icon = key;
+    const li = el('li', `shot${layout ? ` shot--${layout}` : ''}`);
     li.setAttribute('data-reveal', '');
     const fig = el('figure');
     const media = el('div', 'shot__media');
     media.dataset.type = item.type === 'video' ? 'video' : 'image';
-    if (item.src) media.dataset.src = String(item.src);
-    if (item.poster) media.dataset.poster = String(item.poster);
+    media.dataset.src = safeSrc(item.src);
+    if (item.poster) media.dataset.poster = safeSrc(item.poster);
     if (item.alt) media.dataset.alt = String(item.alt);
-    const cap = el('figcaption');
-    const title = String(item.title || 'Prosjekt');
-    cap.append(el('strong', '', title));
+    fig.append(media);
+    const title = String(item.title || '').trim();
     const text = [item.caption, item.place && item.place !== 'Bergen' ? item.place : ''].filter(Boolean).join(' ');
-    if (text) cap.append(document.createTextNode(' '), el('span', '', String(text)));
-    fig.append(media, cap);
+    if (title || text) {
+      const cap = el('figcaption');
+      if (title) cap.append(el('strong', '', title));
+      if (text) cap.append(document.createTextNode(title ? ' ' : ''), el('span', '', String(text)));
+      fig.append(cap);
+    }
     li.append(fig);
     frag.append(li);
   });
@@ -931,9 +1033,9 @@ function renderGallery(items) {
 }
 
 let videoIO = null;
+/** loads every card's photo or video; cards whose file fails are removed. Resolves with the count that loaded. */
 function loadGalleryMedia() {
-  const cards = $$('.shot', dom.gallery || document);
-  cards.forEach((card) => addArt(card, card.dataset.icon || 'nybygg'));
+  const cards = $$('.shot', dom.gallery);
   if ('IntersectionObserver' in window && !reducedMotion) {
     videoIO = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
@@ -943,17 +1045,21 @@ function loadGalleryMedia() {
       });
     }, { threshold: 0.25 });
   }
-
-  const load = (card) => {
+  const load = (card) => new Promise((resolve) => {
     const media = $('.shot__media', card);
-    if (!media || media.dataset.loaded) return;
-    media.dataset.loaded = '1';
-    const src = (media.dataset.src || '').trim();
-    if (!src || /^(javascript|vbscript|data):/i.test(src)) return;
+    const src = media ? media.dataset.src : '';
+    if (!src) { card.remove(); resolve(false); return; }
     const title = ($('figcaption strong', card) || {}).textContent || '';
-    const alt = media.dataset.alt || `${title}, prosjekt i Bergen og omegn`;
-    const ok = () => card.classList.add('has-media');
-    const fail = (node) => node.remove();
+    const alt = media.dataset.alt || (title ? `${title}, fra en jobb i Bergen og omegn` : 'Bilde fra en av jobbene våre');
+    let settled = false;
+    const done = (ok, node) => {
+      if (settled) return;
+      settled = true;
+      if (ok) card.classList.add('has-media');
+      else { if (node) node.remove(); card.remove(); }
+      resolve(ok);
+    };
+    setTimeout(() => done(false), 20000);
     if (media.dataset.type === 'video') {
       const v = document.createElement('video');
       v.muted = true;
@@ -966,8 +1072,8 @@ function loadGalleryMedia() {
       v.setAttribute('aria-label', alt);
       if (media.dataset.poster) v.poster = media.dataset.poster;
       if (reducedMotion) v.controls = true;
-      v.addEventListener('loadeddata', ok, { once: true });
-      v.addEventListener('error', () => fail(v), { once: true });
+      v.addEventListener('loadedmetadata', () => done(true), { once: true });
+      v.addEventListener('error', () => done(false, v), { once: true });
       v.src = src;
       media.appendChild(v);
       if (videoIO) videoIO.observe(card);
@@ -975,38 +1081,42 @@ function loadGalleryMedia() {
       const img = new Image();
       img.decoding = 'async';
       img.alt = alt;
-      img.addEventListener('load', ok, { once: true });
-      img.addEventListener('error', () => fail(img), { once: true });
+      if ('fetchPriority' in img) img.fetchPriority = 'low';
+      img.addEventListener('load', () => done(true), { once: true });
+      img.addEventListener('error', () => done(false, img), { once: true });
       img.src = src;
       media.appendChild(img);
     }
-  };
+  });
+  return Promise.all(cards.map(load)).then((r) => r.filter(Boolean).length);
+}
 
-  if (!('IntersectionObserver' in window)) { cards.forEach(load); return; }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (!e.isIntersecting) return;
-      io.unobserve(e.target);
-      load(e.target);
-    });
-  }, { rootMargin: '400px 0px' });
-  cards.forEach((c) => io.observe(c));
+function showGallery(on) {
+  if (dom.gallerySection) dom.gallerySection.hidden = !on;
+  $$('[data-nav-gallery]').forEach((n) => { n.hidden = !on; });
 }
 
 async function loadFootage() {
-  if (!dom.gallery) return;
+  if (!dom.gallery || !dom.gallerySection) return;
   let items = null;
   try {
     const res = await fetch('assets/footage/footage.json', { cache: 'no-cache' });
     if (res.ok) items = await res.json();
   } catch (e) {
-    /* file:// or offline: keep the cards that ship in the HTML */
+    /* file:// or offline: the section simply stays hidden */
   }
-  if (Array.isArray(items)) {
-    const valid = items.filter((it) => it && typeof it === 'object' && (it.src || it.title)).slice(0, 24);
-    if (valid.length) renderGallery(valid);
+  if (!Array.isArray(items)) return;
+  const valid = items.filter((it) => it && typeof it === 'object' && safeSrc(it.src)).slice(0, 24);
+  if (valid.length < MIN_SHOTS) return;
+  // photos are not urgent: let the hero and the 3D house load first
+  if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true }));
+  renderGallery(valid);
+  const loaded = await loadGalleryMedia();
+  if (loaded < MIN_SHOTS) {
+    dom.gallery.replaceChildren();
+    return;
   }
-  loadGalleryMedia();
+  showGallery(true);
   revealGallery();
 }
 
@@ -1103,12 +1213,11 @@ function setupForm() {
       });
       const firstBad = document.getElementById(errors[0][0]);
       if (firstBad) firstBad.focus();
-      if (dom.formStatus) dom.formStatus.textContent = errors.length === 1 ? 'Nesten der. Ett felt må fylles ut.' : `Nesten der. ${errors.length} felt må fylles ut.`;
+      if (dom.formStatus) dom.formStatus.textContent = errors.length === 1 ? 'Nesten der. Se over feltet som er merket.' : 'Nesten der. Se over feltene som er merket.';
       return;
     }
 
-    const what = services.length ? services.join(', ') : 'prosjekt';
-    const subject = `Forespørsel om ${what.toLowerCase()} fra ${name}`;
+    const subject = `Forespørsel fra ${name}${services.length ? `: ${services.join(', ')}` : ''}`;
     const lines = [
       'Hei, Bygg & Renovering Vest!',
       '',

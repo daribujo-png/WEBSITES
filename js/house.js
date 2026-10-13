@@ -15,8 +15,10 @@
  *   play({ duration }) skipToEnd() setBuildProgress(p, immediate)
  *   setPaintColor(hex, { animate }) onStage(cb) onComplete(cb)
  *   setPointer(x, y) setViewShift(x, y) resize() setActive(bool) dispose()
- * Extras (optional): setScrollOut(t) getStage() getPaintColor() isComplete()
- *   getStages(); setMode()/setLoadProgress() are kept as no-ops for old callers.
+ * Extras (optional): onPaintEnd(cb) ready (Promise) setScrollOut(t) getStage()
+ *   getPaintColor() isComplete() getStages(); setViewShift(x, y, region) also
+ *   takes the exact region {left, top, right, bottom} (fractions of the canvas)
+ *   the house should be fitted into. setMode()/setLoadProgress() are no-ops.
  */
 import * as THREE from 'three';
 import { RoomEnvironment } from '../vendor/addons/RoomEnvironment.js';
@@ -32,7 +34,7 @@ const STAGES = [
   { id: 'bindingsverk', start: 0.16, end: 0.29, ms: 850, label: 'Reiser bindingsverket…' },
   { id: 'bjelkelag', start: 0.29, end: 0.37, ms: 500, label: 'Legger bjelkelaget…' },
   { id: 'takstoler', start: 0.37, end: 0.48, ms: 750, label: 'Setter opp takstolene…' },
-  { id: 'kledning', start: 0.48, end: 0.62, ms: 800, label: 'Kler veggene med panel…' },
+  { id: 'kledning', start: 0.48, end: 0.62, ms: 800, label: 'Setter opp kledningen…' },
   { id: 'vinduer', start: 0.62, end: 0.71, ms: 500, label: 'Setter inn vinduer og dør…' },
   { id: 'tak', start: 0.71, end: 0.92, ms: 950, label: 'Legger taket…' },
   { id: 'maling', start: 0.92, end: 0.985, ms: 1350, label: 'Maler huset…' },
@@ -370,6 +372,10 @@ class Part {
     this.anim = opts.anim ?? A_GROW;
     this.drop = opts.drop ?? 2;
     this.swing = opts.swing ?? 1.3;
+    // strike: 'drop' = each piece is lowered a little and the part fades out (scaffolding);
+    // default = the in-animation played backwards
+    this.outMode = opts.outMode || null;
+    this.outDrop = opts.outDrop ?? 0.6;
     this.lastL = -1;
     this.lastO = -1;
     this.hideAt = opts.hideAt ?? 2;
@@ -410,11 +416,17 @@ class Part {
     const { P, Q, S, A, O, dur, outDur, anim } = this;
     const span = 1 - dur;
     const ospan = 1 - outDur;
+    const strike = this.outMode === 'drop';
+    if (strike && mesh.material.transparent) mesh.material.opacity = 1 - smooth(Lo);
     for (let i = 0; i < this.n; i++) {
       let t = clamp01((L - O[i] * span) / dur);
+      let lower = 0;
       if (Lo > 0) {
         const r = clamp01((Lo - (1 - O[i]) * ospan) / outDur);
-        if (1 - r < t) t = 1 - r;
+        if (strike) {
+          if (r >= 1) t = 0;
+          else lower = smooth(r) * this.outDrop;
+        } else if (1 - r < t) t = 1 - r;
       }
       if (t <= 0) {
         mesh.setMatrixAt(i, ZERO_M);
@@ -444,6 +456,7 @@ class Part {
         _qa.premultiply(_qb);
         _sv.multiplyScalar(k);
       }
+      if (lower) _pv.y -= lower;
       _m4.compose(_pv, _qa, _sv);
       mesh.setMatrixAt(i, _m4);
     }
@@ -527,15 +540,16 @@ void main() {
 // azimuth 0 = front (+z), π/2 = glazed gable (+x). Distance is fitted to the
 // finished house, so the framing never jumps while it grows.
 // dm > 1 while the crane stands, so its jib stays inside the frame (and clear of the nav bar);
-// the camera settles in on the finished house as the crane sinks away.
+// the camera settles in on the finished house as the crane sinks away. The fit itself also
+// grows upwards while the crane stands (see fitDistance's `top`).
 const CAM_KEYS = [
   [0.0, 1.02, 0.7, -1.4, 1.0],
-  [0.06, 0.96, 0.54, -1.1, 1.05],
-  [0.16, 0.88, 0.42, -0.7, 1.1],
-  [0.29, 0.8, 0.34, -0.25, 1.1],
-  [0.37, 0.72, 0.38, 0.0, 1.1],
-  [0.48, 0.64, 0.3, 0.0, 1.09],
-  [0.62, 0.62, 0.24, 0.0, 1.07],
+  [0.06, 0.96, 0.54, -1.1, 1.08],
+  [0.16, 0.88, 0.42, -0.7, 1.22],
+  [0.29, 0.8, 0.34, -0.25, 1.22],
+  [0.37, 0.72, 0.38, 0.0, 1.22],
+  [0.48, 0.64, 0.3, 0.0, 1.22],
+  [0.62, 0.62, 0.24, 0.0, 1.22],
   [0.71, 0.7, 0.32, 0.0, 1.05],
   [0.92, 0.64, 0.2, 0.0, 0.98],
   [1.0, 0.7, 0.2, 0.0, 0.98],
@@ -558,8 +572,8 @@ const FRAME_BOX = [-6.45, 10.0, 0.0, 9.9, -4.0, 4.0];
 const TARGET_X = 1.75;
 const TARGET_Y = 4.5;
 const TARGET_Z = 0;
-/** exact pinhole fit: distance that keeps the box inside ±tanH/±tanV */
-function fitDistance(az, el, ty, tanH, tanV) {
+/** exact pinhole fit: distance that keeps the box (top edge = `top`) inside ±tanH/±tanV */
+function fitDistance(az, el, ty, tanH, tanV, top = FRAME_BOX[3]) {
   const ca = Math.cos(az);
   const sa = Math.sin(az);
   const ce = Math.cos(el);
@@ -567,7 +581,7 @@ function fitDistance(az, el, ty, tanH, tanV) {
   let D = 0;
   for (let i = 0; i < 8; i++) {
     const x = (i & 1 ? FRAME_BOX[1] : FRAME_BOX[0]) - TARGET_X;
-    const y = (i & 2 ? FRAME_BOX[3] : FRAME_BOX[2]) - ty;
+    const y = (i & 2 ? top : FRAME_BOX[2]) - ty;
     const z = (i & 4 ? FRAME_BOX[5] : FRAME_BOX[4]) - TARGET_Z;
     const px = x * ca - z * sa; // · right
     const py = -x * se * sa + y * ce - z * se * ca; // · up
@@ -642,16 +656,20 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const rnd = mulberry32(60425);
 
   /* ------------------------------------------------------------ env + lights */
-  let envTex = null;
-  try {
-    const pm = new THREE.PMREMGenerator(renderer);
-    const room = new RoomEnvironment();
-    envTex = pm.fromScene(room, 0.04).texture;
-    room.dispose();
-    pm.dispose();
-  } catch (e) {
-    envTex = null;
-  }
+  /** studio reflections (re-made after a lost WebGL context is restored) */
+  const makeEnv = () => {
+    try {
+      const pm = new THREE.PMREMGenerator(renderer);
+      const room = new RoomEnvironment();
+      const tex = pm.fromScene(room, 0.04).texture;
+      room.dispose();
+      pm.dispose();
+      return tex;
+    } catch (e) {
+      return null;
+    }
+  };
+  let envTex = makeEnv();
   scene.environment = envTex;
   scene.environmentIntensity = 0.5;
 
@@ -816,6 +834,68 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   };
   mat.clad.customProgramCacheKey = () => 'brv-clad-paint';
 
+  /* ------------------ trims: white listverk on a dark house, antrasitt on a light one */
+  // Window frames, corner boards and barge/fascia boards follow the paint (Kritthvit trims on
+  // a dark colour, Antrasitt on a light one) and change in the same sweep as the walls. The
+  // sweep position comes from the world position, so long boards are painted along their length.
+  const trimU = {
+    uTrimBase: { value: new THREE.Color(0xf4f1ea) },
+    uTrimRaw: { value: new THREE.Color(RAW_PINE) },
+    uTrimC: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color(), new THREE.Color()] },
+  };
+  const trimPatch = (sh) => {
+    Object.assign(sh.uniforms, trimU);
+    sh.uniforms.uPaintE = paintU.uPaintE;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vTrimW;').replace(
+      '#include <project_vertex>',
+      `#include <project_vertex>
+        {
+          vec4 tw = vec4(transformed, 1.0);
+          #ifdef USE_INSTANCING
+            tw = instanceMatrix * tw;
+          #endif
+          vTrimW = (modelMatrix * tw).xyz;
+        }`,
+    );
+    sh.fragmentShader = sh.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        uniform vec3 uTrimBase;
+        uniform vec3 uTrimRaw;
+        uniform vec3 uTrimC[4];
+        uniform float uPaintE[4];
+        varying vec3 vTrimW;
+        float brvSweepD(vec2 p) {
+          float ex = abs(p.x) - 5.9;
+          float ez = abs(p.y) - 3.4;
+          if (ez > ex) return p.y > 0.0 ? p.x + 6.0 : 13.0 + p.x;
+          return p.x > 0.0 ? 15.5 - p.y : 3.5 - p.y;
+        }
+        vec3 brvTrim() {
+          float q = clamp(brvSweepD(vTrimW.xz) / ${SWEEP_LEN.toFixed(1)}, 0.0, 1.0) + (9.4 - vTrimW.y) * 0.0085;
+          float aa = max(fwidth(q), 1e-4);
+          #ifdef BRV_TRIM_RAW
+            vec3 c = uTrimRaw;
+          #else
+            vec3 c = uTrimBase;
+          #endif
+          for (int i = 0; i < 4; i++) c = mix(c, uTrimC[i], 1.0 - smoothstep(uPaintE[i] - aa, uPaintE[i] + aa, q));
+          return c;
+        }`,
+      )
+      .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= brvTrim();');
+  };
+  // pre-finished trims (window frames): trim colour from the start
+  mat.trim = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.05 });
+  mat.trim.onBeforeCompile = trimPatch;
+  mat.trim.customProgramCacheKey = () => 'brv-trim';
+  // site-painted trims (corner boards, barge boards): raw pine until the painters get there
+  mat.trimRaw = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.62 });
+  mat.trimRaw.defines = { BRV_TRIM_RAW: '' };
+  mat.trimRaw.onBeforeCompile = trimPatch;
+  mat.trimRaw.customProgramCacheKey = () => 'brv-trim-raw';
+
   const col = (hex, jitter = 0, hue = 0) => {
     const c = new THREE.Color(hex);
     if (jitter || hue) c.offsetHSL((rnd() - 0.5) * hue, 0, (rnd() - 0.5) * jitter);
@@ -824,7 +904,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const PINE = 0xd8b989;
   const PINE_DARK = 0xc9a674;
   const OSB = 0xcda873;
-  const FRAME_C = 0x24272a;
+  const FRAME_C = 0xffffff; // tone only: the trim shader supplies the colour
 
   const parts = [];
   const addPart = (name, geo, material, items, opts) => {
@@ -968,12 +1048,12 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   // The landscape pops up around the plot while the blueprint finishes, so the
   // intro starts as clean lines on white.
   {
+    // every prop stands behind or beside the plot, inside the frame of the finished house
     const spruces = [
-      [-15.5, -1.5, 0.95], [-13.0, 6.5, 0.8], [-4.0, -12.5, 0.95], [3.5, -13.0, 1.05], [10.5, -11.0, 0.85],
-      [16.5, -6.0, 0.9], [-9.5, -14.5, 1.1], [19.5, 2.5, 0.75], [-18.5, -8.0, 1.0], [14.0, -15.5, 1.15],
+      [-11.5, -7.5, 0.95], [-4.0, -12.5, 0.95], [3.5, -13.0, 1.05], [7.5, -11.5, 0.85], [-9.5, -14.5, 1.1],
     ];
     const birchesGreen = [[-11.0, 2.0, 0.85], [13.5, -2.5, 0.8], [-1.5, -10.5, 0.75], [6.0, -10.5, 0.8]];
-    const birchesOchre = [[11.2, -7.6, 0.72], [-17.0, 3.0, 0.8]];
+    const birchesOchre = [[11.2, -7.6, 0.72], [-8.5, -10.0, 0.8]];
     const W0 = win('blueprint', 0.62, 1)[0];
     const W1 = win('grunnmur', 0, 0.9)[1];
     const mk = (name, geo, list, seed) => {
@@ -994,7 +1074,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     mk('birchesOchre', birchGeo([0xd9a441, 0xc98f2e, 0xe2b65a]), birchesOchre, 7);
     const rocks = [
       [8.8, -6.6, 0.85], [-9.4, 5.8, 1.0], [-10.2, -6.2, 1.2], [3.5, -9.4, 0.55],
-      [7.2, -12.6, 0.8], [-12.8, -3.0, 0.7], [-6.8, 9.2, 0.5], [16.5, -9.5, 0.6],
+      [7.2, -12.6, 0.8], [-9.0, -8.0, 0.7], [-6.8, 9.2, 0.5], [9.5, -8.5, 0.6],
     ];
     const r = mulberry32(9);
     const e = new THREE.Euler();
@@ -1542,10 +1622,15 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       tube([outer[i][0], 6.6, outer[i][1]], [outer[j][0], 6.6, outer[j][1]], 6.6);
       if (i % 2 === 0) tube([outer[i][0], 0.15, outer[i][1]], [outer[j][0], 4.0, outer[j][1]], 2.0);
     }
+    // struck in two steps once the roof is on: planks first, then the tubes. Each piece is
+    // lowered a little while the whole rig fades, like a crew taking it down.
     const sw = win('kledning', 0, 0.3);
-    const so = win('tak', 0.68, 1.0);
-    addPart('scaffoldTubes', tubeGeo, mat.steel, tubes, { win: sw, out: so, dur: 0.3, outDur: 0.35, anim: A_GROW });
-    addPart('scaffoldPlanks', unitBase, mat.wood, planks, { win: sw, out: so, dur: 0.3, outDur: 0.35, anim: A_GROW });
+    const scafSteel = mat.steel.clone();
+    scafSteel.transparent = true;
+    const scafWood = mat.wood.clone();
+    scafWood.transparent = true;
+    addPart('scaffoldTubes', tubeGeo, scafSteel, tubes, { win: sw, out: win('tak', 0.75, 1.0), dur: 0.3, outDur: 0.5, anim: A_GROW, outMode: 'drop', outDrop: 0.6 });
+    addPart('scaffoldPlanks', unitBase, scafWood, planks, { win: sw, out: win('tak', 0.55, 0.8), dur: 0.3, outDur: 0.5, anim: A_GROW, outMode: 'drop', outDrop: 0.6 });
   }
   // wind barrier (vindsperre) — one shape per wall with holes for openings
   function wallShape(wall, topFn, yMax) {
@@ -1632,14 +1717,16 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         }
       }
     }
-    // corner boards
+    // corner boards: trim colour (see mat.trimRaw)
+    const corners = [];
     for (const sx of [-1, 1]) {
       for (const sz of [-1, 1]) {
         const o = sz > 0 ? (sx > 0 ? 0.25 : 0) : sx > 0 ? 0.5 : 0.75;
-        over.push(it([sx * 5.96, CLAD_BASE, sz * 3.5125], [0.12, CLAD_TOP - CLAD_BASE, 0.025], o, null, tone(0.95, 0)));
-        over.push(it([sx * 6.0125, CLAD_BASE, sz * 3.465], [0.025, CLAD_TOP - CLAD_BASE, 0.12], o, null, tone(0.95, 0)));
+        corners.push(it([sx * 5.96, CLAD_BASE, sz * 3.5125], [0.12, CLAD_TOP - CLAD_BASE, 0.025], o, null, tone(0.97, 0)));
+        corners.push(it([sx * 6.0125, CLAD_BASE, sz * 3.465], [0.025, CLAD_TOP - CLAD_BASE, 0.12], o, null, tone(0.97, 0)));
       }
     }
+    addPart('cornerBoards', unitBase, mat.trimRaw, corners, { win: win('kledning', 0.38, 1), dur: 0.12, anim: A_GROW });
     const withPaint = (items) => {
       const g = baseBox();
       const a = new Float32Array(Math.max(1, items.length) * 2);
@@ -1681,7 +1768,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         bar(o.u0 - ex + t, o.u1 + ex - t, o.y0, o.y0 + 0.03, 0.15);
         bar(o.u0 - 0.35, o.u1 + 0.35, 3.02, 3.07, 0.42, base + 0.22 + 0.06);
         doors.push(it(wp(w, uc, yc - 0.01, base - 0.015), ws(w, o.u1 - o.u0 - 0.06, o.y1 - o.y0 - 0.05, 0.06), ord, null, col(0x9a7550), anchor));
-        frames.push(it(wp(w, o.u0 + 0.16, yc, base + 0.04), ws(w, 0.035, 1.1, 0.04), ord, null, col(0xa59a8a), anchor));
+        doors.push(it(wp(w, o.u0 + 0.16, yc, base + 0.04), ws(w, 0.035, 1.1, 0.04), ord, null, col(0xb7ab98), anchor));
       } else {
         bar(o.u0 - ex + t, o.u1 + ex - t, o.y0 - ex, o.y0 - ex + t);
         bar(o.u0 - ex - 0.02, o.u1 + ex + 0.02, o.y0 - ex - 0.025, o.y0 - ex, 0.2, base + 0.04);
@@ -1689,7 +1776,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         glass.push(it(wp(w, uc, yc, base - 0.03), [o.u1 - o.u0, o.y1 - o.y0, 1], ord, QW[w], null, anchor));
       }
     }
-    addPart('windowFrames', unitCenter, mat.frame, frames, { win: win('vinduer', 0, 0.8), dur: 0.22, anim: A_POP });
+    addPart('windowFrames', unitCenter, mat.trim, frames, { win: win('vinduer', 0, 0.8), dur: 0.22, anim: A_POP });
     const gp = addPart('windowGlass', unitPlane, mat.glass, glass, { win: win('vinduer', 0.04, 0.84), dur: 0.22, anim: A_POP, cast: false });
     gp.mesh.renderOrder = 3;
     addPart('door', unitCenter, mat.wood, doors, { win: win('vinduer', 0.45, 0.95), dur: 0.5, anim: A_POP });
@@ -1712,7 +1799,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       const dir = b.clone().sub(a);
       items.push(it(a.toArray(), [0.08, dir.length() + 0.04, 0.15], 0.85, orientQ(dir, new THREE.Vector3(1, 0, 0)), col(FRAME_C)));
     }
-    addPart('glazeFrame', unitBase, mat.frame, items, { win: win('vinduer', 0.12, 0.7), dur: 0.3, anim: A_GROW });
+    addPart('glazeFrame', unitBase, mat.trim, items, { win: win('vinduer', 0.12, 0.7), dur: 0.3, anim: A_GROW });
     const s = new THREE.Shape();
     s.moveTo(-GLAZE, 0);
     s.lineTo(GLAZE, 0);
@@ -1770,9 +1857,12 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     addPart('roofPanels', panelGeo, mat.roof, items, { win: win('tak', 0.08, 0.56), dur: 0.14, anim: A_GROW });
   }
   {
-    // trims: ridge, gable fascias, eave fascias, gutters, downpipes, flue
+    // trims: ridge, soffits, gutters, downpipes, flue (metal, one step lighter than the roof)
+    // + barge boards and eave fascias (painted wood: trim colour, see mat.trimRaw)
     const items = [];
-    const C = col(0x2b2e2f);
+    const fascia = [];
+    const C = col(0x4a4f52);
+    const SOFFIT = col(0x3a3e40);
     const x1 = GABLE_X + 0.02;
     items.push(it([-x1, RIDGE + ROOF_T + 0.035, 0], [0.24, 2 * x1, 0.07], 0.15, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
     for (const sx of [-1, 1]) {
@@ -1780,13 +1870,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         const dir = s > 0 ? dPlus : dMinus;
         const n = s > 0 ? nPlus : nMinus;
         const p = roofPt(sx * (GABLE_X + 0.015), -0.03, s, -0.08);
-        items.push(it(p, [0.03, slopeLen + 0.06, 0.34], 0.3 + (sx > 0 ? 0.1 : 0), orientQ(dir, n), C));
+        fascia.push(it(p, [0.03, slopeLen + 0.06, 0.34], 0.3 + (sx > 0 ? 0.1 : 0), orientQ(dir, n), col(0xffffff)));
       }
     }
     for (const s of [1, -1]) {
       const ep = roofPt(0, EAVE_Z, s, ROOF_T);
-      items.push(it([-x1, ep[1] - 0.17, s * (EAVE_Z + 0.03)], [0.3, 2 * x1, 0.03], 0.5, orientQ(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, s)), C));
-      items.push(it([-x1, ep[1] - 0.31, s * 3.69], [0.32, 2 * x1, 0.02], 0.45, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
+      fascia.push(it([-x1, ep[1] - 0.17, s * (EAVE_Z + 0.03)], [0.3, 2 * x1, 0.03], 0.5, orientQ(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, s)), col(0xffffff)));
+      items.push(it([-x1, ep[1] - 0.31, s * 3.69], [0.32, 2 * x1, 0.02], 0.45, orientQ(new THREE.Vector3(1, 0, 0), V_UP), SOFFIT));
       items.push(it([-x1, ep[1] - 0.2, s * (EAVE_Z + 0.1)], [0.11, 2 * x1, 0.1], 0.62, orientQ(new THREE.Vector3(1, 0, 0), V_UP), C));
       for (const sx of [-1, 1]) {
         const yNeck = ep[1] - 0.62;
@@ -1801,6 +1891,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     items.push(it([-2.6, fy, fz], [0.24, RIDGE + 0.85 - fy, 0.24], 0.9, null, col(0x1d1e1f)));
     items.push(it([-2.6, RIDGE + 0.85, fz], [0.32, 0.06, 0.32], 1, null, col(0x1d1e1f)));
     addPart('roofTrim', unitBase, mat.roof, items, { win: win('tak', 0.42, 0.66), dur: 0.3, anim: A_GROW });
+    addPart('fascia', unitBase, mat.trimRaw, fascia, { win: win('tak', 0.42, 0.66), dur: 0.3, anim: A_GROW });
   }
 
   /* ======================================================= INTERIOR */
@@ -1898,7 +1989,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   /* ============================================================= CRANE */
   const CRANE_X = -11.5;
   const CRANE_Z = -8.0;
-  const CRANE_H = 11.5;
+  const CRANE_H = 10.6;
   const crane = (() => {
     const DARK = 0x2b2e2f;
     const GREY = 0x8d8b86;
@@ -2001,13 +2092,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   let snap = true;
   let buildDirty = true;
   let renderDirty = true;
-  // autoplay
+  // autoplay: driven by wall-clock time, so a slow GPU drops frames instead of stretching the build
   let playing = false;
-  let playMs = 0;
+  let playStart = 0;
   let playDur = 8000;
   let rewinding = false;
   let rewindFrom = 0;
-  let rewindMs = 0;
+  let rewindStart = 0;
   let rewindDur = 1100;
   // stages / completion
   let stageIdx = -1;
@@ -2016,7 +2107,9 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const completeCbs = new Set();
   // camera
   const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
-  const view = { sx: 0, sy: 0, tsx: 0, tsy: 0, scroll: 0, tscroll: 0 };
+  // framing: centre shift (sx, sy) and the share of the canvas (aw, ah) the house is fitted into
+  const view = { sx: 0, sy: 0, tsx: 0, tsy: 0, aw: 1, ah: 1, taw: 1, tah: 1, scroll: 0, tscroll: 0 };
+  let paintZoom = 0;
   const cam = { az: 0, el: 0, ly: 0, d: 40 };
   let idleT = 0;
   let idleBlend = 0;
@@ -2030,7 +2123,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   const lastCam = new Float32Array(6);
 
   /* ------------------------------------------------------------- paint */
-  const SWEEP_MS = 2100;
+  const SWEEP_MS = 1600; // one repaint, front-left corner to back-right corner
+  const wallNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
   const paintColor = new THREE.Color(DEFAULT_PAINT); // what the visitor picked
   const paintAlbedo = new THREE.Color(); // what the shader gets
   /** Daylight brightens the sunlit façade, so darker/saturated paints are
@@ -2041,41 +2135,134 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     return out.setRGB(src.r * k, src.g * k, src.b * k);
   };
   toAlbedo(paintColor, paintAlbedo);
+  const KRITT = new THREE.Color(0xf4f1ea);
+  const ANTRASITT = new THREE.Color(0x2b2e2f);
+  const _srgb = new THREE.Color();
+  /** hvite listverk: Kritthvit trims on a dark paint, Antrasitt on a light one (sRGB luma) */
+  const trimFor = (src, out) => {
+    _srgb.copy(src).convertLinearToSRGB();
+    const luma = 0.2126 * _srgb.r + 0.7152 * _srgb.g + 0.0722 * _srgb.b;
+    return out.copy(luma < 0.5 ? KRITT : ANTRASITT);
+  };
+  const paintTrim = trimFor(paintColor, new THREE.Color());
   let paintHex = DEFAULT_PAINT;
-  const layerPool = [0, 1, 2, 3].map(() => ({ c: new THREE.Color(), t0: 0 }));
+  const layerPool = [0, 1, 2, 3].map(() => ({ c: new THREE.Color(), tc: new THREE.Color(), t0: 0 }));
   const layers = [];
   let paintDone = false; // repaint queue owns the paint (build finished)
+  const paintEndCbs = new Set();
   const edgeOf = (t) => -0.05 + 1.27 * t;
+
+  /* the roller: rides the newest paint edge along the front and onto the glazed gable */
+  const roller = (() => {
+    const g = new THREE.Group();
+    const handleMat = new THREE.MeshStandardMaterial({ color: ORANGE, roughness: 0.45, transparent: true });
+    const yokeMat = new THREE.MeshStandardMaterial({ color: 0x2b2e2f, roughness: 0.4, metalness: 0.5, transparent: true });
+    const sleeveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.38, transparent: true });
+    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.55, 12).rotateZ(Math.PI / 2), sleeveMat);
+    sleeve.position.set(0, 0, 0.15);
+    const yoke = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 6).rotateZ(Math.PI / 2), yokeMat);
+    yoke.position.set(0.335, 0, 0.15);
+    const dir = new THREE.Vector3(0, -1.22, 0.68).normalize();
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.4, 6).translate(0, -0.7, 0), handleMat);
+    handle.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+    handle.position.set(0.4, 0, 0.15);
+    g.add(sleeve, yoke, handle);
+    g.visible = false;
+    g.renderOrder = 4;
+    scene.add(g);
+    const FRONT_Z = SZ + 0.069;
+    const GABLE_XF = SX + 0.069;
+    const GLAZE_D = 12 + (3.45 - GLAZE); // where the glazing starts on the gable
+    let shown = false;
+    /** edge in sweep space (null hides), t = sweep progress 0..1, colour = incoming paint */
+    function set(edge, t, color) {
+      if (edge == null || reducedMotion) {
+        const was = shown;
+        g.visible = shown = false;
+        return was;
+      }
+      const y = lerp(CLAD_BASE + 0.5, EH - 0.3, 0.5 + 0.5 * Math.sin(edge * TAU * 6));
+      const d = Math.max(0, Math.min(SWEEP_LEN, (edge - (9.4 - y) * 0.0085) * SWEEP_LEN));
+      const a = smooth(clamp01(t / 0.04)) * smooth(clamp01((1 - t) / 0.04)) * (1 - smooth(range(d, GLAZE_D - 0.6, GLAZE_D - 0.1)));
+      if (a <= 0.003) {
+        const was = shown;
+        g.visible = shown = false;
+        return was;
+      }
+      if (d <= 12) {
+        g.position.set(d - 6, y, FRONT_Z);
+        g.rotation.y = 0;
+      } else {
+        g.position.set(GABLE_XF, y, 15.5 - d);
+        g.rotation.y = Math.PI / 2;
+      }
+      sleeveMat.color.copy(color);
+      handleMat.opacity = yokeMat.opacity = sleeveMat.opacity = a;
+      g.visible = shown = true;
+      return true;
+    }
+    return { g, set };
+  })();
+
+  function emitPaintEnd() {
+    const ev = { color: paintHex };
+    paintEndCbs.forEach((cb) => {
+      try {
+        cb(ev);
+      } catch (e) {
+        /* ignore listener errors */
+      }
+    });
+  }
 
   function updatePaint() {
     const E = paintU.uPaintE.value;
     const C = paintU.uPaintC.value;
+    const TC = trimU.uTrimC.value;
     if (bpShown < 1) {
       paintDone = false;
       layers.length = 0;
       paintU.uPaintBase.value.copy(RAW_C);
+      trimU.uTrimBase.value.copy(paintTrim);
+      trimU.uTrimRaw.value.copy(RAW_C);
       const t = range(bpShown, PAINT_START, PAINT_END);
       C[0].copy(paintAlbedo);
+      TC[0].copy(paintTrim);
       E[0] = t > 0 ? edgeOf(t) : -1;
       E[1] = E[2] = E[3] = -1;
+      roller.set(t > 0 && t < 1 ? E[0] : null, t, paintAlbedo);
       return false;
     }
     if (!paintDone) {
       paintDone = true;
       paintU.uPaintBase.value.copy(paintAlbedo);
+      trimU.uTrimBase.value.copy(paintTrim);
       layers.length = 0;
     }
-    while (layers.length && (clock - layers[0].t0) * 1000 >= SWEEP_MS) {
+    const now = wallNow();
+    let ended = false;
+    while (layers.length && now - layers[0].t0 >= SWEEP_MS) {
       paintU.uPaintBase.value.copy(layers[0].c);
+      trimU.uTrimBase.value.copy(layers[0].tc);
       layers.shift();
+      if (!layers.length) ended = true;
     }
+    trimU.uTrimRaw.value.copy(trimU.uTrimBase.value);
     for (let i = 0; i < 4; i++) {
       if (i < layers.length) {
         C[i].copy(layers[i].c);
-        E[i] = edgeOf(clamp01(((clock - layers[i].t0) * 1000) / SWEEP_MS));
+        TC[i].copy(layers[i].tc);
+        E[i] = edgeOf(clamp01((now - layers[i].t0) / SWEEP_MS));
       } else E[i] = -1;
     }
-    return layers.length > 0;
+    let rollerMoved;
+    if (layers.length) {
+      const top = layers[layers.length - 1];
+      const tl = clamp01((now - top.t0) / SWEEP_MS);
+      rollerMoved = roller.set(edgeOf(tl), tl, top.c);
+    } else rollerMoved = roller.set(null);
+    if (ended) emitPaintEnd();
+    return layers.length > 0 || ended || rollerMoved;
   }
   /** '#9B2F22' | '9B2F22' | '#abc' | 0x9b2f22 | THREE.Color → Color, or null if invalid */
   function parsePaint(v) {
@@ -2087,17 +2274,26 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     if (!/^[0-9a-f]{6}$/i.test(h)) return null;
     return new THREE.Color(parseInt(h, 16));
   }
-  function pushPaintLayer(color) {
+  function pushPaintLayer(color, trim) {
     if (layers.length === 4) {
       paintU.uPaintBase.value.copy(layers[0].c);
+      trimU.uTrimBase.value.copy(layers[0].tc);
       layers.shift();
     }
     // reuse a pooled layer object that is not in use
     let slot = null;
     for (const l of layerPool) if (!layers.includes(l)) slot = l;
     slot.c.copy(color);
-    slot.t0 = clock;
+    slot.tc.copy(trim);
+    slot.t0 = wallNow();
     layers.push(slot);
+  }
+  /** drop any running sweep and show `paintAlbedo` / `paintTrim` everywhere */
+  function paintInstant() {
+    layers.length = 0;
+    paintU.uPaintBase.value.copy(paintAlbedo);
+    trimU.uTrimBase.value.copy(paintTrim);
+    trimU.uTrimRaw.value.copy(paintTrim);
   }
 
   /* ------------------------------------------------------------- build */
@@ -2178,31 +2374,37 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     let az = camParam[0];
     let el = camParam[1];
     let ly = camParam[2];
-    const dm = camParam[3];
-    // idle orbit after completion (gentle sway, starts from zero offset)
+    let dm = camParam[3];
+    // dolly in a little while the painters work (build and every repaint), ease back after
+    const painting = (bpShown >= PAINT_START && bpShown < ST.ferdig.start) || layers.length > 0;
+    paintZoom += ((painting ? 1 : 0) - paintZoom) * (snap ? 1 : damp(dt, painting ? 2.2 : 1.4));
+    if (Math.abs(paintZoom - (painting ? 1 : 0)) < 1e-4) paintZoom = painting ? 1 : 0;
+    if (!reducedMotion) dm *= 1 - 0.06 * smooth(paintZoom);
+    // idle orbit after completion: one gentle sway that fades out after ~20 s (WCAG 2.2.2)
     if (bpShown >= 1 && !playing && !rewinding) {
-      if (!reducedMotion) idleT += dt;
+      if (!reducedMotion && idleT < 30) idleT += dt;
       idleBlend = Math.min(1, idleBlend + dt * 0.5);
     } else {
       idleT = 0;
       idleBlend = 0;
     }
     if (!reducedMotion) {
-      az += smooth(idleBlend) * (Math.sin(idleT * 0.12) * 0.2);
-      el += smooth(idleBlend) * (Math.sin(idleT * 0.085) * 0.025);
+      const sway = smooth(idleBlend) * (1 - smooth(range(idleT, 20, 26)));
+      az += sway * (Math.sin(idleT * 0.12) * 0.2);
+      el += sway * (Math.sin(idleT * 0.085) * 0.025);
       az += ptr.x * 0.16;
       el += ptr.y * 0.045;
       az += view.scroll * 0.42;
       el += view.scroll * 0.1;
     }
     if (el < 0.06) el = 0.06;
-    // fit the finished house into the area left by the framing shift
-    const aw = Math.max(0.3, 1 - 2 * Math.abs(view.sx));
-    const ah = Math.max(0.3, 1 - 2 * Math.abs(view.sy));
+    // fit the finished house (and the crane while it stands) into the framing region
+    const aw = Math.max(0.2, view.aw);
+    const ah = Math.max(0.2, view.ah);
     const margin = 1.1;
     const tanV = (tanHalfV * ah) / margin;
     const tanH = (tanHalfV * camera.aspect * aw) / margin;
-    const d = fitDistance(az, el, TARGET_Y + ly, tanH, tanV) * dm;
+    const d = fitDistance(az, el, TARGET_Y + ly, tanH, tanV, FRAME_BOX[3] + 3.0 * craneS) * dm;
     if (snap) {
       cam.az = az;
       cam.el = el;
@@ -2280,19 +2482,17 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     let anim = false;
     // drive progress
     if (rewinding) {
-      rewindMs += dt * 1000;
-      const t = clamp01(rewindMs / rewindDur);
+      const t = clamp01((wallNow() - rewindStart) / rewindDur);
       bpTarget = bpShown = rewindFrom * (1 - inOutCubic(t));
       buildDirty = true;
       anim = true;
       if (t >= 1) {
         rewinding = false;
         playing = true;
-        playMs = 0;
+        playStart = wallNow();
       }
     } else if (playing) {
-      playMs += dt * 1000;
-      const u = clamp01(playMs / playDur);
+      const u = clamp01((wallNow() - playStart) / playDur);
       bpTarget = bpShown = timeToP(u);
       buildDirty = true;
       anim = true;
@@ -2322,12 +2522,19 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     const rm = reducedMotion ? 0 : 1;
     ptr.x += (ptr.tx * rm - ptr.x) * pk;
     ptr.y += (ptr.ty * rm - ptr.y) * pk;
+    if (Math.abs(ptr.tx * rm - ptr.x) < 1e-4) ptr.x = ptr.tx * rm;
+    if (Math.abs(ptr.ty * rm - ptr.y) < 1e-4) ptr.y = ptr.ty * rm;
     const vk = snap ? 1 : damp(dt, 3);
     view.sx += (view.tsx - view.sx) * vk;
     view.sy += (view.tsy - view.sy) * vk;
+    view.aw += (view.taw - view.aw) * vk;
+    view.ah += (view.tah - view.ah) * vk;
     view.scroll += (view.tscroll - view.scroll) * (snap ? 1 : damp(dt, 4));
     if (Math.abs(view.tsx - view.sx) < 1e-5) view.sx = view.tsx;
     if (Math.abs(view.tsy - view.sy) < 1e-5) view.sy = view.tsy;
+    if (Math.abs(view.taw - view.aw) < 1e-5) view.aw = view.taw;
+    if (Math.abs(view.tah - view.ah) < 1e-5) view.ah = view.tah;
+    if (Math.abs(view.tscroll - view.scroll) < 1e-5) view.scroll = view.tscroll;
     if (applyViewShift(false)) anim = true;
     if (updateCamera(dt)) anim = true;
     checkComplete();
@@ -2336,12 +2543,15 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   }
 
   let frameNo = 0;
+  let compiling = true;
   function frame(now) {
     raf = 0;
-    if (!active || !inView || disposed) return;
-    raf = requestAnimationFrame(frame);
-    // phones: the slow idle orbit only needs ~30 fps
-    if (isMobile && lastT && !renderDirty && !playing && !rewinding && bpShown >= 1 && !layers.length && frameNo++ & 1) return;
+    if (!active || !inView || disposed || compiling) return;
+    // the slow idle orbit only needs ~30 fps
+    if (lastT && !renderDirty && !playing && !rewinding && bpShown >= 1 && !layers.length && frameNo++ & 1) {
+      raf = requestAnimationFrame(frame);
+      return;
+    }
     let dt = lastT ? (now - lastT) / 1000 : 0.016;
     lastT = now;
     if (dt > 0.1) dt = 0.1;
@@ -2351,9 +2561,13 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       renderer.render(scene, camera);
       renderDirty = false;
     }
+    // idle: nothing moved and nothing is queued, so stop asking for frames until an input
+    // (play, paint, pointer, scroll, resize, framing) calls start() again
+    if (moving || playing || rewinding || layers.length || buildDirty || bpShown !== bpTarget) raf = requestAnimationFrame(frame);
+    else lastT = 0;
   }
   function start() {
-    if (raf || !active || !inView || disposed || document.hidden) return;
+    if (raf || !active || !inView || disposed || compiling || document.hidden) return;
     lastT = 0;
     raf = requestAnimationFrame(frame);
   }
@@ -2368,6 +2582,29 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     stop();
   };
   canvas.addEventListener('webglcontextlost', onLost);
+  // three re-creates its GL state on restore; render targets (reflections, shadows) are refilled here
+  const onRestored = () => {
+    if (disposed) return;
+    const old = envTex;
+    envTex = makeEnv();
+    scene.environment = envTex;
+    scene.traverse((o) => {
+      if (!o.material) return;
+      (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => {
+        if (old && m.envMap === old) m.envMap = envTex;
+        m.needsUpdate = true;
+      });
+    });
+    if (old) old.dispose();
+    renderer.shadowMap.needsUpdate = true;
+    for (const p of parts) p.lastL = -1;
+    buildDirty = true;
+    renderDirty = true;
+    snap = true;
+    lastT = 0;
+    start();
+  };
+  canvas.addEventListener('webglcontextrestored', onRestored);
   let ro = null;
   if (typeof ResizeObserver !== 'undefined') {
     ro = new ResizeObserver(() => resize());
@@ -2400,11 +2637,15 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     applyViewShift(true);
     nodesU.uSize.value = 9 * renderer.getPixelRatio();
     renderDirty = true;
+    start();
   }
 
-  // compile every program up-front (avoids hitches when parts first appear)
+  // Compile every program up-front (avoids hitches when parts first appear). compileAsync
+  // lets the driver link in parallel (KHR_parallel_shader_compile) instead of one long task.
+  // Hidden parts are made visible for the compile and hidden again before the first frame.
   resize();
-  {
+  if (reducedMotion) bpTarget = bpShown = 1;
+  const ready = (() => {
     const hidden = [];
     scene.traverse((o) => {
       if (!o.visible) {
@@ -2412,20 +2653,27 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
         o.visible = true;
       }
     });
+    let job;
     try {
-      renderer.compile(scene, camera);
+      job = typeof renderer.compileAsync === 'function' ? renderer.compileAsync(scene, camera) : renderer.compile(scene, camera);
     } catch (e) {
-      /* ignore */
+      job = null;
     }
-    for (const o of hidden) o.visible = false;
-  }
-  applyBuild(0);
-  for (const p of parts) p.lastL = -1;
-  if (reducedMotion) {
-    bpTarget = bpShown = 1;
-  }
-  buildDirty = true;
-  start();
+    return Promise.resolve(job)
+      .catch(() => {})
+      .then(() => {
+        for (const o of hidden) o.visible = false;
+        compiling = false;
+        if (disposed) return false;
+        applyBuild(bpShown);
+        for (const p of parts) p.lastL = -1;
+        buildDirty = true;
+        renderDirty = true;
+        snap = true;
+        start();
+        return true;
+      });
+  })();
 
   function finishNow() {
     playing = false;
@@ -2441,6 +2689,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
 
   /* ================================================================ API */
   const api = {
+    /** resolves once the shaders are compiled and the first frame can be drawn */
+    ready,
     /** auto-build from 0 → built → painted. Restarts (with a quick rewind) if called again. */
     play({ duration = 8000, rewind = true } = {}) {
       if (disposed) return;
@@ -2454,7 +2704,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       if (rewind && bpShown > 0.08) {
         rewinding = true;
         rewindFrom = bpShown;
-        rewindMs = 0;
+        rewindStart = wallNow();
         rewindDur = 650 + 650 * bpShown;
         playing = false;
         idleBlend = 0;
@@ -2463,7 +2713,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       } else {
         rewinding = false;
         playing = true;
-        playMs = 0;
+        playStart = wallNow();
         bpTarget = bpShown = 0;
         buildDirty = true;
         stageIdx = -1;
@@ -2495,8 +2745,7 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       if (c.equals(paintColor)) {
         // same colour again: nothing to do, unless an instant finish was asked for
         if (!animate && layers.length) {
-          layers.length = 0;
-          paintU.uPaintBase.value.copy(paintAlbedo);
+          paintInstant();
           renderDirty = true;
           start();
         }
@@ -2504,13 +2753,11 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       }
       paintColor.copy(c);
       toAlbedo(c, paintAlbedo);
+      trimFor(c, paintTrim);
       paintHex = '#' + c.getHexString().toUpperCase();
       if (paintDone && bpShown >= 1) {
-        if (animate && !reducedMotion) pushPaintLayer(paintAlbedo);
-        else {
-          layers.length = 0;
-          paintU.uPaintBase.value.copy(paintAlbedo);
-        }
+        if (animate && !reducedMotion) pushPaintLayer(paintAlbedo, paintTrim);
+        else paintInstant();
       }
       renderDirty = true;
       start();
@@ -2527,21 +2774,45 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       completeCbs.add(cb);
       return () => completeCbs.delete(cb);
     },
+    /** cb({ color }) when a repaint sweep (after the build) has reached the last board */
+    onPaintEnd(cb) {
+      if (typeof cb !== 'function') return () => {};
+      paintEndCbs.add(cb);
+      return () => paintEndCbs.delete(cb);
+    },
     /** normalized pointer -1..1 (x right, y up) */
     setPointer(x, y) {
       ptr.tx = Math.max(-1, Math.min(1, +x || 0));
       ptr.ty = Math.max(-1, Math.min(1, +y || 0));
+      start();
     },
     /** screen-space framing shift in fractions of the canvas (x>0 → right, y>0 → down).
-        The house is refitted into the remaining space. null resets. */
-    setViewShift(x, y) {
-      view.tsx = x == null ? 0 : Math.max(-0.35, Math.min(0.35, +x || 0));
-      view.tsy = y == null ? 0 : Math.max(-0.35, Math.min(0.35, +y || 0));
+        The house is refitted into what is left (from 2x to the far edge). null resets.
+        Optional `region` {left, top, right, bottom} (fractions of the canvas) gives the exact
+        area to fit the house into; it then decides both the shift and the fit. */
+    setViewShift(x, y, region) {
+      const ok = region && [region.left, region.top, region.right, region.bottom].every((v) => Number.isFinite(+v));
+      if (ok) {
+        const l = Math.max(-0.5, Math.min(1, +region.left));
+        const r = Math.max(l + 0.1, Math.min(1.5, +region.right));
+        const t = Math.max(-0.5, Math.min(1, +region.top));
+        const b = Math.max(t + 0.1, Math.min(1.5, +region.bottom));
+        view.tsx = (l + r) / 2 - 0.5;
+        view.tsy = (t + b) / 2 - 0.5;
+        view.taw = r - l;
+        view.tah = b - t;
+      } else {
+        view.tsx = x == null ? 0 : Math.max(-0.35, Math.min(0.35, +x || 0));
+        view.tsy = y == null ? 0 : Math.max(-0.35, Math.min(0.35, +y || 0));
+        view.taw = 1 - 2 * Math.abs(view.tsx);
+        view.tah = 1 - 2 * Math.abs(view.tsy);
+      }
       start();
     },
     /** optional: 0 = hero fully in view … 1 = scrolled out; the house turns and settles */
     setScrollOut(t) {
       view.tscroll = clamp01(+t || 0);
+      start();
     },
     getStage() {
       const s = STAGES[stageIdx >= 0 ? stageIdx : stageIndexAt(bpShown)];
@@ -2573,8 +2844,10 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
       disposed = true;
       stageCbs.clear();
       completeCbs.clear();
+      paintEndCbs.clear();
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', onLost);
+      canvas.removeEventListener('webglcontextrestored', onRestored);
       if (ro) ro.disconnect();
       if (io) io.disconnect();
       const geos = new Set();
