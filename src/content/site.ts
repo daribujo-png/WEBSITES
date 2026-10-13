@@ -1,10 +1,11 @@
 /**
  * Site-wide copy and company facts.
- * Facts come only from the client brief. Missing facts are written as
+ * Facts come only from the client brief and the imported byggrv.no text
+ * (content-import/byggrv/). Missing facts are written as
  * "[MANGLER: …]" tokens; render strings that may contain them with
  * <TextWithMissing> from "@/components/ui".
  */
-import type { MissingFact, NavItem, Trade, Value } from "./types";
+import type { MissingFact, NavItem, PhotoKey, Trade, Value } from "./types";
 
 /* Company -------------------------------------------------------------------- */
 
@@ -44,8 +45,7 @@ export const company = {
     team: "navn og bilder av teamet",
     guarantee: "garantivilkår",
     social: "lenker til sosiale medier",
-    clientPhotos: "egne prosjektbilder fra byggrv.no",
-    beforeAfterPhotos: "egne før- og etterbilder",
+    clientPhotos: "egne prosjektbilder",
     privacyOwner: "kontaktperson for personvern",
     privacyApproval: "godkjenning av personvernerklæringen",
     formEndpoint: "adresse til skjematjeneste (NEXT_PUBLIC_FORM_ENDPOINT)",
@@ -107,6 +107,8 @@ export const ui = {
   toTop: "Til toppen",
   renderNote: "Gjengivelse fra vår 3D-modell",
   illustrationNote: "Illustrasjon fra vår 3D-modell, ikke foto",
+  photoNote: "Foto fra eget prosjekt",
+  logoAlt: "Bygg & Renovering Vest AS",
 } as const;
 
 /* Home: hero ----------------------------------------------------------------------- */
@@ -127,6 +129,8 @@ export const hero = {
 export const intro = {
   title: "Alt under ett tak",
   lede: "Vi er erfarne håndverkere fra flere firmaer som er slått sammen til ett. Derfor har vi alle fagene et byggeprosjekt trenger i samme bedrift.",
+  /** Supporting photo (own worksite photo over Bergen). */
+  photoKey: "arbeid-over-bergen-bred" satisfies PhotoKey,
   body: [
     "Tømrerarbeid, elektro, VVS, maling, mur og betong og sprenging gjør vi selv. Vi tar hele jobben som totalentreprise, eller den delen du trenger.",
     "Du får én prosjektleder. Prosjektlederen samordner fagene, holder tidsplanen og er den du snakker med fra første samtale til overlevering.",
@@ -156,7 +160,10 @@ export const servicesCopy = {
   tradesLabel: "Fag som deltar",
   permitNote: "Krever jobben byggesøknad, ordner vi den.",
   allLink: "Se alle tjenestene",
-  imagesNote: "Bildene er gjengivelser fra vår egen 3D-modell. [MANGLER: egne prosjektbilder fra byggrv.no]",
+  /** Under services that show renders because no own photo exists yet. */
+  imagesNote:
+    "Vi har ikke egne bilder av denne typen jobb ennå, så her viser vi gjengivelser fra 3D-modellen. [MANGLER: egne prosjektbilder]",
+  photosNote: "Foto fra egne prosjekter.",
   otherTitle: "Står ikke jobben din her?",
   otherBody: "Ring eller skriv noen ord om prosjektet, så finner vi ut av det sammen.",
   relatedTitle: "Andre tjenester",
@@ -172,8 +179,14 @@ export const processCopy = {
 
 export const permitsCopy = {
   title: "Byggesøknad",
-  lede: "Mange byggeprosjekter må søkes om hos kommunen. Den jobben tar vi: vi skriver søknaden og sender den for deg.",
-  body: "Vi søker også om riving og om utgraving av kjeller. Om prosjektet ditt er søknadspliktig, avklarer vi før du får tilbudet.",
+  lede: "Mange byggeprosjekter må søkes om hos kommunen. Den jobben tar vi: Vi skriver søknaden og sender den for deg.",
+  body: "Skal du bygge eller rive et påbygg, eller grave ut kjeller under et eksisterende hus, må søknaden sendes med hjelp fra fagfolk. Om prosjektet ditt er søknadspliktig, avklarer vi før du får tilbudet.",
+  /** External link to DiBK (opens in a new tab). */
+  exemptLink: {
+    label: "Se hva du kan bygge uten å søke",
+    href: "https://www.dibk.no/bygge-selv/dette-kan-du-bygge-uten-a-soke/bygg-garasje-uten-a-soke",
+    source: "Direktoratet for byggkvalitet",
+  },
   listLabel: "Bygg vi søker om",
   dragHint: "Dra for å snu modellen",
   diagramNote: "Grått viser huset du har. Eik viser det nye.",
@@ -182,15 +195,21 @@ export const permitsCopy = {
 export const beforeAfterCopy = {
   title: "Før og etter",
   lede: "Dra i håndtaket, eller bruk piltastene, for å sammenligne.",
-  note: "Illustrasjoner fra vår 3D-modell, ikke foto fra ferdige prosjekter. [MANGLER: egne før- og etterbilder]",
+  /** Under the photo pairs (beforeAfterPairs). */
+  note: "Foto fra egne prosjekter.",
+  /** Under render pairs (renderBeforeAfterPairs). */
+  renderNote: "Illustrasjon fra vår 3D-modell, ikke foto fra et ferdig prosjekt.",
 } as const;
 
 export const referencesCopy = {
   title: "Referanser",
-  lede: "Et utvalg av jobbene vi har gjort, fra et nytt bad til innredning av en hel bolig.",
+  lede: "Et utvalg av oppdragene våre: en innvendig rehabilitering, innredning av leiligheter og et nytt bad og kjøkken.",
   scopeLabel: "Arbeid",
   placeLabel: "Sted",
+  categoryLabel: "Type oppdrag",
   allLink: "Se alle referansene",
+  photosTitle: "Fra prosjektene våre",
+  photosLede: "Bilder fra jobber vi har gjort.",
 } as const;
 
 export const contactCopy = {
@@ -210,11 +229,14 @@ export const contactCopy = {
 export const about = {
   title: "Om oss",
   headline: "Håndverkere fra flere firmaer, samlet i ett",
-  lede: "Bygg og Renovering Vest AS er en gruppe erfarne håndverkere fra firmaer som er slått sammen. Sammen dekker vi alle fagene et byggeprosjekt trenger.",
+  lede: "Bygg og Renovering Vest AS er en gruppe erfarne fagfolk med ulik bakgrunn. Vi har slått oss sammen for å kunne levere hele jobben selv.",
   body: [
-    "Vi bygger for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn. Løsningene skreddersyr vi etter det du ønsker, og vi bygger etter dine spesifikasjoner.",
-    "Hver kunde får én prosjektleder som samordner fagene og holder tidsplanen. Vi leverer nøkkelferdig, til avtalt tid og pris.",
+    "Vi skreddersyr løsninger for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn, og bygger etter dine spesifikasjoner. Målet er å gjøre byggeprosessen så enkel som mulig for deg.",
+    "Alle fagene er samlet i én bedrift: entreprenør, tømrer, elektriker, VVS, maler, mur og betong og sprenging. Firmaene som er slått sammen, har drevet stabilt over tid.",
+    "Du får en egen prosjektleder som samordner fagene og følger opp tidsplanen. Vi leverer nøkkelferdig, til avtalt tid og pris.",
   ],
+  /** Supporting photo (own worksite photo over Bergen). */
+  photoKey: "arbeid-over-bergen" satisfies PhotoKey,
   valuesTitle: "Dette står vi for",
   tradesTitle: "Fagene våre",
   teamTitle: "Folkene bak",
@@ -236,17 +258,17 @@ export const values: Value[] = [
   {
     id: "enok",
     title: "ENØK",
-    body: "Vi foreslår energieffektive løsninger, både når vi bygger nytt og når vi pusser opp.",
+    body: "Når vi tar et oppdrag, ser vi etter gode ENØK-tiltak, både i nybygg og når vi pusser opp.",
   },
   {
     id: "miljo",
     title: "Miljøansvar",
-    body: "Vi tar miljøhensyn i løsningene vi foreslår og i måten vi bygger på.",
+    body: "Det vi bygger, skal være bra for miljøet. Det tar vi med i løsningene vi foreslår.",
   },
   {
     id: "fleksibel",
     title: "Fleksible løsninger",
-    body: "Vi tilpasser prosjektet til dine behov og ønsker, ikke omvendt.",
+    body: "Vi tilpasser løsningen til dine behov, enten du trenger hele jobben eller bare en del av den.",
   },
   {
     id: "pris",
@@ -264,32 +286,32 @@ export const trades: Trade[] = [
   {
     id: "prosjektledelse",
     name: "Prosjektledelse",
-    body: "Totalentreprise med én prosjektleder som samordner fagene og holder tidsplanen.",
+    body: "Entreprenørtjenester og en egen prosjektleder som samordner fagene og følger opp tidsplanen.",
   },
   {
     id: "tomrer",
     name: "Tømrer",
-    body: "Bindingsverk, tak, vinduer, dører, kledning og innvendig snekkerarbeid.",
+    body: "Alle typer tømrerarbeid: nybygg, ombygging, tilbygg, garasjer, terrasser, rehabilitering og restaurering.",
   },
   {
     id: "elektro",
     name: "Elektro",
-    body: "Nye el-anlegg i nybygg og oppgradering av gamle anlegg.",
+    body: "Nye el-anlegg i nybygg og tilbygg, og oppgradering av eldre anlegg ved renovering.",
   },
   {
     id: "vvs",
     name: "VVS",
-    body: "Rør, vann, avløp og sanitærutstyr.",
+    body: "Vann og avløp, sanitær, vannbåren varme, ventilasjon og varmepumpe.",
   },
   {
     id: "maler",
     name: "Maler",
-    body: "Forarbeid, sparkling og maling, ute og inne.",
+    body: "Maling ute og inne, tapetsering, høytrykksvask og sprøytemaling.",
   },
   {
     id: "mur-betong",
     name: "Mur og betong",
-    body: "Grunnmur, støp og murarbeid.",
+    body: "Grunnmur og støp, flislegging, muring og murpuss.",
   },
   {
     id: "sprenging",
@@ -351,6 +373,11 @@ export const notFoundCopy = {
 
 /* Missing facts --------------------------------------------------------------------------------------- */
 
+/**
+ * Every visible [MANGLER: …] placeholder and where it appears.
+ * Resolved by the byggrv.no import: before/after photos (real pairs now) and
+ * some project photos (see src/content/photos.ts).
+ */
 export const missingFacts: MissingFact[] = [
   { key: "foundingYear", label: "stiftelsesår", where: ["Om oss: fakta om firmaet"] },
   {
@@ -361,14 +388,20 @@ export const missingFacts: MissingFact[] = [
   { key: "sentralgodkjenning", label: "sentralgodkjenning", where: ["Om oss: fakta om firmaet"] },
   { key: "mesterbrev", label: "mesterbrev", where: ["Om oss: fakta om firmaet"] },
   { key: "team", label: "navn og bilder av teamet", where: ["Om oss: folkene bak"] },
-  { key: "guarantee", label: "garantivilkår", where: ["Om oss: fakta om firmaet"] },
+  {
+    key: "guarantee",
+    label: "garantivilkår",
+    where: ["Om oss: fakta om firmaet", "Tjenester: takarbeid", "Tjenester: oppussing av bad"],
+  },
   { key: "social", label: "lenker til sosiale medier", where: ["Footer"] },
   {
     key: "clientPhotos",
-    label: "egne prosjektbilder fra byggrv.no",
-    where: ["Tjenester (forside og tjenestesider)", "Referanser"],
+    label: "egne prosjektbilder",
+    where: [
+      "Tjenester uten egne bilder: ny bolig, bytte dører og vinduer, oppussing av bad, VVS og maling (viser 3D-gjengivelser)",
+      "Referanser: rekkehus, Vestheim og Kjerrgarden",
+    ],
   },
-  { key: "beforeAfterPhotos", label: "egne før- og etterbilder", where: ["Forside: før og etter"] },
   {
     key: "privacyOwner",
     label: "kontaktperson for personvern",
@@ -394,5 +427,58 @@ export const missingFacts: MissingFact[] = [
     key: "clientHouse",
     label: "kundens eget hus: tegninger, bilder eller 3D-modell",
     where: ["Hero og Slik bygger vi bruker referansehuset til dette finnes"],
+  },
+];
+
+/* Editorial notes (handover only, never rendered) -------------------------------------------------- */
+
+/**
+ * Oddities in the imported byggrv.no text and how the copy handles them.
+ * The client should confirm these before launch.
+ */
+export const contentNotes: { topic: string; note: string }[] = [
+  {
+    topic: "Referanser: rekkehus",
+    note: "Kildeteksten nevner ikke navnet Svein (det kommer fra briefen). Den nevner «Adrian» og anbefaler «Bergen Operating Group». Vi gjengir bare innholdet i tilbakemeldingen. Bekreft at referansen gjelder Bygg og Renovering Vest, og at kunden godtar å bli sitert med fornavn.",
+  },
+  {
+    topic: "Referanser: rekkehus, omfang",
+    note: "Kunden ba om pris på snekker, maler, rørlegger og elektriker, men ifølge teksten leverte firmaet snekker- og malerarbeidet. Vi oppgir bare det.",
+  },
+  {
+    topic: "Referanser: Vestheim, Askøy",
+    note: "Kildeteksten har ordlyd fra en stillingsannonse («Fast pris på jobben, eller delenterprise pr leilighet», «Mulighet for fast ansettelse i firma»). Vi beskriver bare arbeidet. «6 mannsbolig» er tolket som seksmannsbolig (seks boenheter), ikke en bolig for seks personer.",
+  },
+  {
+    topic: "Referanser: Kjerrgarden",
+    note: "Stedsnavnet kommer fra briefen. Kildeteksten sier bare «Renovering» og beskriver ønsket arbeid, så vi skriver «Oppdraget var å …».",
+  },
+  {
+    topic: "Maling og Rørlegger VVS",
+    note: "Kildetekstene bruker firmanavnet «Mesterfag Gruppen (AS)». Navnet er ikke brukt; fakta om tjenestene er brukt.",
+  },
+  {
+    topic: "Oppussing av bad",
+    note: "Kildeteksten sier at firmaet har godkjenning for byggebransjens våtromsnorm (BVN). Bekreft godkjenningen før lansering.",
+  },
+  {
+    topic: "Takarbeid og bad",
+    note: "Kildetekstene lover garanti, men oppgir ikke vilkår. Vist med [MANGLER: garantivilkår].",
+  },
+  {
+    topic: "Om oss",
+    note: "«Vi er den eneste tilbyder i Bergen av vårt slag» og «godt rykte» er ikke brukt, fordi påstandene ikke kan dokumenteres på siden.",
+  },
+  {
+    topic: "VVS",
+    note: "Kildeteksten forklarer VVS som «vann, ventilasjon og sanitær». Vi lister tjenestene i stedet for å forklare forkortelsen.",
+  },
+  {
+    topic: "Logo",
+    note: "Logovarianter med «Tlf. 922 23 222» er ikke brukt, fordi nummeret avviker fra 94 01 66 10.",
+  },
+  {
+    topic: "Bilder",
+    note: "Bare egne bilder er brukt. Stock- og tredjepartsbilder er listet i excludedImages (src/content/photos.ts) og i README. arbeid-over-bergen lå bare i mediebiblioteket og bør bekreftes som eget bilde.",
   },
 ];

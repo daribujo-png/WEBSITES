@@ -1,6 +1,10 @@
 /**
- * The ten services. Each has its own specific copy (never the old shared
- * "Har du tomt, men ikke hus?" paragraph). Order = display order.
+ * The ten services. Copy is rewritten from the service pages on byggrv.no
+ * (content-import/byggrv/pages/). Extra pages are folded in:
+ * totalrenovering → oppussing-og-renovering, rorlegger-vvs → vvs,
+ * tomrer → pabygg-og-tilbygg / ombygging / rehabilitering (+ trades).
+ * Never the old shared "Har du tomt, men ikke hus?" paragraph.
+ * Order = display order.
  */
 import type { Service, ServiceSlug } from "./types";
 
@@ -9,15 +13,16 @@ export const services: Service[] = [
     slug: "ny-bolig",
     title: "Ny bolig",
     shortTitle: "Ny bolig",
-    lede: "Vi bygger boligen etter dine ønsker og spesifikasjoner, og leverer den nøkkelferdig til avtalt tid og pris.",
+    lede: "Vi bygger huset etter dine ønsker og spesifikasjoner, og leverer det nøkkelferdig til avtalt tid og pris.",
     body: [
-      "Et nytt hus starter med tomten. Vi skriver byggesøknaden, gjør tomten klar med graving og sprenging, og støper grunnmuren. Så reiser tømrerne bindingsverket og tetter huset med tak, vinduer og kledning.",
-      "Inne legger elektrikerne og rørleggerne våre de tekniske installasjonene før vegger kles, gulv legges og bad bygges. Maleren gjør ferdig til slutt. Alle fagene kommer fra oss, så du har én avtale og én prosjektleder gjennom hele byggingen.",
-      "Vi bygger etter gjeldende byggteknisk forskrift (TEK) og foreslår energieffektive løsninger der det passer i prosjektet ditt.",
+      "Vi har lang erfaring med å sette opp hus og andre bygg. Alle fagene er i eget firma. Vi sprenger og graver, støper grunnmuren, reiser bindingsverket og tetter huset med tak, vinduer og kledning.",
+      "Hvert hus tilpasses dem som skal bo der. Vi begynner med hvordan du vil bo, og den samme prosjektlederen følger deg fra planlegging til ferdig hus. Byggesøknaden skriver og sender vi.",
+      "Elektrikerne og rørleggerne våre legger installasjonene før veggene lukkes. Vi bygger etter gjeldende byggteknisk forskrift (TEK) og foreslår ENØK-tiltak der de passer.",
     ],
     includes: [
+      "Planlegging etter dine ønsker",
       "Byggesøknad til kommunen",
-      "Graving, sprenging og grunnarbeid",
+      "Sprenging, graving og grunnarbeid",
       "Grunnmur og støp",
       "Bindingsverk, tak, vinduer og kledning",
       "Elektro og VVS",
@@ -28,58 +33,63 @@ export const services: Service[] = [
     cta: "Snakk med oss om ny bolig",
     metaTitle: "Bygge nytt hus i Bergen",
     metaDescription:
-      "Vi bygger ny bolig etter dine ønsker, fra byggesøknad og sprenging til nøkkelferdig hus. Alle fag i eget firma og én prosjektleder.",
+      "Vi bygger ny bolig etter dine spesifikasjoner, fra byggesøknad og sprenging til nøkkelferdig hus. Alle fag i eget firma og én prosjektleder.",
     renderKey: "svc-ny-bolig",
     renderBrief: {
       a: "Det ferdige huset i dagslys, sett fra hagen mellom de to lønnetrærne.",
       b: "Råbygg: grunnmur og bindingsverk reist på tomten, før tak og kledning.",
     },
+    photoKeys: [],
+    legacyPaths: ["/ny-bolig/"],
   },
   {
     slug: "oppussing-og-renovering",
     title: "Oppussing og renovering",
     shortTitle: "Oppussing",
-    lede: "Nytt kjøkken, nye gulv eller et helt hus som skal fornyes. Vi tar ett rom eller alle.",
+    lede: "Fra ett rom til hele huset. Vi pusser opp og totalrenoverer for private og offentlige oppdragsgivere i Bergen.",
     body: [
-      "Oppussing samler ofte mange fag på kort tid. Snekkeren river og bygger opp, elektrikeren flytter punkter, rørleggeren kobler om og maleren gjør ferdig. Hos oss kommer alle fra samme firma, og prosjektlederen setter dem opp i riktig rekkefølge.",
-      "Vi kommer på befaring før du får pris, så du vet hva jobben omfatter. Underveis holder prosjektlederen deg oppdatert på fremdriften.",
-      "Når vegger og gulv likevel åpnes, er det et godt tidspunkt for etterisolering og andre ENØK-tiltak. Vi sier fra når vi ser muligheten.",
+      "Vi tar de fleste typer oppussing: snekkerarbeid, maling, flislegging og gulv. Skal hele huset fornyes, gjør vi en totalrenovering. Da tas vegger, gulv og himlinger ned til de bærende konstruksjonene og bygges opp igjen.",
+      "En innvendig totalrenovering gir nye overflater i alle rom, oppgraderte våtrom, nytt kjøkken og et oppgradert el-anlegg. Mange endrer planløsningen eller antall vinduer samtidig. Tar vi også utsiden, er det vanlig å etterisolere, drenere og skifte kledning og tak.",
+      "Vil du bevare eller gjenskape originale detaljer i et eldre hus, som stukkatur, krever det ekstra arbeid. Ved større prosjekter kan det være lurt å trekke inn en interiørarkitekt tidlig. Vi bruker moderne utstyr og gjør arbeidet etter gjeldende forskrifter og standarder.",
     ],
     includes: [
-      "Riving og oppbygging av vegger, gulv og himling",
-      "Nytt kjøkken og nye overflater",
-      "Flytting og fornying av el-punkter",
-      "Omlegging av rør og avløp",
-      "Sparkling og maling",
-      "Etterisolering når konstruksjonen er åpen",
+      "Oppussing av ett eller flere rom",
+      "Snekkerarbeid",
+      "Maling og malerarbeid",
+      "Flislegging og gulvarbeid",
+      "Innvendig totalrenovering: overflater, våtrom, kjøkken og el-anlegg",
+      "Utvendig: etterisolering, drenering, kledning og tak",
     ],
-    trades: ["prosjektledelse", "tomrer", "elektro", "vvs", "maler"],
+    trades: ["prosjektledelse", "tomrer", "elektro", "vvs", "maler", "mur-betong"],
     permitRelevant: false,
     cta: "Snakk med oss om oppussing",
-    metaTitle: "Oppussing og renovering i Bergen",
+    metaTitle: "Oppussing og totalrenovering i Bergen",
     metaDescription:
-      "Oppussing av ett rom eller hele huset. Snekker, elektriker, rørlegger og maler fra samme firma, samordnet av én prosjektleder.",
+      "Oppussing og totalrenovering for private og offentlige oppdragsgivere i Bergen. Snekker, maler, flislegger, rørlegger og elektriker fra samme firma.",
     renderKey: "svc-oppussing-og-renovering",
     renderBrief: {
       a: "Snitt gjennom første etasje med nytt kjøkken og nye overflater.",
       b: "Stue og kjøkken mot hagen med varmt innelys.",
     },
+    photoKeys: ["gang-etter", "gang-for"],
+    legacyPaths: ["/tjenester/oppussing-og-renovering/", "/tjenester/totalrenovering/"],
   },
   {
     slug: "pabygg-og-tilbygg",
     title: "Påbygg og tilbygg",
     shortTitle: "Påbygg og tilbygg",
-    lede: "Mer plass uten å flytte. Vi bygger ut eller opp, og ordner byggesøknaden for deg.",
+    lede: "Mer plass uten å flytte. Vi bygger på, til eller under huset du har, og ordner byggesøknaden.",
     body: [
-      "Et tilbygg utvider huset på bakken. Et påbygg gir en ny etasje eller en ny bygningsdel oppå det du har. Begge krever som regel søknad til kommunen, og den skriver og sender vi.",
-      "Det nye skal kobles til det gamle: fundament, bæring, tak, tetting, strøm og vann. Vi har alle fagene selv, så overgangen mellom nytt og eksisterende er vårt ansvar fra start til slutt.",
-      "Skal du grave ut kjeller eller bygge garasje under huset, søker vi om det også. Sprenging og grunnarbeid gjør vi i eget firma.",
+      "Et påbygg er en ny bygningsdel oppå huset, for eksempel en ekstra etasje. Et tilbygg utvider grunnflaten, så huset tar mer plass på tomten. Underbygg og kjeller utvider huset nedover.",
+      "Skal du bygge eller rive et påbygg, må byggesøknaden sendes med hjelp fra fagfolk. Det samme gjelder kjeller under et eksisterende hus. Vi ordner alle søknadene for deg.",
+      "Det trengs ikke alltid store grep for å få boligen slik du vil ha den. Vi har lang erfaring med å finne den mest kostnadseffektive løsningen. Vi bygger også garasjer og terrasser.",
     ],
     includes: [
-      "Byggesøknad for påbygg og tilbygg",
-      "Grunnarbeid, sprenging og fundament",
+      "Byggesøknad for påbygg, tilbygg og kjeller",
+      "Sprenging, grunnarbeid og fundament",
       "Bindingsverk og tak",
       "Tilkobling av el og VVS",
+      "Garasjer og terrasser",
       "Kledning og maling, ute og inne",
     ],
     trades: ["prosjektledelse", "sprenging", "mur-betong", "tomrer", "elektro", "vvs", "maler"],
@@ -87,12 +97,14 @@ export const services: Service[] = [
     cta: "Snakk med oss om påbygg eller tilbygg",
     metaTitle: "Påbygg og tilbygg i Bergen",
     metaDescription:
-      "Mer plass uten å flytte. Vi bygger påbygg og tilbygg i Bergen og omegn og ordner byggesøknaden for deg.",
+      "Påbygg, tilbygg, kjeller og garasje i Bergen og omegn. Vi finner den mest kostnadseffektive løsningen og ordner byggesøknaden for deg.",
     renderKey: "svc-pabygg-og-tilbygg",
     renderBrief: {
       a: "Huset med et nytt tilbygg på siden, markert i eik.",
       b: "Huset med en ny etasje på toppen, markert i eik.",
     },
+    photoKeys: ["tilbygg-etter", "tilbygg-for"],
+    legacyPaths: ["/tjenester/pabygg-og-tilbygg/"],
   },
   {
     slug: "ombygging",
@@ -100,13 +112,14 @@ export const services: Service[] = [
     shortTitle: "Ombygging",
     lede: "Ny planløsning i huset du allerede har. Vi flytter vegger, rom og funksjoner.",
     body: [
-      "Ombygging endrer hvordan boligen brukes. Et kjøkken kan flytte inn i spisestuen, og det gamle kjøkkenet kan bli et soverom. Det gjorde vi på Kjerrgarden.",
-      "Når rom flyttes, må strøm, vann og avløp ofte følge med. Elektrikerne og rørleggerne våre tar den delen, og prosjektlederen planlegger rekkefølgen sammen med deg.",
-      "Er ombyggingen søknadspliktig, skriver og sender vi søknaden.",
+      "Ombygging tilpasser boligen til nye behov. Du kan modernisere kjøkkenet, gjøre stuen større, få et ekstra rom eller fornye en hel etasje. På Kjerrgarden var oppdraget å flytte kjøkkenet inn i spisestuen og gjøre det gamle kjøkkenet om til soverom.",
+      "Når rom flyttes, må strøm, vann og avløp ofte følge med. Den delen tar elektrikerne og rørleggerne våre. Prosjektlederen planlegger rekkefølgen sammen med deg og holder deg oppdatert underveis.",
+      "Vi tilpasser løsningen til smaken og budsjettet ditt og leverer til avtalt tid og pris. Er ombyggingen søknadspliktig, skriver og sender vi søknaden.",
     ],
     includes: [
       "Ny planløsning og flytting av vegger",
-      "Flytting av kjøkken og bad",
+      "Nytt eller flyttet kjøkken",
+      "Større bad eller et ekstra rom",
       "Omlegging av el, vann og avløp",
       "Overflater, listverk og maling",
       "Byggesøknad når det kreves",
@@ -116,57 +129,76 @@ export const services: Service[] = [
     cta: "Snakk med oss om ombygging",
     metaTitle: "Ombygging og ny planløsning i Bergen",
     metaDescription:
-      "Flytt kjøkken, bad og vegger. Vi bygger om boligen din med alle fag i eget firma, og søker når det kreves.",
+      "Flytt kjøkken, bad og vegger. Vi bygger om boligen din med alle fag i eget firma, til avtalt tid og pris, og søker når det kreves.",
     renderKey: "svc-ombygging",
     renderBrief: {
       a: "Plantegning av første etasje sett ovenfra, med kjøkken, stue og bad.",
       b: "Innvendige vegger i bindingsverk under ombygging.",
     },
+    photoKeys: ["gang-for", "gang-etter"],
+    legacyPaths: ["/tjenester/ombygging/"],
   },
   {
     slug: "rehabilitering-og-renovering",
     title: "Rehabilitering og renovering",
     shortTitle: "Rehabilitering",
-    lede: "Vi setter eldre bygg i stand igjen, innvendig og utvendig, for private og offentlige oppdragsgivere.",
+    lede: "Vi setter eldre bygg i stand, innvendig og utvendig, for private og offentlige oppdragsgivere.",
     body: [
-      "Rehabilitering betyr å reparere og fornye det som er slitt: kledning, vinduer, tak, bad og el-anlegg. Vi starter med en befaring og ser på hva bygget faktisk trenger.",
-      "Et av prosjektene våre er en full innvendig rehabilitering av et rekkehus. Snekker, maler, rørlegger og elektriker kom fra oss.",
-      "Når bygget likevel åpnes, er det et godt tidspunkt for etterisolering og tetting. Vi foreslår ENØK-tiltak der det passer.",
+      "Oppussing handler som regel om overflatene. Renovering går lenger. Da rives rommet inn til bjelkelaget eller betongen og bygges i praksis opp på nytt, og rør, ventilasjon og el-anlegg oppgraderes.",
+      "Vi starter med en befaring og ser på hva bygget faktisk trenger. Noen ganger holder det å reparere. Andre ganger må bygningsdeler skiftes ut, eller føres tilbake til slik de var.",
+      "Når bygget likevel åpnes, er det et godt tidspunkt for etterisolering og tetting. Vi foreslår ENØK-tiltak der de passer.",
+    ],
+    terms: [
+      {
+        term: "Oppussing",
+        definition: "Kosmetisk arbeid, som å male, skifte gulv, sette opp nye gipsplater eller bytte kjøkken.",
+      },
+      {
+        term: "Rehabilitering",
+        definition: "Å sette bygningsdeler og komponenter i stand uten å endre hva de brukes til.",
+      },
+      { term: "Renovering", definition: "Å oppgradere, eller heve standarden til et akseptabelt nivå." },
+      { term: "Reparasjon", definition: "Å gjenopprette funksjonen til en bygningsdel som er defekt." },
+      { term: "Restaurering", definition: "Å føre noe tilbake til slik det var tidligere." },
     ],
     includes: [
       "Befaring og gjennomgang av bygget",
+      "Riving inn til bjelkelag eller betong",
+      "Nye rør, ny ventilasjon og nytt el-anlegg",
       "Utskifting av kledning, vinduer og dører",
-      "Fornying av bad, rør og el-anlegg",
       "Etterisolering og tetting",
-      "Maling ute og inne",
+      "Restaurering av eldre detaljer",
     ],
     trades: ["prosjektledelse", "tomrer", "elektro", "vvs", "maler", "mur-betong"],
     permitRelevant: false,
     cta: "Snakk med oss om rehabilitering",
     metaTitle: "Rehabilitering av eldre bygg i Bergen",
     metaDescription:
-      "Vi setter eldre hus og bygg i stand, innvendig og utvendig, for private og offentlige oppdragsgivere i Bergen og omegn.",
+      "Vi rehabiliterer og renoverer eldre hus og bygg i Bergen og omegn, innvendig og utvendig, for private og offentlige oppdragsgivere.",
     renderKey: "svc-rehabilitering-og-renovering",
     renderBrief: {
       a: "Fasade der deler av kledningen er tatt av og byttes.",
       b: "Vegg åpnet ned til trefiberisolasjon og vindsperre.",
     },
+    photoKeys: ["firemannsbolig", "minigraver-skifer", "nytt-tak"],
+    legacyPaths: ["/tjenester/rehabilitering-og-renovering/"],
   },
   {
     slug: "takarbeid",
     title: "Takarbeid",
     shortTitle: "Tak",
-    lede: "Nytt tak, utskifting eller ny takkonstruksjon. Vi gjør jobben fra sperrene og opp.",
+    lede: "Nytt tak, reparasjon eller inspeksjon. Et tett tak beskytter hele huset mot vær og vind.",
     body: [
-      "Taket beskytter alt under det. Vi bygger takkonstruksjoner på nye hus og påbygg, legger ny tekking og skifter ut gamle tak som har gjort jobben sin.",
-      "Når vi bytter tak, ser vi på hele oppbyggingen: undertak, lekter, lufting og isolasjon. Et tak skal være tett og godt luftet for å vare.",
-      "Endrer du takformen eller løfter taket, kan det kreve byggesøknad. Den ordner vi.",
+      "Vi legger ny taktekking, reparerer skader og vedlikeholder tak. Vi jobber med ulike takmaterialer, og vi bygger takkonstruksjonen på nye hus og påbygg.",
+      "Takrenner og nedløp leder vannet bort før det gir fuktskader og råte på tak og fasade. Vi monterer nye og vedlikeholder dem du har.",
+      "Er du usikker på taket, kommer vi på inspeksjon. Du får råd ut fra det vi finner, så du kan bestemme hva som skal gjøres. Vi gir garanti på takarbeidet. [MANGLER: garantivilkår]",
     ],
     includes: [
-      "Takstoler og sperrer",
-      "Undertak, lekter og tekking",
-      "Utskifting av gammelt tak",
-      "Etterisolering av tak",
+      "Ny taktekking",
+      "Reparasjon og vedlikehold",
+      "Takstoler og takkonstruksjon",
+      "Takrenner og nedløp",
+      "Inspeksjon og rådgivning",
       "Byggesøknad ved ny takform",
     ],
     trades: ["prosjektledelse", "tomrer"],
@@ -174,24 +206,28 @@ export const services: Service[] = [
     cta: "Snakk med oss om tak",
     metaTitle: "Takarbeid og nytt tak i Bergen",
     metaDescription:
-      "Nytt tak, utskifting og takkonstruksjoner på nye og eldre hus. Vi ordner byggesøknad når takformen endres.",
+      "Ny taktekking, reparasjoner, takrenner og nedløp, inspeksjon og råd. Vi gjør takarbeid på nye og eldre hus i Bergen og omegn.",
     renderKey: "svc-takarbeid",
     renderBrief: {
       a: "Takstoler på plass over andre etasje, før tekking.",
       b: "Nærbilde av mørkt, falset metalltak mot mønet.",
     },
+    photoKeys: ["nytt-tak"],
+    legacyPaths: ["/tjenester/takarbeid/"],
   },
   {
     slug: "dorer-og-vinduer",
     title: "Bytte dører og vinduer",
     shortTitle: "Dører og vinduer",
-    lede: "Nye vinduer og dører gir lysere rom og et tettere hus.",
+    lede: "Nye vinduer og dører gir mindre trekk og et hus som er lettere å holde varmt.",
     body: [
-      "Gamle vinduer og dører er ofte der huset taper mest varme. Når vi bytter dem, monterer vi nye, tetter rundt karmen og avslutter med beslag og lister, ute og inne.",
-      "Vil du ha større vindusflater eller en ny døråpning, må veggen bygges om. Det gjør tømrerne våre, og maleren gjør ferdig rundt.",
-      "Endringer i fasaden kan være søknadspliktige. Vi sjekker det, og søker for deg når det trengs.",
+      "Vinduer varer normalt i 20 til 30 år. Fukt og råte skader ofte karmen, og eldre vinduer slipper ut mye varme. Når du bytter, merker du raskt mindre trekk og et bedre inneklima.",
+      "Et godt resultat starter med riktig vindu eller dør, målt så det passer i åpningen du har. Her er det mange fallgruver. Vi hjelper deg å velge, monterer, tetter rundt karmen og avslutter med beslag og lister.",
+      "Vil du ha større vindusflater eller en ny døråpning, bygger tømrerne om veggen, og maleren gjør ferdig rundt. Endringer i fasaden kan være søknadspliktige. Da søker vi for deg.",
     ],
     includes: [
+      "Hjelp til å velge vinduer og dører",
+      "Oppmåling av åpningene du har",
       "Utskifting av vinduer og ytterdører",
       "Tetting, beslag og lister",
       "Nye og større åpninger i veggen",
@@ -203,12 +239,14 @@ export const services: Service[] = [
     cta: "Snakk med oss om dører og vinduer",
     metaTitle: "Bytte dører og vinduer i Bergen",
     metaDescription:
-      "Nye vinduer og dører gir et tettere hus. Vi monterer, tetter og maler ferdig rundt, og lager nye åpninger i veggen.",
+      "Nye vinduer og dører gir mindre trekk og bedre inneklima. Vi måler, monterer, tetter og maler ferdig rundt, i Bergen og omegn.",
     renderKey: "svc-dorer-og-vinduer",
     renderBrief: {
       a: "Store vinduer mot hagen, nærbilde av karm og lister.",
       b: "Vindusåpninger i bindingsverket før vinduene settes inn.",
     },
+    photoKeys: [],
+    legacyPaths: ["/tjenester/bytte-dorer-og-vinduer/"],
   },
   {
     slug: "oppussing-av-bad",
@@ -216,16 +254,17 @@ export const services: Service[] = [
     shortTitle: "Bad",
     lede: "Et nytt bad samler mange fag på få kvadratmeter. Hos oss kommer alle fra samme firma.",
     body: [
-      "Et bad bygges i lag: riving, nytt underlag, fall mot sluk, membran, fliser, rør, sanitærutstyr og elektro. Rørleggeren, elektrikeren, snekkeren og mureren jobber etter samme plan, og prosjektlederen holder rekkefølgen.",
-      "Vil du ha et større bad, kan vi flytte vegger og bygge om rundt. På Kjerrgarden gjorde vi badet større og ga det en ny utforming.",
-      "Vi bygger badet etter dine ønsker og etter gjeldende krav til våtrom.",
+      "Vi bygger badet i stilen du vil ha, enkelt og moderne eller mer tradisjonelt. Vil du ha mer plass, flytter vi vegger. På Kjerrgarden var oppdraget å pusse opp og utvide badet.",
+      "Rørleggerne våre monterer dusj, badekar og toalett, og legger gulvvarme eller vannbåren varme. Vi har godkjenning for byggebransjens våtromsnorm (BVN). Det betyr at vi følger faste retningslinjer for våtrom, og at materialene holder den standarden et tett og trygt bad krever.",
+      "Når badet er ferdig, viser vi deg hvordan du bruker og vedlikeholder det. Vi gir garanti på arbeidet. [MANGLER: garantivilkår]",
     ],
     includes: [
       "Riving og nytt underlag",
       "Membran og fall mot sluk",
       "Fliser og murarbeid",
-      "Rør, sluk og sanitærutstyr",
-      "Elektro, varme i gulv og lys",
+      "Dusj, badekar, toalett og servant",
+      "Gulvvarme og vannbåren varme",
+      "Elektro og lys",
       "Større bad og ny planløsning",
     ],
     trades: ["prosjektledelse", "tomrer", "mur-betong", "vvs", "elektro", "maler"],
@@ -233,70 +272,80 @@ export const services: Service[] = [
     cta: "Snakk med oss om nytt bad",
     metaTitle: "Oppussing av bad i Bergen",
     metaDescription:
-      "Nytt bad med rørlegger, elektriker, snekker og murer fra samme firma. Vi kan også gjøre badet større og endre planløsningen.",
+      "Nytt bad i Bergen og omegn, bygget etter byggebransjens våtromsnorm (BVN). Rørlegger, elektriker, snekker og flislegger fra samme firma.",
     renderKey: "svc-oppussing-av-bad",
     renderBrief: {
       a: "Badet i snitt med membran, sluk og fliser.",
       b: "Ferdig bad med sanitærutstyr og varmt lys.",
     },
+    photoKeys: [],
+    legacyPaths: ["/tjenester/oppussing-av-bad/"],
   },
   {
     slug: "vvs",
     title: "VVS",
     shortTitle: "VVS",
-    lede: "Rør, vann og avløp, lagt av egne rørleggere som jobber tett med resten av byggeprosjektet.",
+    lede: "Vann, avløp, varme og ventilasjon, lagt av egne rørleggere i Bergen og omegn.",
     body: [
-      "VVS står for varme, ventilasjon og sanitær. Vi legger nye rør i nybygg og tilbygg, skifter gamle rør i eldre hus og monterer sanitærutstyr på bad, kjøkken og vaskerom.",
-      "Rørleggerne våre er en del av samme firma som snekkerne og elektrikerne. Rørføringene planlegges derfor sammen med resten av bygget, før veggene lukkes.",
-      "Vi foreslår gjerne energieffektive løsninger for oppvarming og varmtvann.",
+      "Rørleggerne våre installerer og reparerer sanitæranlegg, varmeanlegg og andre røranlegg, fra nye vann- og avløpsledninger til kraner, oppvaskmaskin og vaskemaskin. De er en del av samme firma som snekkerne og elektrikerne, så rørføringene planlegges før veggene lukkes.",
+      "God ventilasjon gir et sunnere inneklima med mindre fukt og mugg. Vi installerer ventilasjonsanlegg og tar service og vedlikehold.",
+      "Vil du bruke mindre energi, ser vi på varmeanlegget og foreslår energieffektive løsninger. Vi gir råd om valg av varmepumpe og installerer den. Arbeidet dokumenterer vi.",
     ],
     includes: [
-      "Nye rør i nybygg og tilbygg",
-      "Utskifting av gamle rør",
-      "Sanitærutstyr på bad, kjøkken og vaskerom",
-      "Avløp og sluk",
-      "Oppvarming og varmtvann",
+      "Vann- og avløpsledninger",
+      "Sanitærutstyr, armatur og ledningsnett",
+      "Vannbåren varme og gulvvarme",
+      "Ventilasjon: installasjon, service og vedlikehold",
+      "Råd om og installasjon av varmepumpe",
+      "Gass-, sprinkler-, trykkluft- og isvannsanlegg",
+      "Servicearbeid og dokumentasjon",
     ],
     trades: ["prosjektledelse", "vvs"],
     permitRelevant: false,
     cta: "Snakk med oss om VVS",
     metaTitle: "Rørlegger og VVS i Bergen",
     metaDescription:
-      "Egne rørleggere for nye rør, utskifting, sanitærutstyr og varmtvann, planlagt sammen med resten av byggeprosjektet.",
+      "Egne rørleggere i Bergen og omegn: vann og avløp, sanitær, vannbåren varme, ventilasjon og varmepumpe. Vi dokumenterer arbeidet.",
     renderKey: "svc-vvs",
     renderBrief: {
       a: "Røntgenvisning av huset med rør og avløp som lysende linjer.",
       b: "Rørføringer i vegg og bjelkelag ved badet.",
     },
+    photoKeys: [],
+    legacyPaths: ["/tjenester/vvs/", "/tjenester/rorlegger-vvs/"],
   },
   {
     slug: "maling",
     title: "Maling",
     shortTitle: "Maling",
-    lede: "Vi maler ute og inne, på nye og gamle hus.",
+    lede: "Vi maler ute og inne, og gjør forarbeidet som får malingen til å vare.",
     body: [
-      "Utvendig maling starter med forarbeidet: vask, skraping og reparasjon av skadet kledning. Deretter grunner og maler vi.",
-      "Inne sparkler og maler vi vegger, tak og listverk. Når maleren er en del av samme firma, kan malingen planlegges inn fra start i et større prosjekt.",
-      "Trenger kledningen reparasjon før maling, tar tømrerne våre den delen.",
+      "Vestlandsværet er hardt mot en fasade. Vi vasker, skraper og reparerer før vi grunner og maler, og vi velger utstyr og maling etter underlaget.",
+      "Inne maler og tapetserer vi, og vi legger gulvbelegg og fliser. Skal du selge, kan nymalte flater gjøre boligen mer attraktiv for kjøperne.",
+      "Trenger kledningen reparasjon før maling, tar tømrerne våre den delen. I et større prosjekt planlegges malingen inn fra start, fordi maleren er en del av samme firma.",
     ],
     includes: [
-      "Vask, skraping og forarbeid",
-      "Reparasjon av kledning før maling",
-      "Grunning og maling av fasade",
-      "Sparkling og maling inne",
-      "Vinduer, dører og listverk",
+      "Maling av fasader og bygg",
+      "Maling innvendig og tapetsering",
+      "Høytrykksvask og malingsfjerning",
+      "Sprøytemaling",
+      "Gulvbelegg, tepper og flislegging",
+      "Våtrom og membran",
+      "Muring og murpuss",
     ],
-    trades: ["prosjektledelse", "maler", "tomrer"],
+    trades: ["prosjektledelse", "maler", "tomrer", "mur-betong"],
     permitRelevant: false,
     cta: "Snakk med oss om maling",
     metaTitle: "Maling ute og inne i Bergen",
     metaDescription:
-      "Vi maler fasader, vegger og listverk på nye og gamle hus, med grundig forarbeid og reparasjon av kledning.",
+      "Maling av fasader og innvendige flater, tapetsering, høytrykksvask og sprøytemaling i Bergen og omegn, med grundig forarbeid.",
     renderKey: "svc-maling",
     renderBrief: {
       a: "Stående trekledning, ubehandlet.",
       b: "Den samme fasaden ferdig malt.",
     },
+    photoKeys: [],
+    legacyPaths: ["/tjenester/maling/"],
   },
 ];
 
@@ -305,6 +354,20 @@ export const serviceSlugs: ServiceSlug[] = services.map((s) => s.slug);
 export function getService(slug: string): Service | undefined {
   return services.find((s) => s.slug === slug);
 }
+
+/**
+ * Old byggrv.no paths that moved (for static redirect pages or host rules).
+ * Paths that stay the same are left out.
+ */
+export const legacyRedirects: { from: string; to: string }[] = [
+  ...services.flatMap((s) =>
+    s.legacyPaths
+      .filter((from) => from !== `/tjenester/${s.slug}/`)
+      .map((from) => ({ from, to: `/tjenester/${s.slug}/` })),
+  ),
+  // "Tømrer" covered several services; its facts are folded into them.
+  { from: "/tjenester/tomrer/", to: "/tjenester/" },
+];
 
 /** Options for the contact form's project type select. */
 export const projectTypeOptions: { value: string; label: string }[] = [

@@ -1,8 +1,47 @@
 /**
  * Content types for the Bygg og Renovering Vest site.
  * All copy lives in src/content/*.ts. Components import it; they never
- * duplicate copy. Every claim must trace back to the client facts.
+ * duplicate copy. Every claim must trace back to the client facts
+ * (the brief and the imported byggrv.no text in content-import/byggrv/).
  */
+import type { RenderAsset } from "@/lib/images";
+import type { PhotoKey } from "./photos";
+
+export type { PhotoKey };
+
+/* Photos (client images from byggrv.no, see src/content/photos.ts) ------------------------- */
+
+/**
+ * own                  The client's own work.
+ * stock-suspect        Looks like stock (needs a licence check). Not used.
+ * third-party-suspect  Another company's photo, render or diagram. Not used.
+ * illustration         Vector clipart or decoration. Not used (design reasons).
+ * logo                 Logo files.
+ */
+export type PhotoOrigin = "own" | "stock-suspect" | "third-party-suspect" | "illustration" | "logo";
+
+/** A published client photo. Same shape as a render, so <Picture asset={…} /> works. */
+export interface PhotoAsset extends RenderAsset {
+  /** Short Norwegian caption (figcaption). */
+  caption: string;
+  origin: PhotoOrigin;
+  /** Original file, e.g. "/images/byggrv/for.png". */
+  file: string;
+  /** byggrv.no page the image appeared on, or the media library. */
+  sourcePage: string;
+  /** Original URL on byggrv.no. */
+  sourceUrl: string;
+  /** Editorial note (e.g. "confirm with the client"). Not for display. */
+  note?: string;
+}
+
+export interface ExcludedImage {
+  file: string;
+  origin: PhotoOrigin;
+  /** Why it is not on the site (Norwegian). */
+  reason: string;
+  sourcePage: string;
+}
 
 /** Ids of the in-house trades. */
 export type TradeId =
@@ -61,6 +100,15 @@ export interface Service {
   renderKey: string;
   /** What each render should show (Norwegian; usable as alt-text basis). */
   renderBrief: { a: string; b: string };
+  /**
+   * Own photos from byggrv.no for this service (src/content/photos.ts), best
+   * first. Prefer these over the renders; empty when no own photo exists yet.
+   */
+  photoKeys: PhotoKey[];
+  /** Optional glossary shown on the service page (e.g. oppussing vs. renovering). */
+  terms?: { term: string; definition: string }[];
+  /** Old byggrv.no paths whose content now lives on this page (for redirects). */
+  legacyPaths: string[];
 }
 
 /** Ids of the model layers (group names in house.glb are `layer_${id}`). */
@@ -138,11 +186,15 @@ export interface ReferenceQuote {
 export interface Reference {
   id: string;
   title: string;
+  /** Kind of job, as byggrv.no/referanser/ labels it (e.g. "Renovering"). */
+  category: string;
   /** Place name, or null when the source gives none. */
   place: string | null;
   summary: string;
   scope: string[];
   quote?: ReferenceQuote;
+  /** Own photos of this project (src/content/photos.ts). Empty until the client sends some. */
+  photoKeys: PhotoKey[];
   /** [MANGLER] label for the missing project photos. */
   missingPhotos: string;
 }
@@ -154,11 +206,32 @@ export interface BeforeAfterPair {
   caption: string;
   beforeLabel: string;
   afterLabel: string;
-  /** Render keys in src/content/renders.ts, e.g. "ba-1-for" / "ba-1-etter". */
-  beforeKey: string;
-  afterKey: string;
+  /**
+   * "photo": real photos from our own projects; render `photoKeys` from
+   * src/content/photos.ts. "render": illustration from the 3D model; render
+   * `beforeKey`/`afterKey` from src/content/renders.ts and show the
+   * illustration note.
+   */
+  source: "photo" | "render";
+  /** Own photos (source "photo"), otherwise null. */
+  photoKeys: { before: PhotoKey; after: PhotoKey } | null;
+  /**
+   * Render keys in src/content/renders.ts, e.g. "ba-1-for" / "ba-1-etter".
+   * Set for source "render"; null for photo pairs.
+   */
+  beforeKey: string | null;
+  afterKey: string | null;
   /** Accessible name for the slider. */
   sliderLabel: string;
+}
+
+/** A captioned own photo, e.g. in the "Fra prosjektene våre" grid. */
+export interface ProjectPhoto {
+  photoKey: PhotoKey;
+  /** Short caption; never claims more than the photo shows. */
+  caption: string;
+  /** Service the photo belongs to, for linking. */
+  service?: ServiceSlug;
 }
 
 export interface Value {

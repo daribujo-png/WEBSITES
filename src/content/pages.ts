@@ -22,13 +22,13 @@ export const pages = {
   referanser: {
     title: "Referanser",
     description:
-      "Rehabilitering av rekkehus, innredning på Askøy og renovering på Kjerrgarden. Se hva vi har gjort for kundene våre.",
+      "Innvendig rehabilitering av et rekkehus, innredning av leiligheter på Askøy og nytt bad og kjøkken på Kjerrgarden. Se bilder fra prosjektene våre.",
     path: "/referanser/",
   },
   omOss: {
     title: "Om oss",
     description:
-      "Erfarne håndverkere fra sammenslåtte firmaer, med alle fag under ett tak. Les om fagene, verdiene og måten vi jobber på.",
+      "Erfarne fagfolk fra sammenslåtte firmaer: tømrer, elektriker, VVS, maler, mur og betong og sprenging i samme bedrift, og én prosjektleder per kunde.",
     path: "/om-oss/",
   },
   kontakt: {

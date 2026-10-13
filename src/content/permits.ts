@@ -5,7 +5,7 @@ export const permitTypes: PermitType[] = [
   {
     id: "pabygg",
     title: "Påbygg",
-    body: "En ny etasje eller en ny bygningsdel oppå huset du har. Du får mer plass uten å bruke mer av tomten.",
+    body: "En ny bygningsdel oppå en eksisterende konstruksjon, for eksempel en ekstra etasje. Du får mer plass uten å bruke mer av tomten.",
     diagramAlt: "Diagram: eksisterende hus i grått med en ny etasje på toppen, markert i eik.",
   },
   {
@@ -17,13 +17,13 @@ export const permitTypes: PermitType[] = [
   {
     id: "tilbygg",
     title: "Tilbygg",
-    body: "Utvider huset på bakken med nye rom inntil det eksisterende. Fundament, vegger og tak kobles til huset du har.",
+    body: "Utvider grunnflaten, så huset tar mer plass på tomten. Fundament, vegger og tak kobles til huset du har.",
     diagramAlt: "Diagram: eksisterende hus i grått med et tilbygg på siden, markert i eik.",
   },
   {
     id: "kjeller",
     title: "Kjeller/Underbygg",
-    body: "Ny kjeller eller underetasje under et eksisterende hus. Det krever ofte utgraving og sprenging, og det gjør vi selv.",
+    body: "Utvider huset nedover, med ny kjeller eller underetasje. Det krever ofte utgraving og sprenging, og det gjør vi selv.",
     diagramAlt: "Diagram: eksisterende hus i grått med ny kjeller under, markert i eik.",
   },
   {
