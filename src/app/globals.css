@@ -250,6 +250,17 @@
     font-weight: 300;
     text-wrap: balance;
     font-kerning: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Long Norwegian compounds ("Rehabilitering", "Byggesøknaden") must never
+     push a phone layout sideways. */
+  @media (max-width: 47.999rem) {
+    h1,
+    h2,
+    h3 {
+      hyphens: auto;
+    }
   }
 
   p,

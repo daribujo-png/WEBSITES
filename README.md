@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bygg og Renovering Vest – byggrv.no
 
-## Getting Started
+A static Next.js 16 site (App Router, TypeScript, Tailwind v4) with a React Three Fiber model of a house that builds itself as you scroll. GSAP ScrollTrigger and Lenis drive the scroll animation.
 
-First, run the development server:
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build   # static export to ./out
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`next build` writes a fully static site to `out/` (`output: "export"`, trailing slashes). You can upload `out/` to any static host, such as Netlify, Cloudflare Pages, S3/CloudFront or nginx. No server is needed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Contact form
 
-## Learn More
+Set `NEXT_PUBLIC_FORM_ENDPOINT` at build time (see `.env.example`) to a form service that forwards to post@byggrv.no, for example a Formspree endpoint. The form posts JSON there.
 
-To learn more about Next.js, take a look at the following resources:
+If the variable is not set, the form opens a prefilled e-mail to post@byggrv.no and tells the visitor so.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Path | What |
+|---|---|
+| `DESIGN.md` | Design system: tokens, type, grid, motion, imagery, do/don't. |
+| `src/app/globals.css` | Tailwind v4 `@theme` tokens and global styles. |
+| `src/content/` | **All copy and data** (Norwegian), plus `renders.ts` (generated render manifest). |
+| `src/lib/` | SEO/JSON-LD helpers, fonts, motion tokens, hooks, contact form logic, image types. |
+| `src/components/ui/` | Primitives (Section, RevealText, MagneticButton, BeforeAfter, Picture …). |
+| `src/components/providers/` | SmoothScroll (Lenis + ScrollTrigger) and RevealObserver. |
+| `src/components/three/` | Hero house, build sequence and permit diagrams (R3F). |
+| `src/components/sections/`, `layout/`, `forms/` | Page sections, header/footer/action bar, contact form. |
+| `public/models/`, `public/renders/` | Meshopt-compressed GLB model and AVIF/WebP renders. |
+| `public/images/byggrv/` | Client photos (see below). |
 
-## Deploy on Vercel
+## Client photos (image pipeline)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+byggrv.no could not be reached when the site was built, so it has no client photos yet. Until they arrive, every image is a render of our own 3D model or a visible `[MANGLER: …]` placeholder.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To add photos:
+
+1. Put the original files in `public/images/byggrv/`. Keep the original filenames, and note which byggrv.no page each one came from.
+2. Convert them to AVIF and WebP in responsive widths (480/960/1600/2400), using the same shape as `RenderAsset` in `src/lib/images.ts`.
+3. Swap the `MissingImage` placeholders for `<Picture asset={…} />`.
+
+## Missing facts
+
+Every missing fact appears on the site as a visible `[MANGLER: …]` placeholder. The full list, with where each one appears, is `missingFacts` in `src/content/site.ts`.
+
+## Permissions still needed
+
+- Written permission to reuse text and images from byggrv.no, if we are not the client's agency.
+- Any Kvalbein Korsøen Arkitektur photos. None are used; the 3D house is our own interpretation and is credited on the site.
