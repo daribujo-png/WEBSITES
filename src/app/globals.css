@@ -227,6 +227,14 @@
     hanging-punctuation: first last;
   }
 
+  /* In-page links glide where Lenis is not running (touch devices). Next.js
+     turns this off during route changes (data-scroll-behavior on <html>). */
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-smooth-scroll]) {
+      scroll-behavior: smooth;
+    }
+  }
+
   body {
     min-height: 100dvh;
     font-size: var(--text-body);
@@ -239,6 +247,10 @@
   @media (max-width: 63.999rem) {
     body {
       padding-bottom: calc(var(--actionbar-h) + env(safe-area-inset-bottom, 0px));
+    }
+    /* Keyboard focus and in-page links never land under the action bar. */
+    html {
+      scroll-padding-bottom: calc(var(--actionbar-h) + env(safe-area-inset-bottom, 0px) + 1rem);
     }
   }
 

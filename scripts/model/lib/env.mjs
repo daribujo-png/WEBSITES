@@ -190,41 +190,126 @@ export function blob(mb, centre, radius, scale, detail, seed, colorFn, rough = 0
   geo.dispose();
 }
 
+/** Indexed, welded icosphere templates (unit radius) for foliage clumps. */
+const ICO = [0, 1, 2].map((d) => {
+  const raw = new THREE.IcosahedronGeometry(1, d);
+  raw.deleteAttribute("uv");
+  raw.deleteAttribute("normal");
+  const g = mergeVertices(raw, 1e-4);
+  raw.dispose();
+  return { pos: Array.from(g.attributes.position.array), index: Array.from(g.index.array) };
+});
+
+/** Point inside the union of ellipsoid lobes deeper than `depth` (0..1 of the radius)? */
+function insideLobes(p, lobes, skip, depth) {
+  for (let i = 0; i < lobes.length; i++) {
+    if (i === skip) continue;
+    const L = lobes[i];
+    const dx = (p.x - L.c.x) / L.r.x;
+    const dy = (p.y - L.c.y) / L.r.y;
+    const dz = (p.z - L.c.z) / L.r.z;
+    if (dx * dx + dy * dy + dz * dz < depth * depth) return true;
+  }
+  return false;
+}
+
 /**
- * Lacy foliage: many small triangles in an ellipsoid shell, each facing
- * outwards, with normals bent outwards so the crown shades like a volume.
+ * Crown of soft foliage clumps. `lobes` is a list of ellipsoids {c, r}; clumps
+ * (displaced icospheres) sit on the outer shell of their union, so the
+ * silhouette is calm and leafy instead of a cloud of loose triangles.
+ * Normals blend the clump normal with the crown normal, so the whole crown
+ * shades as one volume; vertex colours bake occlusion (darker underneath and
+ * in the crevices between clumps). Clumps buried inside other lobes are skipped.
  */
-export function leafCloud(mb, centre, radii, count, size, seed, tint, { coreDark = 0.55, centreY = 0 } = {}) {
+export function canopy(mb, lobes, opts) {
+  const {
+    seed,
+    count,
+    size: [s0, s1],
+    tints,
+    detail = 1,
+    shell = [0.8, 1.0],
+    flatten = 0.86,
+    core = null,
+    variance = 0.1,
+    bottomDark = 0.5,
+    lift = 0,
+    clumpNormal = 0.3,
+  } = opts;
   const r = rng(seed);
-  const base = col(tint);
-  const tmp = new THREE.Vector3();
-  for (let i = 0; i < count; i++) {
-    // random direction, radius biased to the shell
-    const u = r() * 2 - 1;
+  const nz = makeNoise2D(seed + 5);
+  // crown bounds → overall ellipsoid used for the soft volume normal
+  const box = new THREE.Box3();
+  lobes.forEach((L) => {
+    box.expandByPoint(V(L.c.x - L.r.x, L.c.y - L.r.y, L.c.z - L.r.z));
+    box.expandByPoint(V(L.c.x + L.r.x, L.c.y + L.r.y, L.c.z + L.r.z));
+  });
+  const cc = box.getCenter(V());
+  const cr = box.getSize(V()).multiplyScalar(0.5);
+  const area = lobes.map((L) => L.r.x * L.r.z + L.r.y * (L.r.x + L.r.z));
+  const total = area.reduce((a, b) => a + b, 0);
+  const pickLobe = () => {
+    let t = r() * total;
+    for (let i = 0; i < lobes.length; i++) {
+      t -= area[i];
+      if (t <= 0) return i;
+    }
+    return lobes.length - 1;
+  };
+  const tpl = ICO[detail];
+  const nv = tpl.pos.length / 3;
+  // dark core so the crown never reads as hollow
+  if (core) {
+    lobes.forEach((L, i) =>
+      blob(mb, L.c, 1, V(L.r.x * core.k, L.r.y * core.k, L.r.z * core.k), 1, seed * 7 + i, (p, n) => {
+        const c = col(core.tint);
+        c.multiplyScalar(0.55 + 0.45 * smooth(-0.8, 0.8, n.y));
+        return c;
+      }, 0.14),
+    );
+  }
+  let placed = 0;
+  let guard = 0;
+  while (placed < count && guard++ < count * 6) {
+    const li = pickLobe();
+    const L = lobes[li];
+    // direction, slightly biased upwards (fewer clumps on the shaded underside)
+    let u = r() * 2 - 1;
+    u = u < 0 ? u * (0.75 + 0.25 * r()) : u;
     const th = r() * Math.PI * 2;
     const sq = Math.sqrt(1 - u * u);
     const dir = V(sq * Math.cos(th), u, sq * Math.sin(th));
-    const rr = Math.pow(r(), 0.28);
-    const p = V(centre.x + dir.x * radii.x * rr, centre.y + dir.y * radii.y * rr, centre.z + dir.z * radii.z * rr);
-    const out = V(dir.x / radii.x, dir.y / radii.y, dir.z / radii.z).normalize();
-    // random small triangle
-    const s = size * (0.7 + r() * 0.6);
-    const a = V(r() - 0.5, r() - 0.5, r() - 0.5).normalize();
-    const b = tmp.copy(a).cross(V(r() - 0.5, r() - 0.5, r() - 0.5)).normalize().clone();
-    const c = a.clone().cross(b).normalize();
-    const p0 = p.clone().addScaledVector(a, s * 0.6);
-    const p1 = p.clone().addScaledVector(b, s * 0.55).addScaledVector(a, -s * 0.3);
-    const p2 = p.clone().addScaledVector(b, -s * 0.55).addScaledVector(a, -s * 0.3);
-    void c;
-    const fn = V().subVectors(p1, p0).cross(V().subVectors(p2, p0)).normalize();
-    const n = out.clone().multiplyScalar(0.85).addScaledVector(fn.dot(out) >= 0 ? fn : fn.clone().negate(), 0.15).normalize();
-    const col0 = base.clone();
-    const v = noise.fbm(p.x * 0.45 + seed, p.z * 0.45 + p.y * 0.3, 2);
-    col0.multiplyScalar(1 + v * 0.3 + (r() - 0.5) * 0.12);
-    const occl = (1 - coreDark) + coreDark * Math.pow(rr, 2.2);
-    col0.multiplyScalar(occl * (0.72 + 0.28 * smooth(-0.6, 0.9, out.y)) * (0.92 + 0.08 * smooth(centreY - 3, centreY + 3, p.y)));
-    if (fn.dot(out) >= 0) mb.tri(p0, p1, p2, col0, n);
-    else mb.tri(p0, p2, p1, col0, n);
+    const k = shell[0] + (shell[1] - shell[0]) * Math.pow(r(), 0.6);
+    const p = V(L.c.x + dir.x * L.r.x * k, L.c.y + dir.y * L.r.y * k + lift, L.c.z + dir.z * L.r.z * k);
+    if (insideLobes(p, lobes, li, 0.84)) continue;
+    placed++;
+    const s = s0 + (s1 - s0) * r() * r();
+    const tint = col(r.pick(tints));
+    tint.multiplyScalar(1 + (r() - 0.5) * 2 * variance);
+    const rot = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(r() * 6.28, r() * 6.28, r() * 6.28));
+    const base = mb.vertexCount;
+    const q = V();
+    const nClump = V();
+    for (let i = 0; i < nv; i++) {
+      q.set(tpl.pos[i * 3], tpl.pos[i * 3 + 1], tpl.pos[i * 3 + 2]).applyMatrix4(rot);
+      const d = 1 + 0.22 * nz.fbm(q.x * 1.3 + q.y * 0.7 + placed * 0.37, q.z * 1.3 - q.y * 0.5, 2) * 2;
+      nClump.copy(q).normalize();
+      const w = V(p.x + q.x * s * d, p.y + q.y * s * d * flatten, p.z + q.z * s * d);
+      // crown normal: blend of the lobe ellipsoid and the whole-crown ellipsoid
+      const nl = V((w.x - L.c.x) / (L.r.x * L.r.x), (w.y - L.c.y) / (L.r.y * L.r.y), (w.z - L.c.z) / (L.r.z * L.r.z)).normalize();
+      const nc = V((w.x - cc.x) / (cr.x * cr.x), (w.y - cc.y) / (cr.y * cr.y), (w.z - cc.z) / (cr.z * cr.z)).normalize();
+      const nCrown = nl.multiplyScalar(0.5).add(nc.multiplyScalar(0.5)).normalize();
+      const n = nClump.clone().multiplyScalar(clumpNormal).addScaledVector(nCrown, 1 - clumpNormal).normalize();
+      // occlusion: underside of the crown, inward-facing clump sides, depth
+      const facing = nClump.dot(nCrown); // −1 inward … 1 outward
+      const depth = Math.sqrt(((w.x - cc.x) / cr.x) ** 2 + ((w.y - cc.y) / cr.y) ** 2 + ((w.z - cc.z) / cr.z) ** 2);
+      let ao = 1 - bottomDark + bottomDark * smooth(-0.9, 0.7, nCrown.y);
+      ao *= 0.7 + 0.3 * smooth(-0.6, 0.8, facing);
+      ao *= 0.78 + 0.22 * smooth(0.55, 1.0, depth);
+      const c = tint.clone().multiplyScalar(ao * (1 + 0.08 * nz(w.x * 0.8 + 3, w.z * 0.8 + w.y * 0.5)));
+      mb._push(w, n, c);
+    }
+    for (const ix of tpl.index) mb.indices.push(base + ix);
   }
 }
 
@@ -303,16 +388,6 @@ export function buildRocks(node) {
 /* Trees                                                                                          */
 /* ---------------------------------------------------------------------------------------------- */
 
-function leafColor(base, p, n, seed, variance = 0.12, centreY = 0) {
-  const c = col(base);
-  const v = noise.fbm(p.x * 0.5 + seed, p.z * 0.5 + p.y * 0.4, 2);
-  c.multiplyScalar(1 + v * variance * 2);
-  // self-shadow: darker underneath and towards the inside
-  const occl = 0.62 + 0.38 * smooth(-0.6, 0.8, n.y);
-  c.multiplyScalar(occl * (0.9 + 0.1 * smooth(centreY - 2, centreY + 3, p.y)));
-  return c;
-}
-
 function trunk(mb, points, r0, r1, radial, colorFn) {
   // tapered tube along a polyline
   const total = points.reduce((s, p, i) => (i ? s + p.distanceTo(points[i - 1]) : 0), 0);
@@ -364,21 +439,31 @@ export function buildBirch(name, x, z, seed) {
     const tip = base.clone().add(V(Math.cos(ang) * 1.3, 1.4 + r(), Math.sin(ang) * 1.3));
     trunk(bark, [base, tip], 0.05, 0.02, 5, barkColor);
   }
-  // crown: narrow, drooping ovoid of soft blobs
+  // crown: a tall, airy ovoid with two small side lobes. Small clumps and no
+  // core, so the sky shows through like it does in a real birch.
   const top = pts[5];
-  const cy = H * 0.68;
-  // one tall oval crown with two small side lobes
   const crown = [
-    { y: H * 0.7, rx: 1.45 + r() * 0.45, ry: H * 0.27, off: 0 },
-    { y: H * 0.58, rx: 0.9 + r() * 0.3, ry: 1.3, off: 0.8 },
-    { y: H * 0.8, rx: 0.8 + r() * 0.3, ry: 1.1, off: 0.7 },
+    { y: H * 0.7, rx: 1.5 + r() * 0.45, ry: H * 0.27, off: 0 },
+    { y: H * 0.56, rx: 0.95 + r() * 0.3, ry: 1.3, off: 0.85 },
+    { y: H * 0.8, rx: 0.85 + r() * 0.3, ry: 1.1, off: 0.75 },
   ];
-  crown.forEach((cr, k) => {
+  const lobes = crown.map((cr) => {
     const ang = r() * Math.PI * 2;
-    const c = V(top.x * (cr.y / H) + Math.cos(ang) * cr.off, cr.y, top.z * (cr.y / H) + Math.sin(ang) * cr.off);
-    const tint = r.pick(["#8a9658", "#83904f", "#919c60", "#7d8a4b"]);
-    blob(leaf, c, 1, V(cr.rx * 0.38, cr.ry * 0.45, cr.rx * 0.38), 1, seed * 13 + k, (p, n) => leafColor("#46512f", p, n, seed, 0.06, cy), 0.12);
-    leafCloud(leaf, c, V(cr.rx, cr.ry, cr.rx), Math.round(cr.rx * cr.ry * 250), 0.14, seed * 19 + k, tint, { centreY: cy, coreDark: 0.45 });
+    return {
+      c: V(top.x * (cr.y / H) + Math.cos(ang) * cr.off, cr.y, top.z * (cr.y / H) + Math.sin(ang) * cr.off),
+      r: V(cr.rx, cr.ry, cr.rx),
+    };
+  });
+  canopy(leaf, lobes, {
+    seed: seed * 19,
+    count: 230,
+    size: [0.22, 0.4],
+    tints: ["#7a8650", "#838e58", "#727f4a", "#8c955f"],
+    detail: 0,
+    shell: [0.6, 1.0],
+    flatten: 0.78,
+    variance: 0.1,
+    bottomDark: 0.42,
   });
   return node;
 }
@@ -418,26 +503,46 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
       tips.push(t2);
     }
   }
-  // canopy: lobes of lacy foliage around dark cores
+  // canopy: a broad dome of lobes around the limb tips, built from soft clumps
+  // with a dark core, plus a fringe of small clumps that softens the outline
   const cy = height * 0.66;
-  const tints = ["#4a5e3e", "#526643", "#46593b", "#566a46"];
-  const lobes = [];
+  const centres = [];
   const nL = 11;
   for (let i = 0; i < nL; i++) {
     const a = i * 2.399963 + r() * 0.4;
     const rad = i === 0 ? 0 : spread * (0.42 + r() * 0.3);
     const yy = cy + (i === 0 ? height * 0.12 : (r() - 0.35) * height * 0.2);
-    lobes.push(V(Math.cos(a) * rad, yy, Math.sin(a) * rad));
+    centres.push(V(Math.cos(a) * rad, yy, Math.sin(a) * rad));
   }
   tips.forEach((t) => {
-    if (r() < 0.5) lobes.push(t.clone().add(V(0, 0.8, 0)));
+    if (r() < 0.5) centres.push(t.clone().add(V(0, 0.8, 0)));
   });
-  lobes.forEach((c, i) => {
+  const lobes = centres.map((c) => {
     const rx = 2.4 + r() * 1.2;
-    const ry = rx * (0.72 + r() * 0.15);
-    const tint = r.pick(tints);
-    blob(leaf, c, 1, V(rx * 0.62, ry * 0.6, rx * 0.62), 1, seed * 17 + i, (p, n) => leafColor("#3a4a32", p, n, seed, 0.08, cy), 0.15);
-    leafCloud(leaf, c, V(rx, ry, rx), Math.round(rx * rx * 150), 0.17, seed * 31 + i, tint, { centreY: cy });
+    return { c, r: V(rx, rx * (0.72 + r() * 0.15), rx) };
+  });
+  const tints = ["#45593a", "#4d6240", "#41543a", "#536845", "#4a5d3c"];
+  canopy(leaf, lobes, {
+    seed: seed * 31,
+    count: 430,
+    size: [0.55, 1.0],
+    tints,
+    detail: 1,
+    clumpNormal: 0.22,
+    shell: [0.78, 0.98],
+    flatten: 0.82,
+    core: { k: 0.74, tint: "#2e3b28" },
+    variance: 0.08,
+  });
+  canopy(leaf, lobes, {
+    seed: seed * 37,
+    count: 320,
+    size: [0.24, 0.45],
+    tints,
+    detail: 0,
+    shell: [0.95, 1.07],
+    flatten: 0.8,
+    variance: 0.1,
   });
   return node;
 }

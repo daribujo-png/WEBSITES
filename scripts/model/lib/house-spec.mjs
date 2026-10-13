@@ -4,7 +4,7 @@
  *
  * The drawings could not be fetched, so this is an INTERPRETATION:
  * a compact two-storey gabled timber house of about 130 m² whose volume
- * bends 14° between two old maples. Two "wings" share a mitred joint at the
+ * bends 18° between two old maples. Two "wings" share a mitred joint at the
  * origin. Every wing has local coordinates:
  *   u — along the wing, away from the joint (0 = joint, L = gable frame face)
  *   v — across the wing, + towards the garden (south), − towards the entry
@@ -203,7 +203,7 @@ export function materialSpecs() {
     seal_tape: { color: "#3e4a52", roughness: 0.5 },
     // roof
     roof_deck: { color: "#bf9f6c", roughness: 0.9 },
-    roof_metal: { color: "#2c3134", roughness: 0.4, metallic: 0.6 },
+    roof_metal: { color: "#363d42", roughness: 0.34, metallic: 0.7 },
     // openings
     window_frame: { color: "#2a2724", roughness: 0.55, metallic: 0.15 },
     glass: { color: "#1f2b31", roughness: 0.04, metallic: 0.1, opacity: 0.32 },

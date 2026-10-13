@@ -28,7 +28,7 @@ export default function NotFound() {
           </div>
           <p className="t-body mt-12 border-t border-line pt-6">
             {before}
-            <a href={company.phoneHref} aria-label={ui.callLabel} className={underlined}>
+            <a href={company.phoneHref} aria-label={ui.callLabel} className={`${underlined} whitespace-nowrap`}>
               {company.phone}
             </a>
             {after}

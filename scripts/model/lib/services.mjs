@@ -19,7 +19,7 @@ import {
   Y,
   roofTop,
 } from "./house-spec.mjs";
-import { blob, leafCloud } from "./env.mjs";
+import { canopy } from "./env.mjs";
 import { terrainHeight } from "./env.mjs";
 import { wbox } from "./interior.mjs";
 
@@ -270,17 +270,22 @@ export function buildFinished(layer) {
   ];
   spots.forEach((p, i) => {
     const n = 2 + Math.floor(r() * 3);
+    const lobes = [];
     for (let k = 0; k < n; k++) {
-      const c = V(p.x + (r() - 0.5) * 0.9, 0.18, p.z + (r() - 0.5) * 0.9);
-      const tint = r.pick(["#46573a", "#4d5d3e", "#5a6442"]);
-      const rad = 0.3 + r() * 0.25;
-      blob(shrub, c, rad * 0.7, V(1.2, 0.75, 1.2), 1, 900 + i * 7 + k, (pp, nn) => {
-        const cc = col("#34422c");
-        cc.multiplyScalar(0.7 + 0.3 * Math.max(0, nn.y));
-        return cc;
-      });
-      leafCloud(shrub, c, V(rad * 1.25, rad * 0.85, rad * 1.25), Math.round(rad * rad * 900), 0.09, 950 + i * 7 + k, tint, { centreY: 0.2, coreDark: 0.35 });
+      const rad = 0.32 + r() * 0.25;
+      lobes.push({ c: V(p.x + (r() - 0.5) * 0.9, 0.16, p.z + (r() - 0.5) * 0.9), r: V(rad * 1.2, rad * 0.75, rad * 1.2) });
     }
+    canopy(shrub, lobes, {
+      seed: 900 + i * 7,
+      count: 34 * n,
+      size: [0.08, 0.15],
+      tints: ["#46573a", "#4d5d3e", "#56633f"],
+      detail: 0,
+      shell: [0.6, 0.95],
+      flatten: 0.85,
+      core: { k: 0.72, tint: "#2f3c28" },
+      variance: 0.1,
+    });
   });
   return {
     entry: W(A, (NICHE.u0 + NICHE.u1) / 2, -HW - 0.6, 1.6),

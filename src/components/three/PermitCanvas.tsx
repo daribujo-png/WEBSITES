@@ -1,0 +1,187 @@
+"use client";
+/* eslint-disable react-hooks/immutability -- three.js objects (scene, renderer, camera, model) are
+   mutable by design; R3F mutates them in effects and useFrame, outside React's render. */
+
+/**
+ * Small permit diagram canvas (lazy chunk): one node of permits.glb on paper,
+ * lit with the same "paper" preset and camera as its poster. It turns slowly
+ * while hovered or focused, can be dragged on desktop, and eases back to the
+ * poster pose when left alone.
+ */
+import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
+import type { PermitTypeId } from "@/content/types";
+import { PERMITS_GLB, houseMeta, permitsMeta } from "./lib/meta";
+import { useModel } from "./lib/loader";
+import { LightRig, createSkyMesh, resolvePreset, setSkyUniforms, skyEnvironment } from "./lib/lighting";
+import { coverView, damp } from "./lib/camera";
+import type { InputStore } from "./lib/inputStore";
+
+export interface PermitInputState {
+  /** Hovered or focused: turn slowly. */
+  active: boolean;
+  /** Drag yaw target (radians). */
+  yaw: number;
+  dragging: boolean;
+}
+
+export type PermitInput = InputStore<PermitInputState>;
+
+export interface PermitCanvasProps {
+  type: PermitTypeId;
+  input: PermitInput;
+  onReady: () => void;
+  onError: () => void;
+}
+
+const POSTER_ASPECT = 4 / 3;
+
+function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
+  const gltf = useModel(PERMITS_GLB);
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+  const size = useThree((s) => s.size);
+  const invalidate = useThree((s) => s.invalidate);
+
+  const lit = useMemo(() => resolvePreset(houseMeta.lighting.paper), []);
+  const model = useMemo(() => {
+    const root = gltf.scene.clone(true);
+    root.children.forEach((c) => (c.visible = c.name === `permit_${type}`));
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    const pivot = new THREE.Group();
+    pivot.add(root);
+    return pivot;
+  }, [gltf.scene, type]);
+  const lights = useMemo(() => {
+    const rig = new LightRig({ interior: [], exterior: [], shadowMapSize: 1024, shadowExtent: 12, shadowTarget: [0, 0, 0] });
+    rig.apply(lit);
+    return rig;
+  }, [lit]);
+  const sky = useMemo(() => {
+    const s = createSkyMesh();
+    setSkyUniforms(s.uniforms, lit.sky);
+    return s;
+  }, [lit]);
+  const env = useMemo(() => skyEnvironment(gl, lit.envSky), [gl, lit]);
+  const cam = permitsMeta.cameras[type];
+  const cur = useRef({ spin: 0, yaw: 0, cont: false });
+
+  useEffect(() => {
+    scene.environment = env.texture;
+    scene.environmentIntensity = lit.envIntensity;
+    scene.background = null;
+    scene.fog = null;
+    gl.toneMappingExposure = lit.exposure;
+    return () => {
+      scene.environment = null;
+    };
+  }, [scene, gl, env, lit]);
+
+  useEffect(() => input.subscribe(() => invalidate()), [input, invalidate]);
+
+  useEffect(
+    () => () => {
+      sky.mesh.geometry.dispose();
+      sky.mesh.material.dispose();
+      env.dispose();
+    },
+    [sky, env],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      onError();
+    };
+    gl.domElement.addEventListener("webglcontextlost", onLost);
+    (async () => {
+      try {
+        await gl.compileAsync(scene, camera);
+      } catch {
+        // optimisation only
+      }
+      if (cancelled) return;
+      invalidate();
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (!cancelled) onReady();
+        }),
+      );
+    })();
+    return () => {
+      cancelled = true;
+      gl.domElement.removeEventListener("webglcontextlost", onLost);
+    };
+  }, [gl, scene, camera, invalidate, onReady, onError]);
+
+  useFrame((_, delta) => {
+    const c = cur.current;
+    // Continuations use the real delta (capped); the first frame after idle a nominal step.
+    const dt = c.cont ? Math.min(delta, 0.25) : 1 / 60;
+    c.cont = false;
+    const inp = input.get();
+    // Turntable while hovered/focused; otherwise ease back to the poster pose.
+    if (inp.active && !inp.dragging) c.spin += dt * 0.32;
+    else c.spin = damp(c.spin, Math.round(c.spin / (Math.PI * 2)) * Math.PI * 2, 2.2, dt);
+    c.yaw = damp(c.yaw, inp.yaw, inp.dragging ? 12 : 2.2, dt);
+    model.rotation.y = c.spin + c.yaw;
+    camera.position.set(...cam.position);
+    camera.near = 0.5;
+    camera.far = 4000;
+    camera.lookAt(new THREE.Vector3(...cam.target));
+    coverView(camera, size.width, size.height, cam, POSTER_ASPECT);
+    const settling =
+      inp.active ||
+      Math.abs(c.yaw - inp.yaw) > 1e-4 ||
+      Math.abs(c.spin - Math.round(c.spin / (Math.PI * 2)) * Math.PI * 2) > 1e-4;
+    if (settling) {
+      c.cont = true;
+      invalidate();
+    }
+  });
+
+  return (
+    <>
+      <primitive object={model} />
+      <primitive object={lights.group} />
+      <primitive object={sky.mesh} />
+    </>
+  );
+}
+
+export default function PermitCanvas(props: PermitCanvasProps) {
+  const glProps = useMemo(
+    () => ({
+      antialias: true,
+      alpha: false,
+      stencil: false,
+      toneMapping: THREE.NeutralToneMapping,
+      toneMappingExposure: houseMeta.lighting.paper.exposure,
+    }),
+    [],
+  );
+  return (
+    <Canvas
+      frameloop="demand"
+      dpr={[1, 1.75]}
+      gl={glProps}
+      shadows="percentage"
+      camera={{ fov: 30, near: 0.5, far: 4000 }}
+      style={{ position: "absolute", inset: 0 }}
+      aria-hidden="true"
+    >
+      <Suspense fallback={null}>
+        <PermitScene {...props} />
+      </Suspense>
+    </Canvas>
+  );
+}

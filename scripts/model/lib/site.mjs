@@ -220,7 +220,9 @@ export function buildFundament(layer) {
   // drainage gravel strip around the house (covers the backfilled pit)
   const strip = layer.mb("gravel", "fundament_drenering");
   strip.slab(outline(0.62), [outline(0.05)], -0.06, 0.012, col("#96918a"), { bottom: false });
-  strip.slab(outline(PIT_OUT + 0.06), [outline(0.62)], -0.06, 0.004, col(LAWN), { bottom: false });
+  // backfill over the rest of the pit: same material as the terrain, so it follows the lawn
+  // (and the monochrome site model on the dark stage)
+  layer.mb("terrain", "fundament_tilbakefylling").slab(outline(PIT_OUT + 0.06), [outline(0.62)], -0.06, 0.004, col(LAWN), { bottom: false });
   const A = WINGS.A;
   return {
     ringmurCorner: (() => {

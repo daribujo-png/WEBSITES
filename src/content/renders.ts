@@ -15,7 +15,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-1-etter-600.avif", w: 600 }, { src: "/renders/ba-1-etter-1000.avif", w: 1000 }, { src: "/renders/ba-1-etter-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-1-etter-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADQAwCdASoUAA0APu1kq04ppaQiMAgBMB2JYwC06B9ONOBS4JMg9CAA9iPKzY6C9dNDMS4MYyBVTy2dvg42iku4s/X5zkdC+EMWhFqTE3rnYwEJbXpy8PEAAAA=",
+    placeholder: "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JQBdmUABhojTDRv+d/aQgAP6G+ItZXe/KCxCrQ+0pMtvRIb0zCatgD/tXb51SHQnSR26gWhwZyxgyxiT+AAAA",
   },
   "ba-1-for": {
     alt: "Illustrasjon: råbygg med bindingsverk på grunnmuren.",
@@ -25,7 +25,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-1-for-600.avif", w: 600 }, { src: "/renders/ba-1-for-1000.avif", w: 1000 }, { src: "/renders/ba-1-for-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-1-for-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAwCdASoUAA0APu1kqU2ppaQiMAgBMB2JYwC7AB6Sc/YpgkuZdiAA4ngmrtymsNca7Nq0JDcrrvGfLPTv0Os4jGf2tc0YuPeDtVobPux1papRxgAAAA==",
+    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoUAA0APu1kqU2ppaQiMAgBMB2JQBadA9JhSKRIIjQEkAAA/k434D+Q+fHfQckurPsbHYjUPJHhv0EkUtdh2BIwBAqM3hM/Eeu87oAA",
   },
   "ba-2-etter": {
     alt: "Illustrasjon: den samme gavlveggen ferdig behandlet.",
@@ -35,7 +35,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-2-etter-600.avif", w: 600 }, { src: "/renders/ba-2-etter-1000.avif", w: 1000 }, { src: "/renders/ba-2-etter-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-2-etter-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JZQC7AB6IoQ8wg7l8MAD+se4eYG3RRhwnyMOkCOJZLOCZEtDrIJLGyRdP1V1QwbAAAA==",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JZQCdAB6H0dOfc1iNAAD7pZ1roY44N+30vRXZgTSatf2BLRqcIbSkSFBTYAAA",
   },
   "ba-2-for": {
     alt: "Illustrasjon: gavlvegg med ubehandlet trekledning.",
@@ -45,7 +45,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-2-for-600.avif", w: 600 }, { src: "/renders/ba-2-for-1000.avif", w: 1000 }, { src: "/renders/ba-2-for-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-2-for-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAACQAwCdASoUAA0APu1kqU2ppaQiMAgBMB2JZQC06AzgXK42I0oAAP6x7LeOkz3PGk2jIDD5+h/JS4vUNEasTYV75A8pPlsWMKtsxRK8bYzAAA==",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACQAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JYwC7AAnS99gZ/FNgAPanasPAPWK00pcUUqTgyQeWUWKIKCOibY7XdDZcf6tvnlYptPAAAAA=",
   },
   "ba-3-etter": {
     alt: "Illustrasjon: det samme badet etter oppussing.",
@@ -55,7 +55,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-3-etter-600.avif", w: 600 }, { src: "/renders/ba-3-etter-1000.avif", w: 1000 }, { src: "/renders/ba-3-etter-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-3-etter-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACQAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JQBOmUABpnQgsnBzAAP7Tb4ys1q3tu0dqPifPkJG7FGwYJhdnbnHl9ylnpA1XVWI0vnz1Xw+qFJRh4AA=",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwCdABjsdF1UgHdooAD+4GZk/qIZXIlEHRlDbojlCSIl01zJvJuUfTRblOp2FERfOJcvAAA=",
   },
   "ba-3-for": {
     alt: "Illustrasjon: et slitt bad med gamle fliser og utstyr.",
@@ -65,7 +65,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/ba-3-for-600.avif", w: 600 }, { src: "/renders/ba-3-for-1000.avif", w: 1000 }, { src: "/renders/ba-3-for-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/ba-3-for-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAADwAwCdASoUAA0APu1kqk4ppaQiMAgBMB2JYgCdMoADTOiDCu3SrRgAAP7Tb4yrIgjwzP4A/7Zq1QdLVwaYlB+bx1OVyB1axVV6lZtewxWIErQqyCyacB6ZvAAAAA==",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACQAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JQBOgA+h/OnNx95cAAP7gbtavU6Ez9QgWwsZ5gGiK7UPgdD1q2ShF37lJXurLtTbilAdYAAA=",
   },
   "hero-bluehour": {
     alt: "3D-gjengivelse av et arkitekttegnet trehus i blå time, med lys i vinduene, to store lønnetrær, bjørk og fjell i Fana.",
@@ -75,7 +75,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/hero-bluehour-960.avif", w: 960 }, { src: "/renders/hero-bluehour-1600.avif", w: 1600 }, { src: "/renders/hero-bluehour-2400.avif", w: 2400 }],
       webp: [{ src: "/renders/hero-bluehour-1280.webp", w: 1280 }, { src: "/renders/hero-bluehour-2400.webp", w: 2400 }],
     },
-    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAQBACdASoUAAsAPu1krU6ppaSiMAgBMB2JYwC7AB6WodvWccXJwrLAAAD+9DLGQXx1atBBJi0NQxcvZ647FwVGaaTRKFvJ1UudkWW6wR7QwAAA",
+    placeholder: "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAAAQAwCdASoUAAsAPu1Ct1apoqakGAEwHYljAAEKUR8L60AA/vxej3phrstvmNoBnFjWnV0qWVDuc76q25ic0+2C7W98uCAI0pxpgAAA",
   },
   "hero-bluehour-portrait": {
     alt: "3D-gjengivelse av et arkitekttegnet trehus i blå time, med lys i vinduene, to store lønnetrær, bjørk og fjell i Fana.",
@@ -85,7 +85,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/hero-bluehour-portrait-540.avif", w: 540 }, { src: "/renders/hero-bluehour-portrait-1080.avif", w: 1080 }],
       webp: [{ src: "/renders/hero-bluehour-portrait-1080.webp", w: 1080 }],
     },
-    placeholder: "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoUABkAPuVepk2pJSOiN/VYASAciUAXYAId8YL1dcQraV3KPfgBOiTJMAAA/ujBNJ7sy4DGF1MFrjEMGIl75EtQQ4JtS/0wc0XiHT7xAMjuh1Upk4BTJabVmY4SkdI7++Ca8cAA",
+    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADwAwCdASoUABkAPu1mqk2ppaQiMAgBMB2JYwC7AB6W3IGldLnMWM5AAP7szlxwEbOnSTtdGOHVCtJHxynJ/4AvzdY/YhY3UcoZDZf0E2KjgAAA",
   },
   "hero-day": {
     alt: "3D-gjengivelse av det arkitekttegnede trehuset i dagslys, med stående trekledning, mørkt metalltak og hage mellom to store lønnetrær.",
@@ -95,7 +95,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/hero-day-960.avif", w: 960 }, { src: "/renders/hero-day-1600.avif", w: 1600 }, { src: "/renders/hero-day-2400.avif", w: 2400 }],
       webp: [{ src: "/renders/hero-day-1280.webp", w: 1280 }, { src: "/renders/hero-day-2400.webp", w: 2400 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAACwAwCdASoUAAsAPu1iqk4ppaQiMAgBMB2JYwC7AB8r6aGm3RpVQAD+6e42hPEnUUjmdxMdojQ4GGsYUeO22Fr2vbRqgjQz/vsZwN2+vwclg8YofyBM9zmdsAA=",
+    placeholder: "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACwAwCdASoUAAsAPu1iqk2ppaQiMAgBMB2JYwC/OCIOxr+BeMZvAAD+6XJq5mky3FdSq1hIcWbUQPhOy6yLpaTOpX0dBDMRzAA=",
   },
   "permit-frittliggende": {
     alt: "Diagram: eksisterende hus i grått og et nytt, frittstående bygg markert i eik.",
@@ -105,7 +105,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/permit-frittliggende-480.avif", w: 480 }, { src: "/renders/permit-frittliggende-900.avif", w: 900 }, { src: "/renders/permit-frittliggende-1200.avif", w: 1200 }],
       webp: [{ src: "/renders/permit-frittliggende-900.webp", w: 900 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAADQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JZQC7AB2esl3Di4jL4AAA/t7oDp2ouXmP8Q2H6NJbTnTZg5YNlmu+IM/gAA==",
+    placeholder: "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQBACdASoUAA8APu1iqk4ppaQiMAgBMB2JZQC7AB4bLXI7D+h+NGqgAAD+3ugOXuDUhpdN7V5bCNRhXDX7EHzfGAA=",
   },
   "permit-garasje": {
     alt: "Diagram: eksisterende hus i grått med en garasje bygget inn under, markert i eik.",
@@ -115,7 +115,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/permit-garasje-480.avif", w: 480 }, { src: "/renders/permit-garasje-900.avif", w: 900 }, { src: "/renders/permit-garasje-1200.avif", w: 1200 }],
       webp: [{ src: "/renders/permit-garasje-900.webp", w: 900 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JZwC/OBtNG3un9jYAAP7euunFnEJzKfEoJjZSCHBfUpR/byFwCHcwIptQBwPlYgAAAA==",
+    placeholder: "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAwCdASoUAA8APu1iqU2ppaQiMAgBMB2JZQAASraGqXnsauc9VQAA/uc66pRphTdZRNI2JLvwERSj+xD86ey9KQ7sI3I7AAA=",
   },
   "permit-kjeller": {
     alt: "Diagram: eksisterende hus i grått med ny kjeller under, markert i eik.",
@@ -125,7 +125,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/permit-kjeller-480.avif", w: 480 }, { src: "/renders/permit-kjeller-900.avif", w: 900 }, { src: "/renders/permit-kjeller-1200.avif", w: 1200 }],
       webp: [{ src: "/renders/permit-kjeller-900.webp", w: 900 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACwAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JZQC7ABAbGe7XFuzwAAD+3rrp0YnPZkYyP9z0ujLKBNl1pU8gyu6+Q6HWMG2CAAA=",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACQAwCdASoUAA8APu1iqU2ppaQiMAgBMB2JZQAASraFcHxsVQAAAP7nOuqUaYU3WUTSNeV8+zovhf3je+3OlMWGH7y55EAA",
   },
   "permit-pabygg": {
     alt: "Diagram: eksisterende hus i grått med en ny etasje på toppen, markert i eik.",
@@ -135,7 +135,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/permit-pabygg-480.avif", w: 480 }, { src: "/renders/permit-pabygg-900.avif", w: 900 }, { src: "/renders/permit-pabygg-1200.avif", w: 1200 }],
       webp: [{ src: "/renders/permit-pabygg-900.webp", w: 900 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JYwCdAB7A8yQdUBsAAP7evtxjwWol3uOeZRfF8Whq6e2MAwqfNkcMarx/gAAA",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JQBOmUABgGkPtmheQAP7nL3jSvShPVWEMIFBWeAC+8XtRHEsx9rtjkmFjgAAA",
   },
   "permit-tilbygg": {
     alt: "Diagram: eksisterende hus i grått med et tilbygg på siden, markert i eik.",
@@ -145,7 +145,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/permit-tilbygg-480.avif", w: 480 }, { src: "/renders/permit-tilbygg-900.avif", w: 900 }, { src: "/renders/permit-tilbygg-1200.avif", w: 1200 }],
       webp: [{ src: "/renders/permit-tilbygg-900.webp", w: 900 }],
     },
-    placeholder: "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAACQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JZwAAT+PfOqMv8NsAAP7e6A6dm4qBKs0oB8eKEPDKny956tHBvFAOAAA=",
+    placeholder: "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAwCdASoUAA8APu1kqU2ppaOiMAgBMB2JZQCdAB4WdN6e7t4dmNwAAP7nPwB7F2breifDpJiqt3gFk7nENQudAAA=",
   },
   "poster-build": {
     alt: "3D-modell av huset under bygging: bindingsverket står på grunnmuren, mellom to store lønnetrær.",
@@ -155,7 +155,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/poster-build-640.avif", w: 640 }, { src: "/renders/poster-build-1024.avif", w: 1024 }, { src: "/renders/poster-build-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/poster-build-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAACQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAUqp0e00AHJ9AAP70Mse5Qyi/Cc3W9p5mIamk2UnzQIAAAA==",
+    placeholder: "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADQAwCdASoUAAsAPu1iqU2ppaQiMAgBMB2JZwDKAB6GO4UG06LN8yAA/u6gs94uAK33gtrVJxL9rZ/rBcxDKZ6AAAA=",
   },
   "step-bindingsverk": {
     alt: "Bindingsverk av tre reist i to etasjer på grunnmuren.",
@@ -165,7 +165,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-bindingsverk-640.avif", w: 640 }, { src: "/renders/step-bindingsverk-1024.avif", w: 1024 }, { src: "/renders/step-bindingsverk-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-bindingsverk-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAUqUISqO61tnoAAD+8txXSqgcuIWt8mICLsUwV/F3iPDrIuolRAgAAA==",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAAsAPu1kqU4ppaOiMAgBMB2JZwAAUVD7SIG1zOvjEAD+71/tfGpemT36DdrjQ/+z6bECtxI/qBIGN3J5eAAA",
   },
   "step-fundament": {
     alt: "Støpt ringmur med radonsperre over grunnen.",
@@ -175,7 +175,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-fundament-640.avif", w: 640 }, { src: "/renders/step-fundament-1024.avif", w: 1024 }, { src: "/renders/step-fundament-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-fundament-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAABwAwCdASoUAAsAPu1iqk2ppaQiMAgBMB2JZwDA3B5Pf8LbGAAA/vD7XyqXDvR3nV1b8JcHMN73nXS/YUX+kbgA",
+    placeholder: "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACQAwCdASoUAAsAPu1kq04ppaQiMAgBMB2JZwDE2BijyRYk2QAAAP7jTT+HidwqyJOytZCJrXdpO4lrI8WtZw0vFWsAAA==",
   },
   "step-grunnarbeid": {
     alt: "Utgravd byggegrop med sprengt stein mellom fjell og bjørketrær.",
@@ -185,7 +185,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-grunnarbeid-640.avif", w: 640 }, { src: "/renders/step-grunnarbeid-1024.avif", w: 1024 }, { src: "/renders/step-grunnarbeid-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-grunnarbeid-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAABwAwCdASoUAAsAPu1iqk4ppaQiMAgBMB2JZwDLLB6VDu25geAA/vD7XqAfO6V1CQORpgDTajiIIAAA",
+    placeholder: "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAABwAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwDLLCG+7fVGzQAA/uL7SoqiorpxeCArTxikbMooen6AAAA=",
   },
   "step-installasjoner": {
     alt: "Røntgenvisning av huset med el-anlegg og rør som lysende linjer.",
@@ -195,7 +195,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-installasjoner-640.avif", w: 640 }, { src: "/renders/step-installasjoner-1024.avif", w: 1024 }, { src: "/renders/step-installasjoner-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-installasjoner-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACwAwCdASoUAAsAPu1kqU2ppaOiMAgBMB2JZwAAQujhqXKRn7hjAAD+8X995VJzdNAwW82n2EdH+qfpAMxD3SyDX0/brYiMh8B4QcNCAAA=",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAAsAPu1iqk4ppaQiMAgBMB2JZwAAOwo0IzUt1XQSgAD+7NfW1e8oDrXgsBUIa95U0tioyb8ca6xgIjQHl4QA",
   },
   "step-interior": {
     alt: "Snitt gjennom huset med gulv, kjøkken, bad og trapp.",
@@ -205,7 +205,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-interior-640.avif", w: 640 }, { src: "/renders/step-interior-1024.avif", w: 1024 }, { src: "/renders/step-interior-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-interior-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADQAwCdASoUAAsAPu1kqU2ppaQiMAgBMB2JZQDDNCLhVvly1fM9c0AA/vEO21tvNQANik1O2JbzWDr5Bmn6Xq8tR6li3u/FlB4uJb7c8WAAAA==",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAwCdASoUAAsAPu1iqU2ppaQiMAgBMB2JZwC/OBbs0RQ5QSVwXQAAAP7vYdFQ5P/Edgc6g0tPczXpny5GzLe32hKsAvYmfEgAAA==",
   },
   "step-isolasjon": {
     alt: "Veggene isolert med trefiberplater og dekket med vindsperre.",
@@ -215,7 +215,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-isolasjon-640.avif", w: 640 }, { src: "/renders/step-isolasjon-1024.avif", w: 1024 }, { src: "/renders/step-isolasjon-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-isolasjon-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAW+sNRiSooqQAAP7zJqWD0oBnX4y639ShMXLaxgT4Mvoaefi0E7w67ft1gAA=",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAUVhG9tdmR2zqYAAA/u9ieYZdwlwuKUMsOmgGUSVzC4ZXQEVTI6SYHfJY6WYAAA==",
   },
   "step-kledning": {
     alt: "Huset kledd med stående trekledning.",
@@ -225,7 +225,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-kledning-640.avif", w: 640 }, { src: "/renders/step-kledning-1024.avif", w: 1024 }, { src: "/renders/step-kledning-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-kledning-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAACwAwCdASoUAAsAPu1kqk4ppaQiMAgBMB2JZwAASqp0p6YgKlOuYAD+9DK9/qCYkUgYtNcgxZicb9AgAAA=",
+    placeholder: "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAABwAwCdASoUAAsAPu1mqk4ppaOiMAgBMB2JZwAAUrhlFSyraAAA/vFsvd1u8agBXor50l06Wv8S4tF6wUYjhdYA",
   },
   "step-nokkelferdig": {
     alt: "Det ferdige huset i blå time med lys i vinduene og terrasse mot hagen.",
@@ -235,7 +235,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-nokkelferdig-640.avif", w: 640 }, { src: "/renders/step-nokkelferdig-1024.avif", w: 1024 }, { src: "/renders/step-nokkelferdig-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-nokkelferdig-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAAsAPu1iqU2ppaQiMAgBMB2JZQAAXBudGp4ReoGgAAD+8s/QQIwGE3AsTWpwHzBbp2b5XpOql4Th+skTKAAA",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADwAwCdASoUAAsAPu1iqk2ppaQiMAgBMB2JZwCdACHwhbTKyfibBvDAAP7u7IOOED+XwnsUJKoN9KDjQxPQYBGOpOgwHZTQ6DfAAA==",
   },
   "step-tak": {
     alt: "Takstoler og mørkt, falset metalltak på plass.",
@@ -245,7 +245,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-tak-640.avif", w: 640 }, { src: "/renders/step-tak-1024.avif", w: 1024 }, { src: "/renders/step-tak-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-tak-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JaQAAW+vxcm9cyGcvLwAA/vKlK6tAQvLwz+psSIjSnMvCgkfH0S6C8Itsy8AA",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAWqE9x+Epk5gAAP7pGs38nxBuFxb7B3KiOgvRVqU0u8oeYLITqmDsvHpofAAAAA==",
   },
   "step-tomt": {
     alt: "Tomten i Fana med situasjonsplan, oppmerkede hjørner og to store lønnetrær.",
@@ -255,7 +255,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-tomt-640.avif", w: 640 }, { src: "/renders/step-tomt-1024.avif", w: 1024 }, { src: "/renders/step-tomt-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-tomt-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAACQAwCdASoUAAsAPu1iqU2ppaQiMAgBMB2JZwDE2B6VZnJ2oAwAAP7yyqTUSjSiH8BrdAAA",
+    placeholder: "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAAAwAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JaQC7ADKKvPQAAP7uSKAkB98+rhXdaOMCAA==",
   },
   "step-vinduer": {
     alt: "Vinduer og dører satt inn i veggene.",
@@ -265,7 +265,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/step-vinduer-640.avif", w: 640 }, { src: "/renders/step-vinduer-1024.avif", w: 1024 }, { src: "/renders/step-vinduer-1600.avif", w: 1600 }],
       webp: [{ src: "/renders/step-vinduer-1024.webp", w: 1024 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAUqq+/G4Iu1wsrAAA/u+dMSsbPcZOsM9rCfZNOgDIdO+/++fx3jbbj39ZIQAAAA==",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAABwAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZwAAW+22+GplK8AA/upK6pH551F5SL6GUA0jrBMTbA0Cn9/27jUBQzVjZ9Ju6FAAAA==",
   },
   "svc-dorer-og-vinduer-a": {
     alt: "Store vinduer mot hagen, nærbilde av karm og lister.",
@@ -275,7 +275,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-dorer-og-vinduer-a-600.avif", w: 600 }, { src: "/renders/svc-dorer-og-vinduer-a-1000.avif", w: 1000 }, { src: "/renders/svc-dorer-og-vinduer-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-dorer-og-vinduer-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JZQCdAB5jrmiJziyi4AD9byQQ0mbVexyZpgTlPFe0jyqTGwFdQ9ZNjnDblb91kAl18V1W1WUHCLIAAAA=",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JZQCdAB6Skn5NmxnO8wAA/rnbwRWzSdapY33cxmMzCVn39pEo/IeH3uyhEWCrkML/myzQAAA=",
   },
   "svc-dorer-og-vinduer-b": {
     alt: "Vindusåpninger i bindingsverket før vinduene settes inn.",
@@ -285,7 +285,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-dorer-og-vinduer-b-600.avif", w: 600 }, { src: "/renders/svc-dorer-og-vinduer-b-1000.avif", w: 1000 }, { src: "/renders/svc-dorer-og-vinduer-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-dorer-og-vinduer-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAACwAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JYwC7AB6Qp4F92cimQAD5Wm5Il18/6QtUu8Vc7vHdgLbrVaMzzTewJd++AYqUyUB91SxVebgAAA==",
+    placeholder: "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAACQAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JQBOgAwzOFdQTMALgAP3CjsSZG9qsfFpnxb1muXeWKTDOlyosNzdErQDZDXlHInwyiS6zHO+c1DbhxEAAAA==",
   },
   "svc-maling-a": {
     alt: "Stående trekledning, ubehandlet.",
@@ -295,7 +295,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-maling-a-600.avif", w: 600 }, { src: "/renders/svc-maling-a-1000.avif", w: 1000 }, { src: "/renders/svc-maling-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-maling-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JYwCdAB2PVbv1/H9ZAAD96nZ+9F7yVVnXQ/S6iM9Dvo+k2DCU2yfnvLmA0diVoCPezXVW/QPOODnzghVu4AAA",
+    placeholder: "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACQAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JQBOgAz0w2p6TKBWgAPglZkJCUIlTlYR1RoWoso1cE9zU2y1yfjUYboyrxgGkKKtMel+KcXWCZuberoddqAAA",
   },
   "svc-maling-b": {
     alt: "Den samme fasaden ferdig behandlet.",
@@ -305,7 +305,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-maling-b-600.avif", w: 600 }, { src: "/renders/svc-maling-b-1000.avif", w: 1000 }, { src: "/renders/svc-maling-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-maling-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JYwCw7CG/gDb6w8HrduQAAP56QdnyzcjrrNAQ4Qg6bTwJFAEGOddIpdlZIx+Ow5bL5Zzy+ZXdNIlsAAA=",
+    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JYwCdACHhcwJkZSHwKWsAAP69O3z7RqXfea0ksaer9bqu8NzzoIwtslYYxKNMSy4Z3aEfU8InNq98AAA=",
   },
   "svc-ny-bolig-a": {
     alt: "Det ferdige huset i dagslys, sett fra hagen mellom de to lønnetrærne.",
@@ -315,7 +315,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-ny-bolig-a-600.avif", w: 600 }, { src: "/renders/svc-ny-bolig-a-1000.avif", w: 1000 }, { src: "/renders/svc-ny-bolig-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-ny-bolig-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAACQAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JZQAAW0GKh9vwHFkAAPqfl0ynbWL4r4g8tm6ve9ldMY9ezcwa0h1NJHfGf21BDuUcR30ttR7ebXDE5eAAAA==",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADwAwCdASoUAA0APu1kqU4ppaOiMAgBMB2JYwC7ACIKEuD4JcdVnIgAAP1TyScNTEIn0IrpS7/m2N2cK/Ir8VSlvJF8ITRX+h/lcfTLQAA=",
   },
   "svc-ny-bolig-b": {
     alt: "Råbygg: grunnmur og bindingsverk reist på tomten, før tak og kledning.",
@@ -325,7 +325,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-ny-bolig-b-600.avif", w: 600 }, { src: "/renders/svc-ny-bolig-b-1000.avif", w: 1000 }, { src: "/renders/svc-ny-bolig-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-ny-bolig-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoUAA0APu1kqU4ppaOiMAgBMB2JYwC7ABum0MFnILMR5YgA9n0kqcR9jRRfTN1W41d7d/oPhy40akBTHbh1ak44fcTD1D5KSjDVsAAA",
+    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoUAA0APu1kqk4ppaQiMAgBMB2JQBOgA3Uf9J+IDuiMiQAA/kYqiZjUkN+FdGPkOZ2psydDRcsW7iP6+DtE7wgD40LsFobgIZGnmQAA",
   },
   "svc-ombygging-a": {
     alt: "Plantegning av første etasje sett ovenfra, med kjøkken, stue, trapp og bad.",
@@ -335,7 +335,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-ombygging-a-600.avif", w: 600 }, { src: "/renders/svc-ombygging-a-1000.avif", w: 1000 }, { src: "/renders/svc-ombygging-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-ombygging-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYgCdACPpfYWLkFyB8AD+1bkX9q+BtCE5L0sRtBYYHElXe32NCeP2UyxoY3LUIlWj7m4gA8fgIVEQuSPyiZE5z6guA51LRMAAAA==",
+    placeholder: "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAQBACdASoUAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACccd7OmacWPQyQAD+4IWFGQK0aecR1LjfKV8U/2yflO6azqjN2rse9GurNMDCkPqp0zhdYSDivhhb1euGY/JkxZ4xyk+FQAA=",
   },
   "svc-ombygging-b": {
     alt: "Innvendige vegger i bindingsverk under ombygging, sett inn i første etasje.",
@@ -345,17 +345,17 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-ombygging-b-600.avif", w: 600 }, { src: "/renders/svc-ombygging-b-1000.avif", w: 1000 }, { src: "/renders/svc-ombygging-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-ombygging-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JQBOgBEPi3kBSDO0PTAD+1Go27F7q7niYo91fytdoIWuAUEd5nc+t9oogbDUJL6NGkNd5AVppA3synZk7vlqaVN3SrjmCy9rQ6NoPiUmvJ0KEUUAAAA==",
+    placeholder: "data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAAAQBACdASoUAA0APu1iqU2ppaQiMAgBMB2JYgCdMoADP2PGEKgwDwwPgAD+1etcFQIDBTzCJQSi/iEweDd0H1881nOoDxSzyKw1ayIgwpD8LFRxPuYGQ9SwjO3r7ZLp3nxkP0W9QXYZhrZl2mJih3EAAAA=",
   },
   "svc-oppussing-av-bad-a": {
-    alt: "Badet sett ovenfra i snitt, med membran, sluk og fliser.",
+    alt: "Badet sett ovenfra i snitt: membranen og sluket synes der gulvflisene ikke er lagt ennå.",
     width: 1500,
     height: 1000,
     sources: {
       avif: [{ src: "/renders/svc-oppussing-av-bad-a-600.avif", w: 600 }, { src: "/renders/svc-oppussing-av-bad-a-1000.avif", w: 1000 }, { src: "/renders/svc-oppussing-av-bad-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-oppussing-av-bad-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACQAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JQBWAApRK5PUAytEwAP6PoMMuWkxsF9YG7ALtGyVyw6oIRhjXMYo97UoFuFHvmAii0MoidOuQAAAA",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAABwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwCdAB9D/Cllm9gA/uBu1q9ToTP1B8vvxBsWWDsTgWLOVyaRBEPj6BbEVFg/+25T/L4cAAA=",
   },
   "svc-oppussing-av-bad-b": {
     alt: "Ferdig bad med dusj, servant og varmt lys.",
@@ -365,7 +365,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-oppussing-av-bad-b-600.avif", w: 600 }, { src: "/renders/svc-oppussing-av-bad-b-1000.avif", w: 1000 }, { src: "/renders/svc-oppussing-av-bad-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-oppussing-av-bad-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACQAwCdASoUAA0APu1iqk2ppaQiMAgBMB2JQBOmUABpnQgsnBzAAP7Tb4ys1q3tu0dqPifPkJG7FGwYJhdnbnHl9ylnpA1XVWI0vnz1Xw+qFJRh4AA=",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwCdABjsdF1UgHdooAD+4GZk/qIZXIlEHRlDbojlCSIl01zJvJuUfTRblOp2FERfOJcvAAA=",
   },
   "svc-oppussing-og-renovering-a": {
     alt: "Snitt gjennom første etasje med nytt kjøkken, tregulv og nye overflater.",
@@ -375,7 +375,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-oppussing-og-renovering-a-600.avif", w: 600 }, { src: "/renders/svc-oppussing-og-renovering-a-1000.avif", w: 1000 }, { src: "/renders/svc-oppussing-og-renovering-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-oppussing-og-renovering-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APu1kqU2ppaOiMAgBMB2JQBOgBFMmEC27cgy8wAD+1eRd+j2ax/NXpqquemuUFKn71tQRhOzaIZPmwIMiFc2N++T8KvZCsU1bO15ARvjJc5znkAAA",
+    placeholder: "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADQAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JQBOl8dAuBtGWe/v8PMAA/tW1MORv1TZFAeMClSiy/8WJmx0OghfoAYOia5m/curRsgEqEjMZhy+/UebKaIzHczRzOEkegAAAAA==",
   },
   "svc-oppussing-og-renovering-b": {
     alt: "Kjøkken og spisestue mot hagen, med varmt lys innendørs og store vinduer.",
@@ -385,7 +385,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-oppussing-og-renovering-b-600.avif", w: 600 }, { src: "/renders/svc-oppussing-og-renovering-b-1000.avif", w: 1000 }, { src: "/renders/svc-oppussing-og-renovering-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-oppussing-og-renovering-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APu1kq04ppaQiMAgBMB2JYwAAYcwkHz/FVe71iAD+8Q7Wv9VpQCT/jVZpLZLK7BBCvK7N4FuJ2RqBByoKRP9oSC478LwmNap7W24YInWS3ybyKgAA",
+    placeholder: "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAADwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwC7AB4aZ5ssGhDeLJPAAP7xEdLUslv3qjVE8cemgcV6boMna5WKDab6CoGEBHgYi/Z1zFHiuMIR7HxCQB3HLQAAAA==",
   },
   "svc-pabygg-og-tilbygg-a": {
     alt: "Diagram: huset i lys grått med et nytt tilbygg på siden, markert i eik.",
@@ -395,7 +395,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-pabygg-og-tilbygg-a-600.avif", w: 600 }, { src: "/renders/svc-pabygg-og-tilbygg-a-1000.avif", w: 1000 }, { src: "/renders/svc-pabygg-og-tilbygg-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-pabygg-og-tilbygg-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAA0APu1qrU8ppiQiMAgBMB2JZQC06CHgZwALjp7BAAD+1UquzYI89qPDIhMJ2AKU6W9/7bfNNEBLH4bJoAAA",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwCsACHgoMeVPZoFAAD+1U/A5s1bLkIv/QaHiEpdZtH4+K6Yjh3smSXLiQAA",
   },
   "svc-pabygg-og-tilbygg-b": {
     alt: "Diagram: huset i lys grått med en ny etasje på toppen, markert i eik.",
@@ -405,7 +405,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-pabygg-og-tilbygg-b-600.avif", w: 600 }, { src: "/renders/svc-pabygg-og-tilbygg-b-1000.avif", w: 1000 }, { src: "/renders/svc-pabygg-og-tilbygg-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-pabygg-og-tilbygg-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACQAwCdASoUAA0APu1kqk4ppaQiMAgBMB2JQBOgA9JToHc9JEUAAP7gUBLN2q8giXCHmY0Gz+Bk8RgqIa/B0VNv0AAAAA==",
+    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADwAwCdASoUAA0APu1iqk4ppaQiMAgBMB2JQBOmUABfh4Vw754aK6igAP7gUBLN1jIfdggKLuVC7yOWbbvkMcV1LfvVwAAA",
   },
   "svc-rehabilitering-og-renovering-a": {
     alt: "Fasade der deler av kledningen er tatt av, så vindsperren under synes.",
@@ -415,7 +415,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-rehabilitering-og-renovering-a-600.avif", w: 600 }, { src: "/renders/svc-rehabilitering-og-renovering-a-1000.avif", w: 1000 }, { src: "/renders/svc-rehabilitering-og-renovering-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-rehabilitering-og-renovering-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAACwAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JYwC7AB5Fz7uGfgw94AD+LuZKUfaeM4b11gG/DpZSOk/xZnmUE04M1HxiYW0Q98Wyc13/QZXakXSlANMBLuYOAyaAj6wAAAA=",
+    placeholder: "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBACdASoUAA0APu1iqU2ppaQiMAgBMB2JYwC7MoAC+QCVUmXS9UYFUAD+42AIhT+A5NfM8W8vQr+rCdTh7FJV91gA9j/C/FyTk/Iti63SKiOQjaEe2zMBo4oUEl0sAAA=",
   },
   "svc-rehabilitering-og-renovering-b": {
     alt: "Vegg åpnet lag for lag: kledning, lekter, vindsperre og trefiberisolasjon mellom stenderne.",
@@ -425,7 +425,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-rehabilitering-og-renovering-b-600.avif", w: 600 }, { src: "/renders/svc-rehabilitering-og-renovering-b-1000.avif", w: 1000 }, { src: "/renders/svc-rehabilitering-og-renovering-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-rehabilitering-og-renovering-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAABwAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JQBOgAosHg0KR4IAA/lVmSaXr8UGe95DjSIz91dhCpojUByD4d6gN3HDRuy/oLbLnjfBeSDnMCgAA",
+    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAABQAwCdASoUAA0APu1iqU2ppaQiMAgBMB2JQBOgAnCRExpAIAD3QXBbcLKyK1M16W+OvdL/8D19evetG9ZuzfuYCkULUFjEq/Q0WUcrbgA=",
   },
   "svc-takarbeid-a": {
     alt: "Takstoler på plass over andre etasje, før taket tekkes.",
@@ -435,7 +435,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-takarbeid-a-600.avif", w: 600 }, { src: "/renders/svc-takarbeid-a-1000.avif", w: 1000 }, { src: "/renders/svc-takarbeid-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-takarbeid-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAwCdASoUAA0APu1mqk4ppaOiMAgBMB2JQBdgA8S2oYgq1fCPrAAA/hvNHPAsXJ2VKWb/QO7psJCjrrQHqNvqgJ6h2iFuQ1thHZIAAAA=",
+    placeholder: "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAACwAwCdASoUAA0APu1mqk4ppaOiMAgBMB2JYgC06B5VfUFqW7Vr0AD+v1nKNft8NmVv6GiIIlfe4hWv60tqFDQPGa8l6U9dacxvFJz+inyfmbLOQAA=",
   },
   "svc-takarbeid-b": {
     alt: "Nærbilde av mørkt, falset metalltak med snøfanger, mot mønet.",
@@ -445,7 +445,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-takarbeid-b-600.avif", w: 600 }, { src: "/renders/svc-takarbeid-b-1000.avif", w: 1000 }, { src: "/renders/svc-takarbeid-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-takarbeid-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAwCdASoUAA0APu1yrU+pp6QiMAgBMB2JZwABHwvRoe99QHPKqiAA/u7z01KKeiEo0mAMNNAIIXve7D1Oto9EM9LMAAAA",
+    placeholder: "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADwAwCdASoUAA0APu1yrU+pp6QiMAgBMB2JYwC7AGk6R2J0f3WDL2OgAP70X43GDVcm5J4w1odFTy5G0WkRhoyjvllQV6639LomzgAA",
   },
   "svc-vvs-a": {
     alt: "Røntgenvisning av huset med rør og avløp som lysende linjer.",
@@ -455,7 +455,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-vvs-a-600.avif", w: 600 }, { src: "/renders/svc-vvs-a-1000.avif", w: 1000 }, { src: "/renders/svc-vvs-a-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-vvs-a-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAwCdASoUAA0APu1kqU4ppaOiMAgBMB2JYwCw7Bhw+mABNYjP+AAA/u0elJGh8PjsMY4MCM0fGbC/CVrLME6QwcqcMHfQJJ4F12JvrL7bA1pL18cAAA==",
+    placeholder: "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoUAA0APu1mqk4ppaOiMAgBMB2JZQCdMoABmVKrJAarDYwA/ubJSfojsL3kInbms26ZjWiq54SWkutOPemT8w3jehsGgiPiIQ4B2AAA",
   },
   "svc-vvs-b": {
     alt: "Rørføringer i vegg og bjelkelag ved badet.",
@@ -465,7 +465,7 @@ export const renders: RenderManifest = {
       avif: [{ src: "/renders/svc-vvs-b-600.avif", w: 600 }, { src: "/renders/svc-vvs-b-1000.avif", w: 1000 }, { src: "/renders/svc-vvs-b-1500.avif", w: 1500 }],
       webp: [{ src: "/renders/svc-vvs-b-1000.webp", w: 1000 }],
     },
-    placeholder: "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADwAwCdASoUAA0APu1kq04ppaQiMAgBMB2JYwCdMoACTEJ6O4KiCmcAAP4in50lCgltz2UY37IAg62BQYMO43f9EvniFz89pr4x2iZd/YCQAA==",
+    placeholder: "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACQAwCdASoUAA0APu1iqU2ppaOiMAgBMB2JZQCdAA4NoX/R3p4AAPnVTimk93Y1qfaKcTNYJ/bue9GZpyJwH163lnDoulhMlzKAAA==",
   },
 };
 

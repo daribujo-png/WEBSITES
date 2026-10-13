@@ -10,7 +10,7 @@
  */
 import { useEffect, useRef, type CSSProperties } from "react";
 import type { ProcessStep } from "@/content/types";
-import { getGsap, EASE } from "@/lib/motion";
+import { withGsap, EASE } from "@/lib/motion";
 import { REDUCED_MOTION_QUERY } from "@/lib/hooks";
 
 interface ProcessTimelineProps {
@@ -34,29 +34,30 @@ export function ProcessTimeline({ steps, label }: ProcessTimelineProps) {
       return;
     }
 
-    const { gsap, ScrollTrigger } = getGsap();
-    const tween = gsap.fromTo(
-      line,
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        ease: EASE.scrub,
-        scrollTrigger: { trigger: list, start: "top 65%", end: "bottom 65%", scrub: true },
-      },
-    );
-    const triggers = items.map((li) =>
-      ScrollTrigger.create({
-        trigger: li,
-        start: "top 65%",
-        onEnter: () => li.setAttribute("data-active", ""),
-        onLeaveBack: () => li.removeAttribute("data-active"),
-      }),
-    );
-    return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
-      triggers.forEach((t) => t.kill());
-    };
+    return withGsap(({ gsap, ScrollTrigger }) => {
+      const tween = gsap.fromTo(
+        line,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: EASE.scrub,
+          scrollTrigger: { trigger: list, start: "top 65%", end: "bottom 65%", scrub: true },
+        },
+      );
+      const triggers = items.map((li) =>
+        ScrollTrigger.create({
+          trigger: li,
+          start: "top 65%",
+          onEnter: () => li.setAttribute("data-active", ""),
+          onLeaveBack: () => li.removeAttribute("data-active"),
+        }),
+      );
+      return () => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+        triggers.forEach((t) => t.kill());
+      };
+    });
   }, []);
 
   return (

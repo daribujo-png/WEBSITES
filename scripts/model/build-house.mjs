@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { SceneNode, V } from "./lib/builder.mjs";
 import { writeGLB } from "./lib/gltf.mjs";
 import {
+  BEND,
   CLAD_OUT,
   HW,
   NICHE,
@@ -232,7 +233,7 @@ async function main() {
     model: {
       name: "House in Bergen — vår tolkning",
       architect: "Kvalbein Korsøen Arkitektur",
-      footprint: "two wings, 8.0 m wide, 4.6 m + 4.4 m long, bending 14° at a mitred joint; ≈ 72 m² gross per floor",
+      footprint: `two wings, ${2 * HW} m wide (frame), ${A.L} m + ${B.L} m long, bending ${round(THREE.MathUtils.radToDeg(BEND))}° at a mitred joint; ≈ ${Math.round(polyArea(outline(CLAD_OUT)))} m² gross per floor`,
       floorsAboveGround: 2,
       roofPitchDeg: 40,
       ridgeHeight: round(RIDGE_Y),
@@ -294,7 +295,7 @@ async function main() {
       note: "plan polygons (x, z) — frame face and outer cladding face",
       frame: outline(0).map((p) => [round(p.x), round(p.z)]),
       cladding: outline(CLAD_OUT).map((p) => [round(p.x), round(p.z)]),
-      bendDeg: 18,
+      bendDeg: round(THREE.MathUtils.radToDeg(BEND)),
       wings: {
         A: { length: A.L, axis: [A.eu.x, A.eu.z] },
         B: { length: B.L, axis: [round(B.eu.x), round(B.eu.z)] },
@@ -307,6 +308,16 @@ async function main() {
   await fs.writeFile(path.join(OUT_DIR, "house.meta.json"), JSON.stringify(meta, null, 2) + "\n");
   console.log(`house.glb ${(stats.bytes / 1024).toFixed(0)} KB · meshes ${stats.meshes} · vertices ${stats.vertices} · triangles ${stats.triangles}`);
   void RAFTER_VD;
+}
+
+function polyArea(pts) {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i];
+    const q = pts[(i + 1) % pts.length];
+    a += p.x * q.z - q.x * p.z;
+  }
+  return Math.abs(a) / 2;
 }
 
 function round(x) {

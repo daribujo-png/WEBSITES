@@ -11,6 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SceneNode, V } from "./lib/builder.mjs";
 import { writeGLB } from "./lib/gltf.mjs";
+import { PERMIT_CAMERAS } from "./lib/cameras.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const OUT = path.join(ROOT, "public/models");
@@ -153,7 +154,8 @@ async function main() {
     units: "m",
     nodes: roots.map((r) => r.name),
     materials: { existing: "permit_existing*", new: "permit_new*", accent: "permit_accent", ground: "permit_ground*" },
-    camera: { position: [-20.5, 12.5, 24.5], target: [0, 1.6, 0.5], fov: 30 },
+    lighting: "paper (see house.meta.json lighting.paper)",
+    cameras: PERMIT_CAMERAS,
     stats,
   };
   await fs.writeFile(path.join(OUT, "permits.meta.json"), JSON.stringify(meta, null, 2) + "\n");

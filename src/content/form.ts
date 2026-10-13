@@ -85,7 +85,7 @@ export const contactForm = {
   privacyLink: { label: "Les personvernerklæringen", href: "/personvern/" },
   success: {
     title: "Takk, vi har fått meldingen din.",
-    body: "Vi tar kontakt for en uforpliktende samtale. Haster det, ring oss på 94 01 66 10.",
+    body: "Vi tar kontakt for en uforpliktende samtale. Haster det, ring oss på 94\u00a001\u00a066\u00a010.",
     again: "Send en ny melding",
   },
   failure: {
@@ -98,7 +98,7 @@ export const contactForm = {
     title: "Fullfør i e-postprogrammet ditt",
     body: "Vi åpnet en ferdig utfylt e-post til post@byggrv.no. Trykk send der for å sende forespørselen.",
     reopen: "Åpne e-posten på nytt",
-    noClient: "Skjer det ingenting? Send en e-post til post@byggrv.no eller ring 94 01 66 10.",
+    noClient: "Skjer det ingenting? Send en e-post til post@byggrv.no eller ring 94\u00a001\u00a066\u00a010.",
     subject: (type: string) => `Forespørsel fra byggrv.no: ${type}`,
   },
 } as const;

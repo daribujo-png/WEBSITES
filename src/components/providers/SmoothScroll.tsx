@@ -5,7 +5,9 @@
  *
  * - Reduced motion: Lenis is not started (native scrolling); ScrollTrigger
  *   still works. Toggling the OS setting live starts/stops Lenis.
- * - Touch devices keep native scrolling (Lenis syncTouch is off).
+ * - Touch-only devices keep native scrolling and never load Lenis (CSS
+ *   scroll-behavior handles their in-page links).
+ * - GSAP and Lenis load lazily: first interaction or idle (see motionWanted).
  * - In-page hash links (<a href="#kontakt">) are handled by Lenis `anchors`.
  * - On route change ScrollTrigger is refreshed and Lenis resized.
  *
@@ -15,9 +17,9 @@
  */
 import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import Lenis from "lenis";
-import { getGsap } from "@/lib/motion";
-import { REDUCED_MOTION_QUERY } from "@/lib/hooks";
+import type Lenis from "lenis";
+import { gsapIfLoaded, withGsap } from "@/lib/motion";
+import { FINE_POINTER_QUERY, REDUCED_MOTION_QUERY } from "@/lib/hooks";
 
 /* Tiny external store for the Lenis instance -------------------------------- */
 let current: Lenis | null = null;
@@ -71,10 +73,10 @@ export function scrollToTarget(target: string | HTMLElement | number, opts: { of
 function RouteSync() {
   const pathname = usePathname();
   useEffect(() => {
-    const { ScrollTrigger } = getGsap();
     const id = requestAnimationFrame(() => {
       current?.resize();
-      ScrollTrigger.refresh();
+      // Before GSAP has loaded there is nothing to refresh.
+      gsapIfLoaded()?.ScrollTrigger.refresh();
     });
     return () => cancelAnimationFrame(id);
   }, [pathname]);
@@ -83,57 +85,76 @@ function RouteSync() {
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
-    const { gsap, ScrollTrigger } = getGsap();
-    const mql = window.matchMedia(REDUCED_MOTION_QUERY);
-    let lenis: Lenis | null = null;
-    let tick: ((time: number) => void) | null = null;
+    // GSAP and Lenis arrive as lazy chunks (first interaction or idle, see
+    // motionWanted in @/lib/motion), not in the first page load.
+    let LenisCtor: typeof Lenis | null = null;
+    let disposed = false;
 
-    const start = () => {
-      if (lenis) return;
-      lenis = new Lenis({
-        lerp: 0.085,
-        smoothWheel: true,
-        syncTouch: false,
-        anchors: true,
-        stopInertiaOnNavigate: true,
+    const cleanupGsap = withGsap(({ gsap, ScrollTrigger }) => {
+      // Lenis only smooths wheel scrolling, so touch-only devices never load it
+      // (CSS smooth scrolling handles their in-page links).
+      const wheel = window.matchMedia(FINE_POINTER_QUERY).matches;
+      const lenisReady = wheel
+        ? import("lenis").then((m) => {
+            LenisCtor = m.default;
+          })
+        : Promise.resolve();
+      const mql = window.matchMedia(REDUCED_MOTION_QUERY);
+      let lenis: Lenis | null = null;
+      let tick: ((time: number) => void) | null = null;
+
+      const start = () => {
+        if (lenis || !LenisCtor || disposed) return;
+        lenis = new LenisCtor({
+          lerp: 0.085,
+          smoothWheel: true,
+          syncTouch: false,
+          anchors: true,
+          stopInertiaOnNavigate: true,
+        });
+        lenis.on("scroll", ScrollTrigger.update);
+        const instance = lenis;
+        tick = (time: number) => instance.raf(time * 1000);
+        gsap.ticker.add(tick);
+        gsap.ticker.lagSmoothing(0);
+        document.documentElement.dataset.smoothScroll = "on";
+        setLenis(lenis);
+      };
+
+      const stop = () => {
+        if (tick) gsap.ticker.remove(tick);
+        tick = null;
+        lenis?.destroy();
+        lenis = null;
+        delete document.documentElement.dataset.smoothScroll;
+        setLenis(null);
+      };
+
+      if (!mql.matches) lenisReady.then(start);
+
+      const onChange = () => {
+        if (mql.matches) stop();
+        else lenisReady.then(start);
+        ScrollTrigger.refresh();
+      };
+      mql.addEventListener("change", onChange);
+
+      // Fonts change line heights: refresh trigger positions once they are in.
+      let cancelled = false;
+      document.fonts?.ready.then(() => {
+        if (!cancelled) ScrollTrigger.refresh(true); // safe: never interrupts a running scroll
       });
-      lenis.on("scroll", ScrollTrigger.update);
-      const instance = lenis;
-      tick = (time: number) => instance.raf(time * 1000);
-      gsap.ticker.add(tick);
-      gsap.ticker.lagSmoothing(0);
-      document.documentElement.dataset.smoothScroll = "on";
-      setLenis(lenis);
-    };
 
-    const stop = () => {
-      if (tick) gsap.ticker.remove(tick);
-      tick = null;
-      lenis?.destroy();
-      lenis = null;
-      delete document.documentElement.dataset.smoothScroll;
-      setLenis(null);
-    };
-
-    if (!mql.matches) start();
-
-    const onChange = () => {
-      if (mql.matches) stop();
-      else start();
-      ScrollTrigger.refresh();
-    };
-    mql.addEventListener("change", onChange);
-
-    // Fonts change line heights: refresh trigger positions once they are in.
-    let cancelled = false;
-    document.fonts?.ready.then(() => {
-      if (!cancelled) ScrollTrigger.refresh();
+      return () => {
+        cancelled = true;
+        mql.removeEventListener("change", onChange);
+        stop();
+      };
     });
 
     return () => {
-      cancelled = true;
-      mql.removeEventListener("change", onChange);
-      stop();
+      disposed = true;
+      cleanupGsap();
     };
   }, []);
 

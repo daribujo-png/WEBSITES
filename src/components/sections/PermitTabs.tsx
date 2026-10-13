@@ -101,13 +101,16 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
               tabIndex={0}
               className="focus-visible:outline-offset-8"
             >
-              <figure>
-                <div className="relative bg-paper-deep" data-cursor-label="Dra">
+              <figure className="group/permit">
+                <div className="relative bg-paper-deep">
                   {selected ? <PermitDiagram type={type.id} /> : null}
                 </div>
                 <figcaption className="t-caption mt-3 flex flex-wrap justify-between gap-x-6 gap-y-1 text-fg-muted">
                   <span>{note}</span>
-                  <span className="hidden lg:inline">{dragHint}</span>
+                  {/* Only once the live 3D diagram is ready (desktop, mouse, WebGL, motion allowed). */}
+                  <span aria-hidden="true" className="hidden lg:group-has-[[data-ready]]/permit:inline">
+                    {dragHint}
+                  </span>
                   <span className="sr-only">{type.diagramAlt}</span>
                 </figcaption>
               </figure>

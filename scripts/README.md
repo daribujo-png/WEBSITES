@@ -40,11 +40,14 @@ Code layout:
 - `lib/services.mjs`: el and VVS runs (the x-ray layer), the terrace, lamps, furniture, the path
   and planting.
 - `lib/env.mjs`: terrain with an exact pit hole, granite outcrops and boulders, birches, the two
-  maples (lacy leaf clouds) and distant ridges.
+  maples and distant ridges. Tree crowns are built by `canopy()`: soft displaced clumps on the
+  outer shell of a few ellipsoid lobes, normals blended towards the crown so each crown shades as
+  one volume, and occlusion baked into vertex colours. No loose leaf triangles.
 - `lib/gltf.mjs`: converts the scene to glTF, then runs dedup → weld → prune → quantize → Meshopt
   (`EXT_meshopt_compression`).
-- `lib/cameras.mjs`: camera and lighting presets. These are written into `house.meta.json` and
-  shared with the renderer, so the live canvas can match the posters.
+- `lib/cameras.mjs`: camera and lighting presets, the single source of truth. They are written
+  into `house.meta.json`; the render harness reads them from there, and so should the live canvas,
+  so posters and canvas match.
 
 ### `house.glb` structure
 
@@ -84,14 +87,14 @@ Set the colour to white for unpainted wood; the stained factor is in the meta.
 | `materials` | material notes, plus the raw and stained cladding factors |
 | `interiorLights[]`, `exteriorLights[]` | warm point-light positions for blue hour |
 | `footprint` | plan polygons (frame and cladding faces), bend angle, wing axes |
-| `camera` | `hero`, `heroMobile`, `og`, `stage` and `steps.<id>`: `{position, target, fov}` |
-| `lighting` | `bluehour`, `day` and `stage` presets |
+| `camera` | `hero`, `heroMobile`, `og`, `stage` and `steps.<id>`: `{position, target, fov, shift?}`. Eye-level exterior views look horizontally (straight verticals) and frame the house with `shift: [x, y]`, applied as `camera.setViewOffset(w, h, x·w, y·h, w, h)` |
+| `lighting` | `bluehour`, `day`, `stage` and `paper`: tone mapping + exposure, sky gradient (also the IBL), fog, hemisphere, key/fill lights, lamp/exterior/interior light levels, bloom and, for `stage`, `envMaterials` (the monochrome slate site model). Field reference at the top of `lib/cameras.mjs` |
 | `stats` | GLB bytes, meshes, vertices, triangles |
 
 `permits.glb` has five root nodes: `permit_pabygg`, `permit_frittliggende`, `permit_tilbygg`,
 `permit_kjeller` and `permit_garasje`. Each is centred at the origin on a model base. The existing
 house uses the `permit_existing*` materials (paper grey), the new part uses `permit_new*` (oak), and
-the joints use `permit_accent` (brass). The camera hint is in `permits.meta.json`.
+the joints use `permit_accent` (brass). `permits.meta.json` has one camera per diagram (`cameras.<id>`, the same ones the posters use) and they are lit with `lighting.paper` from `house.meta.json`.
 
 ## Renders (`scripts/render/`)
 
@@ -103,10 +106,15 @@ writes `src/content/renders.ts` and removes stale files from `public/renders/`. 
 1200×630.
 
 ```bash
-npm run model:render                     # everything (~40 min with software WebGL)
+npm run model:render                     # everything (~45 min with software WebGL)
 npm run model:render -- --only=^hero     # a subset; other manifest entries are kept
 npm run model:render -- --preview=/tmp/p # quick 40 % PNG previews only
 ```
+
+Shots are plain JSON (camera, lighting preset name plus `lightingOverrides`, visible step,
+`hideNodes` name prefixes, clip planes, x-ray, clay, extras). Clip planes keep the positive side
+(`normal · p + constant ≥ 0`), and several planes on one shot keep their intersection, which is
+how the bathroom becomes a cut-away room box.
 
 Playwright is resolved from the project, then from `NODE_PATH`, then from `npm root -g`. Chromium is
 taken from `CHROMIUM_PATH`, then from `PLAYWRIGHT_BROWSERS_PATH`, then from `/opt/pw-browsers`.

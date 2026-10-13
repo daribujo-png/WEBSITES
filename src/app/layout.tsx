@@ -58,7 +58,7 @@ const JS_FLAG = "document.documentElement.classList.add('js')";
  */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="nb" className={fontVariables} suppressHydrationWarning>
+    <html lang="nb" className={fontVariables} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />
       </head>

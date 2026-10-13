@@ -207,11 +207,11 @@ export function Header() {
             type="button"
             aria-expanded={open}
             aria-controls={dialogId}
-            aria-label={ui.menuOpenLabel}
             onClick={() => setOpen(true)}
             className="-mr-2 inline-flex min-h-11 items-center gap-2 px-2 t-small font-medium lg:hidden"
           >
-            <span aria-hidden="true">{ui.menuOpen}</span>
+            {/* The visible word is the accessible name (WCAG 2.5.3); aria-expanded gives the state. */}
+            <span>{ui.menuOpen}</span>
             <Icon.Menu size={22} />
           </button>
         </div>

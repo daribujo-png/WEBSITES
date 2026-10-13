@@ -27,14 +27,15 @@ export default function TjenesterPage() {
           {services.map((service, i) => (
             <li
               key={service.slug}
-              data-reveal="up"
+              // The first card is the LCP element on load: shown at once, not revealed.
+              data-reveal={i === 0 ? undefined : "up"}
               style={{ "--reveal-delay": `${(i % 2) * 120}ms` } as CSSProperties}
               className={cn(
                 "col-span-full md:col-span-4 lg:col-span-5",
                 i % 2 === 0 ? "lg:col-start-1" : "md:mt-24 lg:col-start-8 lg:mt-40",
               )}
             >
-              <ServiceCard service={service} headingLevel="h2" sizes="(min-width: 90rem) 35rem, (min-width: 64rem) 40vw, (min-width: 48rem) 45vw, calc(100vw - 2rem)" />
+              <ServiceCard service={service} headingLevel="h2" priority={i === 0} sizes="(min-width: 90rem) 35rem, (min-width: 64rem) 40vw, (min-width: 48rem) 45vw, calc(100vw - 2rem)" />
             </li>
           ))}
         </ul>

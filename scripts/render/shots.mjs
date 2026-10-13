@@ -3,9 +3,12 @@
  * and Norwegian alt text. Keys are referenced from src/content (services'
  * renderKey + "-a"/"-b", before/after pairs, permit diagrams, build steps).
  */
-import { CAMERAS } from "../model/lib/cameras.mjs";
+import { CAMERAS, PERMIT_CAMERAS } from "../model/lib/cameras.mjs";
+import { BATH, W, WINGS, Y } from "../model/lib/house-spec.mjs";
 
 const cam = (position, target, fov = 30) => ({ position, target, fov });
+// Cameras may also carry `shift: [x, y]` (fraction of the image, camera.setViewOffset):
+// eye-level exterior views look horizontally and use shift to keep verticals straight.
 
 /** Output presets: widths per format and render (supersampled) size. */
 export const SIZES = {
@@ -21,35 +24,44 @@ export const SIZES = {
 const SECTION = [{ normal: [0, 0, -1], constant: 1.35, layers: null }];
 /** Horizontal plan cut, 1. etasje. */
 const PLAN1 = (y = 1.77) => [{ normal: [0, -1, 0], constant: y }];
-const PLAN2 = (y = 4.75) => [{ normal: [0, -1, 0], constant: y }];
-const houseLayers = [
-  "tomt",
-  "grunnarbeid",
-  "fundament",
-  "bindingsverk",
-  "isolasjon",
-  "tak",
-  "vinduer",
-  "kledning",
-  "installasjoner",
-  "interior",
-  "nokkelferdig",
-];
-const allButSite = houseLayers.filter((l) => l !== "tomt" && l !== "grunnarbeid");
 
-const DOLLHOUSE = {
+/*
+ * Bathroom (2. etasje, wing B) as a cut-away room model: six clip planes keep a
+ * box around the room (walls cut at 1.25 m above the floor), seen from above
+ * at 45°. Reads like an axonometric drawing: tiles, membrane, shower glass,
+ * vanity and toilet.
+ */
+const bw = WINGS[BATH.wing];
+const bathU = (BATH.u0 + BATH.u1) / 2;
+const bathV = (BATH.v0 + BATH.v1) / 2;
+const at = (u, v, y) => {
+  const p = W(bw, u, v, y);
+  return [round(p.x), round(p.y), round(p.z)];
+};
+/** Keep u ≥ u0 / u ≤ u1 / v ≥ v0 / v ≤ v1 (wing-local) and y in [y0, y1]. */
+const roomBox = ({ u0, u1, v0, v1, y0, y1 }) => [
+  { normal: [round(bw.eu.x), 0, round(bw.eu.z)], constant: round(-u0) },
+  { normal: [round(-bw.eu.x), 0, round(-bw.eu.z)], constant: round(u1) },
+  { normal: [round(bw.ev.x), 0, round(bw.ev.z)], constant: round(-v0) },
+  { normal: [round(-bw.ev.x), 0, round(-bw.ev.z)], constant: round(v1) },
+  { normal: [0, 1, 0], constant: round(-y0) },
+  { normal: [0, -1, 0], constant: round(y1) },
+];
+const BATH_SECTION = {
   lighting: "paper",
   env: false,
-  interior: 1,
-  interiorScale: 2.5,
-  clip: [
-    { normal: [0.309, 0, -0.951], constant: -1.66 },
-    { normal: [0, -1, 0], constant: 5.64 },
-  ],
-  camera: cam([2.75, 8.3, 2.7], [4.1, 3.9, -1.75], 22),
-  extraLights: [{ position: [4.07, 5.3, -1.6], intensity: 3, distance: 4 }],
-  hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller"],
+  lightingOverrides: { interiorLights: 1.6, interiorColor: "#ffdcb4" },
+  clip: roomBox({ u0: BATH.u0 - 0.16, u1: BATH.u1 + 0.42, v0: BATH.v0 - 0.42, v1: BATH.v1 + 0.12, y0: Y.ff2 - 0.36, y1: Y.ff2 + 1.25 }),
+  camera: { position: at(bathU - 3.2, bathV + 4.3, Y.ff2 + 5.0), target: at(bathU + 0.1, bathV - 0.1, Y.ff2 + 0.3), fov: 24 },
+  extraLights: [{ position: at(bathU, bathV, Y.ff2 + 2.0), intensity: 1.6, distance: 4 }],
+  hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller", "installasjoner"],
+  shadowTarget: at(bathU, bathV, Y.ff2),
+  shadowExtent: 6,
 };
+
+function round(x) {
+  return Math.round(x * 1000) / 1000;
+}
 
 export function buildShots(content) {
   const S = CAMERAS.steps;
@@ -83,8 +95,9 @@ export function buildShots(content) {
   for (const step of content.buildSteps) {
     const st = { lighting: "stage", step: step.id, camera: S[step.id] };
     if (step.id === "installasjoner") Object.assign(st, { xray: { keep: ["installasjoner"] }, bloom: [0.55, 0.45, 0.6] });
-    if (step.id === "interior") Object.assign(st, { clip: SECTION, interior: 1, interiorScale: 4 });
-    if (step.id === "nokkelferdig") Object.assign(st, { lighting: "bluehour" });
+    if (step.id === "interior") Object.assign(st, { clip: SECTION, lightingOverrides: { interiorLights: 4 } });
+    // the finished house at blue hour, eye level with straight verticals
+    if (step.id === "nokkelferdig") Object.assign(st, { lighting: "bluehour", camera: { position: [4.6, 1.6, 19.5], target: [0.4, 1.6, 1.0], fov: 38, shift: [0.02, -0.2] } });
     add(`step-${step.id}`, "wide", step.renderAlt, st);
   }
 
@@ -97,7 +110,7 @@ export function buildShots(content) {
     "ny-bolig",
     {
       alt: "Det ferdige huset i dagslys, sett fra hagen mellom de to lønnetrærne.",
-      state: { lighting: "day", camera: cam([3.5, 1.7, 21], [-0.4, 4.1, 0.6], 36) },
+      state: { lighting: "day", camera: { position: [3.5, 1.6, 21], target: [-0.4, 1.6, 0.6], fov: 40, shift: [0.02, -0.19] } },
     },
     {
       alt: "Råbygg: grunnmur og bindingsverk reist på tomten, før tak og kledning.",
@@ -108,7 +121,7 @@ export function buildShots(content) {
     "oppussing-og-renovering",
     {
       alt: "Snitt gjennom første etasje med nytt kjøkken, tregulv og nye overflater.",
-      state: { lighting: "paper", env: false, clip: PLAN1(), camera: cam([-8.5, 13, 9.5], [-1.4, 0.6, 0.4], 30), hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller", "fundament_drenering"] },
+      state: { lighting: "paper", env: false, clip: PLAN1(), camera: cam([-8.5, 13, 9.5], [-1.4, 0.6, 0.4], 30), hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller", "fundament_drenering", "fundament_tilbakefylling"] },
     },
     {
       alt: "Kjøkken og spisestue mot hagen, med varmt lys innendørs og store vinduer.",
@@ -130,7 +143,7 @@ export function buildShots(content) {
     "ombygging",
     {
       alt: "Plantegning av første etasje sett ovenfra, med kjøkken, stue, trapp og bad.",
-      state: { lighting: "paper", env: false, clip: PLAN1(), camera: cam([0.3, 20, 3.0], [-0.2, 0, 0.7], 30), hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller", "fundament_drenering", "nokkelferdig_terrasse"] },
+      state: { lighting: "paper", env: false, clip: PLAN1(), camera: cam([0.3, 20, 3.0], [-0.2, 0, 0.7], 30), hideNodes: ["nokkelferdig_beplantning", "nokkelferdig_heller", "fundament_drenering", "fundament_tilbakefylling", "nokkelferdig_terrasse"] },
     },
     {
       alt: "Innvendige vegger i bindingsverk under ombygging, sett inn i første etasje.",
@@ -191,20 +204,16 @@ export function buildShots(content) {
   svc(
     "oppussing-av-bad",
     {
-      alt: "Badet sett ovenfra i snitt, med membran, sluk og fliser.",
+      alt: "Badet sett ovenfra i snitt: membranen og sluket synes der gulvflisene ikke er lagt ennå.",
       state: {
-        lighting: "paper",
-        env: false,
-        clip: [
-          ...PLAN2(),
-          { normal: [-0.951, 0, -0.309], constant: 3.4, nodes: "interior_bad_flis_gulv" },
-        ],
-        camera: cam([3.3, 9.2, 1.1], [4.04, 3.45, -1.55], 34),
+        ...BATH_SECTION,
+        clip: [...BATH_SECTION.clip, { normal: [-0.951, 0, -0.309], constant: 3.4, nodes: "interior_bad_flis_gulv" }],
+        hideNodes: [...BATH_SECTION.hideNodes, "interior_bad_glassvegg"],
       },
     },
     {
       alt: "Ferdig bad med dusj, servant og varmt lys.",
-      state: { ...DOLLHOUSE },
+      state: { ...BATH_SECTION },
     },
   );
   svc(
@@ -245,24 +254,22 @@ export function buildShots(content) {
   add("ba-2-for", "card", "Illustrasjon: gavlvegg med ubehandlet trekledning.", { lighting: "day", claddingRaw: true, camera: ba2 });
   add("ba-2-etter", "card", "Illustrasjon: den samme gavlveggen ferdig behandlet.", { lighting: "day", camera: ba2 });
   add("ba-3-for", "card", "Illustrasjon: et slitt bad med gamle fliser og utstyr.", {
-    ...DOLLHOUSE,
+    ...BATH_SECTION,
     materialColors: [
       { name: "tile_wall", color: "#cdbf98", roughness: 0.25 },
       { name: "tile_floor", color: "#8a7458", roughness: 0.5 },
       { name: "furniture_wood", color: "#9a8a6c" },
       { name: "sanitary", color: "#e6dcc3" },
     ],
-    hideNodes: [...DOLLHOUSE.hideNodes, "interior_bad_glassvegg", "interior_bad_membran"],
+    hideNodes: [...BATH_SECTION.hideNodes, "interior_bad_glassvegg", "interior_bad_membran"],
   });
-  add("ba-3-etter", "card", "Illustrasjon: det samme badet etter oppussing.", { ...DOLLHOUSE });
+  add("ba-3-etter", "card", "Illustrasjon: det samme badet etter oppussing.", { ...BATH_SECTION });
 
   /* ---- permits ---- */
   for (const p of content.permits) {
-    const low = p.id === "kjeller" || p.id === "garasje";
-    const c = low ? cam([-18.5, 8.5, 25.5], [0, 0.2, 0.8], 30) : cam([-20.5, 12.5, 24.5], [0, 1.6, 0.5], 30);
+    const c = PERMIT_CAMERAS[p.id];
     add(`permit-${p.id}`, "diagram", p.diagramAlt, { lighting: "paper", permit: p.id, camera: c, shadowTarget: [0, 0, 0], shadowExtent: 12 });
   }
 
-  void allButSite;
   return shots;
 }

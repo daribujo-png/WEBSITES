@@ -78,6 +78,7 @@ async function load() {
     });
   }
   window.meta = meta;
+  window.__scene = scene; // debug handle for the harness (inspect visibility/clipping from Playwright)
   window.ready = true;
 }
 
@@ -103,29 +104,34 @@ function layerOf(o) {
 /* Sky + lighting                                                                                    */
 /* ------------------------------------------------------------------------------------------------ */
 
-function makeSky({ top, horizon, glow, glowStrength = 0.3, glowDir = [0.3, 0.05, 1], below }) {
-  const geo = new THREE.SphereGeometry(1500, 48, 24);
+function makeSky({ top, mid, horizon, glow, glowStrength = 0.3, glowDir = [0.3, 0.05, 1], glowWidth = 5, below }) {
+  const geo = new THREE.SphereGeometry(1500, 64, 32);
   const mat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
     fog: false,
     uniforms: {
       top: { value: new THREE.Color(top) },
+      mid: { value: new THREE.Color(mid || top) },
       horizon: { value: new THREE.Color(horizon) },
       glow: { value: new THREE.Color(glow) },
       below: { value: new THREE.Color(below || horizon) },
       glowDir: { value: new THREE.Vector3(...glowDir).normalize() },
       glowStrength: { value: glowStrength },
+      glowWidth: { value: glowWidth },
     },
     vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position.z = gl_Position.w; }`,
-    fragmentShader: `uniform vec3 top; uniform vec3 horizon; uniform vec3 glow; uniform vec3 below; uniform vec3 glowDir; uniform float glowStrength; varying vec3 vDir;
+    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; uniform vec3 glow; uniform vec3 below; uniform vec3 glowDir; uniform float glowStrength; uniform float glowWidth; varying vec3 vDir;
       void main(){
         float h = vDir.y;
-        float t = pow(clamp(h, 0.0, 1.0), 0.55);
-        vec3 c = mix(horizon, top, t);
-        float g = pow(max(dot(normalize(vec3(vDir.x, 0.0, vDir.z)), normalize(vec3(glowDir.x,0.0,glowDir.z))), 0.0), 6.0) * exp(-max(h,0.0)*7.0);
+        float hp = max(h, 0.0);
+        vec3 c = mix(horizon, mid, smoothstep(0.0, 0.22, pow(hp, 0.8)));
+        c = mix(c, top, smoothstep(0.12, 0.85, hp));
+        vec2 az = normalize(vDir.xz + 1e-5);
+        float facing = max(dot(az, normalize(glowDir.xz + 1e-5)), 0.0);
+        float g = pow(facing, glowWidth) * exp(-hp * 10.0) + 0.1 * pow(facing, 2.0) * exp(-hp * 5.0);
         c = mix(c, glow, clamp(g * glowStrength, 0.0, 1.0));
-        if (h < 0.0) c = mix(horizon, below, clamp(-h*6.0, 0.0, 1.0));
+        if (h < 0.0) c = mix(horizon, below, clamp(-h * 6.0, 0.0, 1.0));
         gl_FragColor = vec4(c, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -134,77 +140,42 @@ function makeSky({ top, horizon, glow, glowStrength = 0.3, glowDir = [0.3, 0.05,
   return new THREE.Mesh(geo, mat);
 }
 
-const PRESETS = {
-  bluehour: {
-    sky: { top: "#07111f", horizon: "#3d5571", glow: "#b08a72", glowStrength: 0.55, glowDir: [0.7, 0, 0.6], below: "#1b2532" },
-    fog: ["#2a3a4f", 30, 300],
-    envIntensity: 1.0,
-    key: { color: "#a9bddc", intensity: 0.45, position: [-30, 38, -12] },
-    fill: { color: "#7f98bd", intensity: 0.4, position: [-12, 10, 30] },
-    exposure: 1.4,
-    windows: 1.0,
-    interior: 1.0,
-    bloom: [0.3, 0.4, 0.92],
-    background: "sky",
-  },
-  day: {
-    sky: { top: "#9fb2c0", horizon: "#e2e3de", glow: "#f3ecdf", glowStrength: 0.25, glowDir: [-0.4, 0, 0.8], below: "#c9ccc6" },
-    fog: ["#cdd3d3", 45, 420],
-    envIntensity: 1.0,
-    key: { color: "#fff3e2", intensity: 2.1, position: [-26, 40, 30] },
-    fill: null,
-    exposure: 0.95,
-    windows: 0.0,
-    interior: 0.0,
-    bloom: null,
-    background: "sky",
-  },
-  stage: {
-    // dark build-sequence stage: blue-hour sky for light, background fades to fjord night
-    sky: { top: "#0a1524", horizon: "#4a6280", glow: "#c3a07e", glowStrength: 0.5, glowDir: [0.7, 0, 0.6], below: "#1b2532" },
-    fog: ["#0e1416", 20, 52],
-    envIntensity: 1.0,
-    key: { color: "#dfe7f2", intensity: 1.5, position: [-24, 34, 22] },
-    fill: { color: "#c9a86a", intensity: 0.25, position: [26, 10, -20] },
-    exposure: 1.0,
-    windows: 0.0,
-    interior: 0.0,
-    bloom: [0.35, 0.5, 0.86],
-    background: "#0e1416",
-  },
-  stageNight: {
-    sky: { top: "#07111f", horizon: "#3d5571", glow: "#b08a72", glowStrength: 0.55, glowDir: [0.7, 0, 0.6], below: "#1b2532" },
-    fog: ["#0e1416", 28, 70],
-    envIntensity: 0.75,
-    key: { color: "#a9bddc", intensity: 0.55, position: [-30, 38, -12] },
-    fill: null,
-    exposure: 1.05,
-    windows: 1.0,
-    interior: 1.0,
-    bloom: [0.5, 0.55, 0.8],
-    background: "#0e1416",
-  },
-  paper: {
-    sky: { top: "#e9e4da", horizon: "#f2efe9", glow: "#ffffff", glowStrength: 0.1, glowDir: [0, 0, 1], below: "#ede8df" },
-    fog: null,
-    envIntensity: 0.5,
-    key: { color: "#fff8ec", intensity: 2.0, position: [-16, 15, 9] },
-    fill: { color: "#e6ecf2", intensity: 0.35, position: [14, 8, 12] },
-    exposure: 0.82,
-    windows: 0.0,
-    interior: 0.0,
-    bloom: null,
-    background: "#ede8df",
-  },
-};
+const TONE = { ACESFilmic: THREE.ACESFilmicToneMapping, AgX: THREE.AgXToneMapping, Neutral: THREE.NeutralToneMapping };
+
+/** Deep merge for plain objects (arrays and primitives replace). */
+function merge(a, b) {
+  if (!b) return a;
+  const out = { ...a };
+  for (const [k, v] of Object.entries(b)) {
+    out[k] = v && typeof v === "object" && !Array.isArray(v) && a[k] && typeof a[k] === "object" ? merge(a[k], v) : v;
+  }
+  return out;
+}
+
+function directional(spec, target, shot) {
+  const l = new THREE.DirectionalLight(spec.color, spec.intensity);
+  l.position.set(...spec.position).add(new THREE.Vector3(...target));
+  l.target.position.set(...target);
+  if (spec.castShadow) {
+    l.castShadow = true;
+    l.shadow.mapSize.set(4096, 4096);
+    const s = shot.shadowExtent || 18;
+    Object.assign(l.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 1, far: 160 });
+    l.shadow.bias = -0.0003;
+    l.shadow.normalBias = shot.normalBias ?? 0.04;
+    l.shadow.radius = 4;
+  }
+  return l;
+}
 
 let currentEnv = null;
 function setLighting(name, shot) {
-  const P = { ...PRESETS[name], ...(shot.lightingOverrides || {}) };
+  const P = merge(meta.lighting[name], shot.lightingOverrides);
+  if (!P) throw new Error(`Unknown lighting preset ${name}`);
   lights.clear();
   if (sky) scene.remove(sky);
   sky = makeSky(P.sky);
-  // environment from the sky
+  // environment from the sky (sky dome only, so the IBL matches the visible sky)
   const envScene = new THREE.Scene();
   envScene.add(makeSky(P.sky));
   if (currentEnv) currentEnv.dispose();
@@ -217,56 +188,56 @@ function setLighting(name, shot) {
   } else {
     scene.background = new THREE.Color(P.background);
   }
-  scene.fog = P.fog ? new THREE.Fog(P.fog[0], P.fog[1], P.fog[2]) : null;
+  scene.fog = P.fog ? new THREE.Fog(P.fog.color, P.fog.near, P.fog.far) : null;
+  renderer.toneMapping = TONE[P.toneMapping] ?? THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = P.exposure;
+  const tgt = shot.shadowTarget || [0, 2, 0.5];
+  if (P.hemisphere) lights.add(new THREE.HemisphereLight(P.hemisphere.sky, P.hemisphere.ground, P.hemisphere.intensity));
   if (P.key) {
-    const k = new THREE.DirectionalLight(P.key.color, P.key.intensity);
-    k.position.set(...P.key.position);
-    const tgt = shot.shadowTarget || [0, 2, 0.5];
-    k.target.position.set(...tgt);
-    k.position.add(new THREE.Vector3(...tgt));
-    k.castShadow = true;
-    k.shadow.mapSize.set(4096, 4096);
-    const s = shot.shadowExtent || 18;
-    Object.assign(k.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 1, far: 140 });
-    k.shadow.bias = -0.0003;
-    k.shadow.normalBias = shot.normalBias ?? 0.04;
-    k.shadow.radius = 4;
+    const k = directional(P.key, tgt, shot);
     lights.add(k, k.target);
   }
   if (P.fill) {
-    const f = new THREE.DirectionalLight(P.fill.color, P.fill.intensity);
-    f.position.set(...P.fill.position);
-    lights.add(f);
+    const f = directional(P.fill, tgt, shot);
+    lights.add(f, f.target);
   }
-  renderer.toneMappingExposure = shot.exposure ?? P.exposure;
-  // interior + windows
-  const winK = shot.windows ?? P.windows;
-  const intK = shot.interior ?? P.interior;
+  // lamps (emissive), exterior wall lights and warm interior lights
   for (const [mesh, mat] of orig) {
-    if (mat.name === "lamp_glow") {
-      mesh.material = mat.clone();
-      mesh.material.emissiveIntensity = mat.emissiveIntensity * winK * (shot.lampScale ?? 0.45);
-      if (winK === 0) mesh.material.emissive = new THREE.Color("#000000");
-    }
+    if (mat.name !== "lamp_glow") continue;
+    mesh.material = mesh.material.clone(); // keeps any clipping set up by the shot
+    if (P.lamps > 0) mesh.material.emissiveIntensity = mat.emissiveIntensity * P.lamps;
+    else mesh.material.emissive = new THREE.Color("#000000");
   }
-  if (winK > 0 && meta && shot.exteriorLights !== false) {
+  if (P.exteriorLights > 0) {
     for (const l of meta.exteriorLights || []) {
-      const pl = new THREE.PointLight(l.color, 1.6 * l.intensity * winK, 4.5, 2);
+      const pl = new THREE.PointLight(l.color, P.exteriorLights * l.intensity, 5, 2);
       pl.position.set(...l.position);
       lights.add(pl);
     }
   }
-  if (intK > 0 && meta) {
+  if (P.interiorLights > 0) {
     for (const l of meta.interiorLights) {
-      const pl = new THREE.PointLight(l.color, (shot.interiorScale ?? 7) * l.intensity * intK, 9, 2);
+      const pl = new THREE.PointLight(P.interiorColor || l.color, P.interiorLights * l.intensity, 9, 2);
       pl.position.set(...l.position);
       lights.add(pl);
     }
-    // soft warm glow just inside large windows
     for (const extra of shot.extraLights || []) {
-      const pl = new THREE.PointLight(extra.color || "#ffc98a", extra.intensity, extra.distance || 8, 2);
+      const pl = new THREE.PointLight(extra.color || P.interiorColor || "#ffc98a", extra.intensity, extra.distance || 8, 2);
       pl.position.set(...extra.position);
       lights.add(pl);
+    }
+  }
+  // environment materials (e.g. the monochrome site model on the dark stage)
+  if (P.envMaterials) {
+    for (const [mesh, mat] of orig) {
+      const spec = P.envMaterials[mat.name];
+      if (!spec) continue;
+      const m = new THREE.MeshStandardMaterial({ color: spec.color, roughness: spec.roughness ?? 1, metalness: 0 });
+      m.name = mat.name;
+      m.clippingPlanes = mesh.material.clippingPlanes;
+      m.side = mesh.material.side;
+      mesh.material = m;
+      if (spec.castShadow === false) mesh.castShadow = false;
     }
   }
   return P;
@@ -280,6 +251,7 @@ function resetState() {
   for (const [mesh, mat] of orig) {
     mesh.material = mat;
     mesh.visible = true;
+    if (mesh.userData.__cast !== undefined) mesh.castShadow = mesh.userData.__cast;
   }
   house.traverse((o) => {
     if (o !== house) o.visible = true;
@@ -297,6 +269,7 @@ function resetState() {
 function rememberPositions() {
   house.traverse((o) => {
     o.userData.__pos = o.position.clone();
+    if (o.isMesh) o.userData.__cast = o.castShadow;
   });
 }
 
@@ -319,11 +292,8 @@ function applyShot(shot) {
       if (hf && steps.indexOf(hf) <= idx) o.visible = false;
     });
   }
-  for (const n of shot.hideNodes || []) {
-    const o = byName.get(n);
-    if (o) o.visible = false;
-    else matchNodes(n).forEach((m) => (m.visible = false));
-  }
+  // hideNodes: node-name prefixes (a part and its sub-parts, e.g. "interior_trapp" also hides "interior_trapp_vange")
+  for (const n of shot.hideNodes || []) matchNodes(`^${n}`).forEach((m) => (m.visible = false));
   for (const n of shot.showNodes || []) matchNodes(n).forEach((m) => (m.visible = true));
   // environment
   if (shot.env === false) house.children.filter((c) => c.name.startsWith("env_")).forEach((c) => (c.visible = false));
@@ -414,7 +384,7 @@ function applyXray({ keep = ["installasjoner"], ghostOpacity = 0.05, ghostColor 
   }
 }
 
-function applyClay({ color = "#cdc7bc", highlight = [], highlightColor = "#b08b5e", keepEnv = true } = {}) {
+function applyClay({ color = "#c4bdb0", highlight = [], highlightColor = "#b08b5e", keepEnv = true } = {}) {
   const clay = new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 });
   const glassClay = new THREE.MeshStandardMaterial({ color: "#c9c4ba", roughness: 0.3, metalness: 0 });
   for (const [mesh, mat] of orig) {
@@ -540,8 +510,8 @@ window.renderShot = async (shot) => {
     ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
     composer.addPass(ao);
   }
-  const bloom = shot.bloom === false ? null : shot.bloom || P.bloom;
-  if (bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), bloom[0], bloom[1], bloom[2]));
+  const bloom = shot.bloom === false ? null : shot.bloom ? { strength: shot.bloom[0], radius: shot.bloom[1], threshold: shot.bloom[2] } : P.bloom;
+  if (bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), bloom.strength, bloom.radius, bloom.threshold));
   composer.addPass(new OutputPass());
   composer.render();
   const url = renderer.domElement.toDataURL("image/png");

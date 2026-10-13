@@ -47,7 +47,7 @@ function ServiceRow({ service, flip }: { service: Service; flip: boolean }) {
           />
           {/* The small image overlaps the large one; the captions sit beside it. */}
           <div className={cn("flex items-start gap-5 md:gap-8", flip && "flex-row-reverse")}>
-            <ul className="t-caption min-w-0 flex-1 pt-3 text-fg-muted">
+            <ul className="t-caption grid min-w-0 flex-1 gap-2.5 pt-3 text-fg-muted">
               {captions.map((c) => (
                 <li key={c}>{c}</li>
               ))}

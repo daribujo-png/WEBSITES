@@ -14,6 +14,8 @@ interface ServiceCardProps {
   service: Service;
   headingLevel?: "h2" | "h3";
   sizes?: string;
+  /** First card in view on load: eager image, no curtain (it is the LCP element). */
+  priority?: boolean;
   className?: string;
 }
 
@@ -21,6 +23,7 @@ export function ServiceCard({
   service,
   headingLevel = "h2",
   sizes = "(min-width: 64rem) 30vw, (min-width: 48rem) 45vw, calc(100vw - 2rem)",
+  priority,
   className,
 }: ServiceCardProps) {
   const Heading = headingLevel;
@@ -32,6 +35,7 @@ export function ServiceCard({
         sizes={sizes}
         aspect="4 / 3"
         cursorLabel="Se"
+        priority={priority}
         missingLabel={`bilder av ${service.title.toLowerCase()}`}
         imgClassName="transition-transform duration-(--dur-slower) ease-expo group-hover/card:scale-[1.03] motion-reduce:transition-none"
       />

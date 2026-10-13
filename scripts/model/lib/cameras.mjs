@@ -1,12 +1,21 @@
 /**
- * Camera presets and lighting presets shared by the renderer
- * (scripts/render) and written into house.meta.json for the live 3D.
- * Positions are world metres; fov is vertical, in degrees.
+ * Camera and lighting presets. One source of truth: the render harness
+ * (scripts/render/page/render.js) reads them from house.meta.json, and the
+ * live 3D on the site reads the same file, so posters and canvas match.
+ *
+ * Cameras: world metres, `fov` is vertical in degrees.
+ * Lighting: colours are sRGB hex; light intensities follow three.js
+ * physically based units (r155+): directional/hemisphere in lux-like
+ * units, point lights in candela with `decay: 2`.
  */
 export const CAMERAS = {
-  hero: { position: [-9.5, 1.6, 17.5], target: [-2.5, 4.8, 0.5], fov: 36 },
-  heroMobile: { position: [-7.5, 1.5, 19.5], target: [0.2, 5.2, 0.6], fov: 44 },
-  og: { position: [-10.5, 1.8, 19], target: [-1.6, 4.6, 0.5], fov: 34 },
+  // Exterior eye-level views look horizontally (straight verticals, like a shift
+  // lens) and frame the house with `shift`: [x, y] as a fraction of the image,
+  // applied with camera.setViewOffset(w, h, shift[0] * w, shift[1] * h, w, h).
+  // Negative x moves the house to the right, negative y moves it down.
+  hero: { position: [-12.4, 1.6, 16.6], target: [-0.6, 1.6, -0.6], fov: 46, shift: [-0.12, -0.1] },
+  heroMobile: { position: [-14.5, 1.6, 21.0], target: [-0.3, 1.6, 0.0], fov: 50, shift: [0.0, 0.0] },
+  og: { position: [-12.4, 1.6, 16.6], target: [-0.6, 1.6, -0.6], fov: 36, shift: [-0.07, -0.19] },
   stage: { position: [-17, 11, 21], target: [0, 2.8, 0.5], fov: 30 },
   steps: {
     tomt: { position: [-13, 12.5, 16], target: [0.5, 0, 1.4], fov: 32 },
@@ -23,28 +32,142 @@ export const CAMERAS = {
   },
 };
 
+/** Permit diagrams (permits.glb, each root node centred at the origin). Lighting: "paper". */
+const PERMIT_HIGH = { position: [-20.5, 12.5, 24.5], target: [0, 1.6, 0.5], fov: 30 };
+const PERMIT_LOW = { position: [-18.5, 8.5, 25.5], target: [0, 0.2, 0.8], fov: 30 };
+export const PERMIT_CAMERAS = {
+  pabygg: PERMIT_HIGH,
+  frittliggende: PERMIT_HIGH,
+  tilbygg: PERMIT_HIGH,
+  kjeller: PERMIT_LOW,
+  garasje: PERMIT_LOW,
+};
+
+/**
+ * Lighting presets.
+ *  toneMapping     "ACESFilmic" | "AgX" | "Neutral"
+ *  background      "sky" (draw the sky dome) or a hex colour
+ *  sky             gradient dome {top, mid, horizon, below, glow, glowStrength, glowDir, glowWidth};
+ *                  also baked into the environment map (PMREM) at envIntensity
+ *  fog             {color, near, far} linear fog, or null
+ *  hemisphere      {sky, ground, intensity} or null
+ *  key / fill      directional lights {color, intensity, position (offset from target), castShadow}
+ *  lamps           multiplier for the `lamp_glow` emissive (0 switches the lamps off)
+ *  exteriorLights  candela per unit of meta.exteriorLights[].intensity (0 = off)
+ *  interiorLights  candela per unit of meta.interiorLights[].intensity (0 = off)
+ *  bloom           {strength, radius, threshold} or null
+ *  envMaterials    optional: replace environment materials (env_* nodes) with flat
+ *                  colours, e.g. the monochrome site model on the dark stage
+ */
 export const LIGHTING = {
   bluehour: {
-    toneMapping: "ACESFilmic",
-    exposure: 1.0,
-    sky: { top: "#0b1626", horizon: "#3a5068", glow: "#8a6f62", glowStrength: 0.35 },
-    fog: { color: "#26364a", near: 40, far: 260 },
-    hemisphere: { sky: "#5d7596", ground: "#1d2420", intensity: 0.55 },
-    key: { color: "#9db4d6", intensity: 0.35, position: [-30, 40, -20] },
-    windows: { color: "#ffc98a", intensity: 1.0 },
+    note: "Blue hour in Fana: sun just below the western horizon, deep blue sky, warm windows.",
+    toneMapping: "AgX",
+    exposure: 1.35,
+    background: "sky",
+    sky: {
+      top: "#0a1631",
+      mid: "#1e3c68",
+      horizon: "#6f8bad",
+      below: "#1a2533",
+      glow: "#e3a77a",
+      glowStrength: 0.65,
+      glowDir: [0.25, 0, -1],
+      glowWidth: 5,
+    },
+    envIntensity: 1.25,
+    fog: { color: "#33496a", near: 35, far: 320 },
+    hemisphere: { sky: "#5a77a3", ground: "#1b2420", intensity: 0.9 },
+    key: { color: "#a9c0e6", intensity: 0.5, position: [-30, 40, -14], castShadow: true },
+    fill: { color: "#d9a07a", intensity: 0.22, position: [36, 6, 14], castShadow: false },
+    lamps: 0.55,
+    exteriorLights: 2.2,
+    interiorLights: 9,
+    interiorColor: "#ffb469",
+    bloom: { strength: 0.32, radius: 0.45, threshold: 0.9 },
   },
   day: {
-    toneMapping: "ACESFilmic",
-    exposure: 1.0,
-    sky: { top: "#a9b8c2", horizon: "#dfe1dc", glow: "#ece6da", glowStrength: 0.2 },
-    fog: { color: "#c8cfd1", near: 60, far: 380 },
-    hemisphere: { sky: "#dfe6ea", ground: "#55604a", intensity: 1.15 },
-    key: { color: "#fff4e4", intensity: 1.6, position: [-25, 45, 30] },
-    windows: { color: "#ffc98a", intensity: 0.0 },
+    note: "Overcast Nordic daylight: soft, slightly cool, low contrast.",
+    toneMapping: "Neutral",
+    exposure: 0.92,
+    background: "sky",
+    sky: {
+      top: "#a3b3bf",
+      mid: "#c4ccd0",
+      horizon: "#e3e4df",
+      below: "#c9ccc6",
+      glow: "#f4eee3",
+      glowStrength: 0.25,
+      glowDir: [-0.4, 0, 0.8],
+      glowWidth: 4,
+    },
+    envIntensity: 1.0,
+    fog: { color: "#cbd2d4", near: 45, far: 420 },
+    hemisphere: { sky: "#e4eaee", ground: "#5b6650", intensity: 0.7 },
+    key: { color: "#fff3e2", intensity: 2.0, position: [-26, 40, 30], castShadow: true },
+    fill: null,
+    lamps: 0,
+    exteriorLights: 0,
+    interiorLights: 0,
+    bloom: null,
   },
   stage: {
-    note: "Build-sequence stage: dark background #0E1416, fog to background, model reads like an architectural model on a dark table.",
+    note: "Dark build-sequence stage: the house in real materials on a monochrome slate site model; fog fades the site into #0E1416.",
+    toneMapping: "AgX",
+    exposure: 1.1,
     background: "#0e1416",
-    fog: { color: "#0e1416", near: 30, far: 75 },
+    sky: {
+      top: "#0d1b2e",
+      mid: "#2a4466",
+      horizon: "#6d86a3",
+      below: "#1b2532",
+      glow: "#d6aa84",
+      glowStrength: 0.55,
+      glowDir: [0.7, 0, 0.6],
+      glowWidth: 5,
+    },
+    envIntensity: 0.9,
+    fog: { color: "#0e1416", near: 24, far: 62 },
+    hemisphere: { sky: "#9fb2c8", ground: "#1a2226", intensity: 0.55 },
+    key: { color: "#f1ece3", intensity: 2.2, position: [-24, 34, 22], castShadow: true },
+    fill: { color: "#c9a86a", intensity: 0.35, position: [26, 10, -20], castShadow: false },
+    lamps: 0,
+    exteriorLights: 0,
+    interiorLights: 0,
+    bloom: { strength: 0.3, radius: 0.5, threshold: 0.88 },
+    envMaterials: {
+      terrain: { color: "#2b3438", roughness: 1 },
+      rock: { color: "#3a4447", roughness: 0.95 },
+      hill: { color: "#161e21", roughness: 1 },
+      maple_leaf: { color: "#3b4743", roughness: 0.95, castShadow: false },
+      birch_leaf: { color: "#455250", roughness: 0.95, castShadow: false },
+      maple_bark: { color: "#2a3133", roughness: 0.95, castShadow: false },
+      birch_bark: { color: "#59625f", roughness: 0.9, castShadow: false },
+    },
+  },
+  paper: {
+    note: "Light diagrams on paper #EDE8DF (service cut-aways, permit diagrams).",
+    toneMapping: "Neutral",
+    exposure: 0.9,
+    background: "#ede8df",
+    sky: {
+      top: "#e9e4da",
+      mid: "#efebe3",
+      horizon: "#f2efe9",
+      below: "#ede8df",
+      glow: "#ffffff",
+      glowStrength: 0.1,
+      glowDir: [0, 0, 1],
+      glowWidth: 3,
+    },
+    envIntensity: 0.6,
+    fog: null,
+    hemisphere: { sky: "#f4f1ea", ground: "#b9b1a3", intensity: 0.6 },
+    key: { color: "#fff8ec", intensity: 2.3, position: [-16, 15, 9], castShadow: true },
+    fill: { color: "#e6ecf2", intensity: 0.35, position: [14, 8, 12], castShadow: false },
+    lamps: 0,
+    exteriorLights: 0,
+    interiorLights: 0,
+    bloom: null,
   },
 };

@@ -27,9 +27,11 @@ export function Container<T extends ElementType = "div">({
   children,
   ...rest
 }: ContainerProps<T>) {
-  const Tag: ElementType = as ?? "div";
+  // Narrowed to one tag so React Three Fiber's JSX elements (global JSX
+  // augmentation) don't collapse the union of intrinsic props to `never`.
+  const Tag = (as ?? "div") as "div";
   return (
-    <Tag className={cn(sizeClass[size], className)} {...rest}>
+    <Tag className={cn(sizeClass[size], className)} {...(rest as ComponentPropsWithoutRef<"div">)}>
       {children}
     </Tag>
   );

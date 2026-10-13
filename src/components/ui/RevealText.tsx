@@ -98,7 +98,7 @@ interface RevealProps {
  * lifts off an image). Server component; see RevealObserver.
  */
 export function Reveal({
-  as: Tag = "div",
+  as = "div",
   variant = "up",
   delay = 0,
   immediate,
@@ -107,6 +107,8 @@ export function Reveal({
   children,
   id,
 }: RevealProps) {
+  // Narrowed to one tag (see Container): R3F's JSX augmentation would make the union `never`.
+  const Tag = as as "div";
   return (
     <Tag
       id={id}

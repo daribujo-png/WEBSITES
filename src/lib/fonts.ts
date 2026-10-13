@@ -7,12 +7,17 @@
  *   font-size automatically, so large headings get the high-contrast cut.
  * - Schibsted Grotesk (wght variable): body and UI.
  * Latin subset only (covers æ ø å é).
+ *
+ * The files in src/fonts/ are the Fontsource latin files trimmed to the axis
+ * ranges the site uses (scripts/fonts/instance-fonts.py): Newsreader wght
+ * 300–400 / opsz 20–72, Schibsted Grotesk wght 400–600. That keeps ~70 KB off
+ * the first load. Widen the ranges there if the type scale changes.
  */
 import localFont from "next/font/local";
 
 export const newsreader = localFont({
-  src: "../../node_modules/@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2",
-  weight: "200 800",
+  src: "../fonts/newsreader-latin-display.woff2",
+  weight: "300 400",
   style: "normal",
   display: "swap",
   variable: "--font-newsreader",
@@ -21,8 +26,8 @@ export const newsreader = localFont({
 });
 
 export const schibsted = localFont({
-  src: "../../node_modules/@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2",
-  weight: "400 900",
+  src: "../fonts/schibsted-grotesk-latin-text.woff2",
+  weight: "400 600",
   style: "normal",
   display: "swap",
   variable: "--font-schibsted",

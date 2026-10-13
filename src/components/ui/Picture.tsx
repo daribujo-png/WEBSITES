@@ -49,7 +49,7 @@ export function Picture({
         sizes={sizes}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
-        decoding={priority ? "sync" : "async"}
+        decoding="async"
         style={placeholderStyle(asset.placeholder)}
         className={cn(fill ? "h-full w-full object-cover" : "h-auto w-full", imgClassName)}
       />

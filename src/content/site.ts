@@ -9,7 +9,7 @@ import type { MissingFact, NavItem, PhotoKey, Trade, Value } from "./types";
 
 /* Company -------------------------------------------------------------------- */
 
-const phone = "94 01 66 10";
+const phone = "94\u00a001\u00a066\u00a010";
 const email = "post@byggrv.no";
 const addressLine = "Breisteinvegen 206, 5111 Breistein";
 
@@ -368,7 +368,7 @@ export const notFoundCopy = {
   body: "Lenken kan være gammel, eller adressen kan ha en skrivefeil.",
   home: { label: "Til forsiden", href: "/" },
   services: { label: "Se tjenestene", href: "/tjenester/" },
-  contact: "Finner du ikke det du leter etter? Ring oss på 94 01 66 10.",
+  contact: "Finner du ikke det du leter etter? Ring oss på 94\u00a001\u00a066\u00a010.",
 } as const;
 
 /* Missing facts --------------------------------------------------------------------------------------- */

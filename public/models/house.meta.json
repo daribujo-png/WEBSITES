@@ -6,7 +6,7 @@
   "model": {
     "name": "House in Bergen — vår tolkning",
     "architect": "Kvalbein Korsøen Arkitektur",
-    "footprint": "two wings, 8.0 m wide, 4.6 m + 4.4 m long, bending 14° at a mitred joint; ≈ 72 m² gross per floor",
+    "footprint": "two wings, 8 m wide (frame), 4.6 m + 4.4 m long, bending 18° at a mitred joint; ≈ 75 m² gross per floor",
     "floorsAboveGround": 2,
     "roofPitchDeg": 40,
     "ridgeHeight": 9.16
@@ -330,20 +330,20 @@
       "node": "layer_nokkelferdig",
       "order": 10,
       "center": [
-        -0.13,
-        3.543,
-        -1.939
+        0.075,
+        3.545,
+        -1.863
       ],
       "bbox": {
         "min": [
-          -5.868,
-          -0.299,
+          -5.721,
+          -0.294,
           -13.319
         ],
         "max": [
-          5.609,
+          5.87,
           7.385,
-          9.442
+          9.592
         ]
       },
       "explode": [
@@ -819,42 +819,54 @@
   "camera": {
     "hero": {
       "position": [
-        -9.5,
+        -12.4,
         1.6,
-        17.5
+        16.6
       ],
       "target": [
-        -2.5,
-        4.8,
-        0.5
+        -0.6,
+        1.6,
+        -0.6
       ],
-      "fov": 36
+      "fov": 46,
+      "shift": [
+        -0.12,
+        -0.1
+      ]
     },
     "heroMobile": {
       "position": [
-        -7.5,
-        1.5,
-        19.5
+        -14.5,
+        1.6,
+        21
       ],
       "target": [
-        0.2,
-        5.2,
-        0.6
+        -0.3,
+        1.6,
+        0
       ],
-      "fov": 44
+      "fov": 50,
+      "shift": [
+        0,
+        0
+      ]
     },
     "og": {
       "position": [
-        -10.5,
-        1.8,
-        19
+        -12.4,
+        1.6,
+        16.6
       ],
       "target": [
-        -1.6,
-        4.6,
-        0.5
+        -0.6,
+        1.6,
+        -0.6
       ],
-      "fov": 34
+      "fov": 36,
+      "shift": [
+        -0.07,
+        -0.19
+      ]
     },
     "stage": {
       "position": [
@@ -1017,85 +1029,260 @@
   },
   "lighting": {
     "bluehour": {
-      "toneMapping": "ACESFilmic",
-      "exposure": 1,
+      "note": "Blue hour in Fana: sun just below the western horizon, deep blue sky, warm windows.",
+      "toneMapping": "AgX",
+      "exposure": 1.35,
+      "background": "sky",
       "sky": {
-        "top": "#0b1626",
-        "horizon": "#3a5068",
-        "glow": "#8a6f62",
-        "glowStrength": 0.35
+        "top": "#0a1631",
+        "mid": "#1e3c68",
+        "horizon": "#6f8bad",
+        "below": "#1a2533",
+        "glow": "#e3a77a",
+        "glowStrength": 0.65,
+        "glowDir": [
+          0.25,
+          0,
+          -1
+        ],
+        "glowWidth": 5
       },
+      "envIntensity": 1.25,
       "fog": {
-        "color": "#26364a",
-        "near": 40,
-        "far": 260
+        "color": "#33496a",
+        "near": 35,
+        "far": 320
       },
       "hemisphere": {
-        "sky": "#5d7596",
-        "ground": "#1d2420",
-        "intensity": 0.55
+        "sky": "#5a77a3",
+        "ground": "#1b2420",
+        "intensity": 0.9
       },
       "key": {
-        "color": "#9db4d6",
-        "intensity": 0.35,
+        "color": "#a9c0e6",
+        "intensity": 0.5,
         "position": [
           -30,
           40,
-          -20
-        ]
+          -14
+        ],
+        "castShadow": true
       },
-      "windows": {
-        "color": "#ffc98a",
-        "intensity": 1
+      "fill": {
+        "color": "#d9a07a",
+        "intensity": 0.22,
+        "position": [
+          36,
+          6,
+          14
+        ],
+        "castShadow": false
+      },
+      "lamps": 0.55,
+      "exteriorLights": 2.2,
+      "interiorLights": 9,
+      "interiorColor": "#ffb469",
+      "bloom": {
+        "strength": 0.32,
+        "radius": 0.45,
+        "threshold": 0.9
       }
     },
     "day": {
-      "toneMapping": "ACESFilmic",
-      "exposure": 1,
+      "note": "Overcast Nordic daylight: soft, slightly cool, low contrast.",
+      "toneMapping": "Neutral",
+      "exposure": 0.92,
+      "background": "sky",
       "sky": {
-        "top": "#a9b8c2",
-        "horizon": "#dfe1dc",
-        "glow": "#ece6da",
-        "glowStrength": 0.2
+        "top": "#a3b3bf",
+        "mid": "#c4ccd0",
+        "horizon": "#e3e4df",
+        "below": "#c9ccc6",
+        "glow": "#f4eee3",
+        "glowStrength": 0.25,
+        "glowDir": [
+          -0.4,
+          0,
+          0.8
+        ],
+        "glowWidth": 4
       },
+      "envIntensity": 1,
       "fog": {
-        "color": "#c8cfd1",
-        "near": 60,
-        "far": 380
+        "color": "#cbd2d4",
+        "near": 45,
+        "far": 420
       },
       "hemisphere": {
-        "sky": "#dfe6ea",
-        "ground": "#55604a",
-        "intensity": 1.15
+        "sky": "#e4eaee",
+        "ground": "#5b6650",
+        "intensity": 0.7
       },
       "key": {
-        "color": "#fff4e4",
-        "intensity": 1.6,
+        "color": "#fff3e2",
+        "intensity": 2,
         "position": [
-          -25,
-          45,
+          -26,
+          40,
           30
-        ]
+        ],
+        "castShadow": true
       },
-      "windows": {
-        "color": "#ffc98a",
-        "intensity": 0
-      }
+      "fill": null,
+      "lamps": 0,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": null
     },
     "stage": {
-      "note": "Build-sequence stage: dark background #0E1416, fog to background, model reads like an architectural model on a dark table.",
+      "note": "Dark build-sequence stage: the house in real materials on a monochrome slate site model; fog fades the site into #0E1416.",
+      "toneMapping": "AgX",
+      "exposure": 1.1,
       "background": "#0e1416",
+      "sky": {
+        "top": "#0d1b2e",
+        "mid": "#2a4466",
+        "horizon": "#6d86a3",
+        "below": "#1b2532",
+        "glow": "#d6aa84",
+        "glowStrength": 0.55,
+        "glowDir": [
+          0.7,
+          0,
+          0.6
+        ],
+        "glowWidth": 5
+      },
+      "envIntensity": 0.9,
       "fog": {
         "color": "#0e1416",
-        "near": 30,
-        "far": 75
+        "near": 24,
+        "far": 62
+      },
+      "hemisphere": {
+        "sky": "#9fb2c8",
+        "ground": "#1a2226",
+        "intensity": 0.55
+      },
+      "key": {
+        "color": "#f1ece3",
+        "intensity": 2.2,
+        "position": [
+          -24,
+          34,
+          22
+        ],
+        "castShadow": true
+      },
+      "fill": {
+        "color": "#c9a86a",
+        "intensity": 0.35,
+        "position": [
+          26,
+          10,
+          -20
+        ],
+        "castShadow": false
+      },
+      "lamps": 0,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": {
+        "strength": 0.3,
+        "radius": 0.5,
+        "threshold": 0.88
+      },
+      "envMaterials": {
+        "terrain": {
+          "color": "#2b3438",
+          "roughness": 1
+        },
+        "rock": {
+          "color": "#3a4447",
+          "roughness": 0.95
+        },
+        "hill": {
+          "color": "#161e21",
+          "roughness": 1
+        },
+        "maple_leaf": {
+          "color": "#3b4743",
+          "roughness": 0.95,
+          "castShadow": false
+        },
+        "birch_leaf": {
+          "color": "#455250",
+          "roughness": 0.95,
+          "castShadow": false
+        },
+        "maple_bark": {
+          "color": "#2a3133",
+          "roughness": 0.95,
+          "castShadow": false
+        },
+        "birch_bark": {
+          "color": "#59625f",
+          "roughness": 0.9,
+          "castShadow": false
+        }
       }
+    },
+    "paper": {
+      "note": "Light diagrams on paper #EDE8DF (service cut-aways, permit diagrams).",
+      "toneMapping": "Neutral",
+      "exposure": 0.9,
+      "background": "#ede8df",
+      "sky": {
+        "top": "#e9e4da",
+        "mid": "#efebe3",
+        "horizon": "#f2efe9",
+        "below": "#ede8df",
+        "glow": "#ffffff",
+        "glowStrength": 0.1,
+        "glowDir": [
+          0,
+          0,
+          1
+        ],
+        "glowWidth": 3
+      },
+      "envIntensity": 0.6,
+      "fog": null,
+      "hemisphere": {
+        "sky": "#f4f1ea",
+        "ground": "#b9b1a3",
+        "intensity": 0.6
+      },
+      "key": {
+        "color": "#fff8ec",
+        "intensity": 2.3,
+        "position": [
+          -16,
+          15,
+          9
+        ],
+        "castShadow": true
+      },
+      "fill": {
+        "color": "#e6ecf2",
+        "intensity": 0.35,
+        "position": [
+          14,
+          8,
+          12
+        ],
+        "castShadow": false
+      },
+      "lamps": 0,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": null
     }
   },
   "stats": {
-    "bytes": 2742396,
-    "meshes": 93,
-    "vertices": 383328,
-    "triangles": 152635
+    "bytes": 1669028,
+    "meshes": 94,
+    "vertices": 234603,
+    "triangles": 226860
   }
 }

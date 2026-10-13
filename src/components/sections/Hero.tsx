@@ -42,9 +42,16 @@ export function Hero() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 hidden w-2/3 bg-linear-to-r from-night/80 via-night/40 to-transparent lg:block"
         />
+        {/* Desktop: the lead sits over the lit facade; a soft local scrim keeps it at 4.5:1 or better. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(ellipse_36%_34%_at_80%_58%,color-mix(in_oklab,var(--color-night)_72%,transparent),transparent)] lg:block"
+        />
       </div>
 
-      <div className="relative z-(--z-raised) container-page -mt-20 pb-10 lg:mt-0 lg:pt-[calc(var(--header-h)+4rem)] lg:pb-12">
+      {/* Desktop: the copy overlays the stage, so let pointer events through to the
+          house (gentle drag) everywhere except on links and buttons. */}
+      <div className="relative z-(--z-raised) container-page -mt-20 pb-10 lg:pointer-events-none lg:mt-0 lg:pt-[calc(var(--header-h)+4rem)] lg:pb-12 lg:[&_a]:pointer-events-auto lg:[&_button]:pointer-events-auto">
         <div className="grid-page gap-y-8 lg:items-end">
           <IntroText
             as="h1"
@@ -57,7 +64,7 @@ export function Hero() {
             style={introUp(120).style}
             className={cn(introUp(120).className, "col-span-full md:col-span-6 lg:col-span-4 lg:col-start-9")}
           >
-            <p className="t-lead text-fg">{hero.sub}</p>
+            <p className="t-lead text-fg lg:[text-shadow:0_0_1.25rem_var(--color-night),0_0_0.375rem_color-mix(in_oklab,var(--color-night)_70%,transparent)]">{hero.sub}</p>
           </div>
         </div>
 
