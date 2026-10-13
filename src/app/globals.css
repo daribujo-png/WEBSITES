@@ -1,26 +1,553 @@
+/*
+ * Bygg og Renovering Vest – global styles and design tokens.
+ * "Lys papir": light paper pages with dark text. Only the hero stage and the
+ * "Slik bygger vi" build sequence are dark (fjord night / slate).
+ * Every colour used anywhere on the site is a token below. See DESIGN.md.
+ */
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Variants ---------------------------------------------------------------- */
+/* `js:` applies only once the inline head script has marked <html class="js">.
+   Use it for hidden-before-animation states so no-JS visitors see content. */
+@custom-variant js (&:where(.js, .js *));
+
+/* Theme tokens ------------------------------------------------------------- */
+@theme {
+  /* Wipe Tailwind's default palette: colour only comes from these tokens. */
+  --color-*: initial;
+
+  /* Prompt tokens (material names). */
+  --color-night: #0e1416; /* bg      – fjord night: hero + build stage */
+  --color-slate: #1a2226; /* surface – slate: panels on dark */
+  --color-snow: #f2efe9; /* text    – snow: text on dark */
+  --color-mist: #9ba5a3; /* muted   – mist: secondary text on dark only */
+  --color-oak: #b08b5e; /* wood    – oak: large type / decoration on light, text on dark */
+  --color-brass: #c9a86a; /* accent  – brass: sparingly; text only on dark */
+  --color-paper: #ede8df; /* light section bg – paper: default page */
+
+  /* Prompt role aliases (same values, for readability in code reviews). */
+  --color-bg: #0e1416;
+  --color-surface: #1a2226;
+  --color-muted: #9ba5a3;
+  --color-wood: #b08b5e;
+  --color-accent: #c9a86a;
+
+  /* Derived tokens (tints / shades of the prompt palette). */
+  --color-chalk: #f7f5f0; /* near-white surface (cards, form fields, alternate band) */
+  --color-paper-deep: #e3ddd1; /* deeper paper band, image placeholders */
+  --color-ink: #161c1e; /* body + heading text on light (14.1:1 on paper) */
+  --color-ink-soft: #4d5654; /* secondary text on light (6.2:1 on paper) */
+  --color-oak-deep: #7a5933; /* oak for text/icons on light (5.2:1 on paper) */
+  --color-brass-deep: #765c29; /* brass for text/icons on light (5.2:1 on paper) */
+  --color-rule: #d3ccbf; /* decorative hairline on light */
+  --color-rule-strong: #6f7774; /* UI borders on light, e.g. inputs (3.8:1 on paper) */
+  --color-rule-night: #2a3437; /* decorative hairline on dark */
+  --color-rule-night-strong: #6b7775; /* UI borders on dark (≥3:1 on night + slate) */
+  --color-error: #8e3b23; /* form errors on light (6.2:1 on paper) */
+  --color-error-night: #e59a7e; /* form errors on dark (8.2:1 on night) */
+
+  /* Type families (next/font/local variables, set in layout.tsx). */
+  --font-*: initial;
+  --font-display: var(--font-newsreader), "Iowan Old Style", "Times New Roman", serif;
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Fluid type scale. Display sizes are Newsreader (optical size follows
+     font-size automatically); everything else is Schibsted Grotesk. */
+  --text-display-xl: clamp(3.25rem, 1.55rem + 7.2vw, 9.75rem);
+  --text-display-xl--line-height: 0.9;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-l: clamp(2.6rem, 1.45rem + 4.8vw, 6.75rem);
+  --text-display-l--line-height: 0.95;
+  --text-display-l--letter-spacing: -0.03em;
+  --text-display-m: clamp(2.05rem, 1.35rem + 2.9vw, 4.4rem);
+  --text-display-m--line-height: 1;
+  --text-display-m--letter-spacing: -0.025em;
+  --text-display-s: clamp(1.6rem, 1.25rem + 1.45vw, 2.65rem);
+  --text-display-s--line-height: 1.08;
+  --text-display-s--letter-spacing: -0.018em;
+  --text-title: clamp(1.25rem, 1.12rem + 0.5vw, 1.55rem);
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.01em;
+  --text-lead: clamp(1.125rem, 1.04rem + 0.38vw, 1.375rem);
+  --text-lead--line-height: 1.5;
+  --text-body: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
+  --text-body--line-height: 1.65;
+  --text-small: 0.9375rem;
+  --text-small--line-height: 1.55;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-caption--letter-spacing: 0.005em;
+
+  /* Spacing additions (Tailwind's numeric spacing scale still works). */
+  --spacing-gutter: clamp(1rem, 0.45rem + 2.4vw, 3rem); /* page side padding, grid gap */
+  --spacing-section: clamp(5.5rem, 3rem + 9vw, 12rem); /* vertical rhythm between sections */
+  --spacing-section-sm: clamp(3.5rem, 2.25rem + 4.5vw, 7rem);
+  --spacing-header: var(--header-h);
+  --spacing-actionbar: var(--actionbar-h);
+
+  /* Max widths (`max-w-page`, `max-w-prose` …). */
+  --container-page: 90rem; /* 1440px content frame */
+  --container-wide: 112rem; /* full-bleed media cap */
+  --container-prose: 40rem; /* running text */
+  --container-measure: 32rem; /* short leads next to headings */
+
+  /* Radii: architectural, almost square. */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 6px;
+  --radius-4xl: 8px;
+
+  /* Easing: slow, weighty, never bouncy. */
+  --ease-weight: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-glide: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
+/* Tone-aware semantic colours. A [data-tone] ancestor sets the --tone-* vars,
+   so `text-fg`, `bg-tone`, `border-line` … adapt on paper and on night. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-tone: var(--tone-bg);
+  --color-fg: var(--tone-fg);
+  --color-fg-muted: var(--tone-fg-muted);
+  --color-fg-accent: var(--tone-accent);
+  --color-line: var(--tone-line);
+  --color-line-strong: var(--tone-line-strong);
+  --color-focus: var(--tone-focus);
+  --color-danger: var(--tone-error);
 }
 
-@media (prefers-color-scheme: dark) {
+/* Global custom properties --------------------------------------------------- */
+:root {
+  --header-h: 4rem;
+  --actionbar-h: 4rem;
+
+  --dur-fast: 200ms;
+  --dur-base: 450ms;
+  --dur-slow: 900ms;
+  --dur-slower: 1400ms;
+
+  /* z-layers – use as z-(--z-header) */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 30;
+  --z-header: 40;
+  --z-actionbar: 45;
+  --z-overlay: 60;
+  --z-menu: 70;
+  --z-toast: 80;
+  --z-cursor: 90;
+  --z-skip: 100;
+
+  /* default tone = paper */
+  --tone-bg: var(--color-paper);
+  --tone-fg: var(--color-ink);
+  --tone-fg-muted: var(--color-ink-soft);
+  --tone-accent: var(--color-oak-deep);
+  --tone-line: var(--color-rule);
+  --tone-line-strong: var(--color-rule-strong);
+  --tone-focus: var(--color-ink);
+  --tone-error: var(--color-error);
+}
+
+@media (min-width: 64rem) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --header-h: 4.75rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Tones ----------------------------------------------------------------------- */
+[data-tone="paper"],
+[data-tone="chalk"],
+[data-tone="paper-deep"] {
+  --tone-fg: var(--color-ink);
+  --tone-fg-muted: var(--color-ink-soft);
+  --tone-accent: var(--color-oak-deep);
+  --tone-line: var(--color-rule);
+  --tone-line-strong: var(--color-rule-strong);
+  --tone-focus: var(--color-ink);
+  --tone-error: var(--color-error);
+  color-scheme: light;
+}
+[data-tone="paper"] {
+  --tone-bg: var(--color-paper);
+}
+[data-tone="chalk"] {
+  --tone-bg: var(--color-chalk);
+}
+[data-tone="paper-deep"] {
+  --tone-bg: var(--color-paper-deep);
+}
+
+[data-tone="night"],
+[data-tone="slate"] {
+  --tone-fg: var(--color-snow);
+  --tone-fg-muted: var(--color-mist);
+  --tone-accent: var(--color-brass);
+  --tone-line: var(--color-rule-night);
+  --tone-line-strong: var(--color-rule-night-strong);
+  --tone-focus: var(--color-brass);
+  --tone-error: var(--color-error-night);
+  color-scheme: dark;
+}
+[data-tone="night"] {
+  --tone-bg: var(--color-night);
+}
+[data-tone="slate"] {
+  --tone-bg: var(--color-slate);
+}
+
+[data-tone] {
+  background-color: var(--tone-bg);
+  color: var(--tone-fg);
+}
+/* Opt out of the painted background but keep the tone's text colours. */
+[data-tone][data-tone-transparent] {
+  background-color: transparent;
+}
+
+/* Base ------------------------------------------------------------------------ */
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    hanging-punctuation: first last;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    overflow-x: clip;
+    background-color: var(--color-paper);
+  }
+
+  /* Room for the persistent mobile action bar (MobileActionBar, below lg). */
+  @media (max-width: 63.999rem) {
+    body {
+      padding-bottom: calc(var(--actionbar-h) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    text-wrap: balance;
+    font-kerning: normal;
+  }
+
+  p,
+  li,
+  dd,
+  figcaption {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  img {
+    height: auto;
+  }
+
+  ::selection {
+    background-color: var(--color-brass);
+    color: var(--color-night);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--tone-focus);
+    outline-offset: 3px;
+  }
+
+  [id] {
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for],
+  select {
+    cursor: pointer;
+  }
+}
+
+/* Composite type utilities ------------------------------------------------------ */
+@utility t-display-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: var(--text-display-xl--letter-spacing);
+  font-weight: 300;
+}
+@utility t-display-l {
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  line-height: var(--text-display-l--line-height);
+  letter-spacing: var(--text-display-l--letter-spacing);
+  font-weight: 300;
+}
+@utility t-display-m {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  line-height: var(--text-display-m--line-height);
+  letter-spacing: var(--text-display-m--letter-spacing);
+  font-weight: 300;
+}
+@utility t-display-s {
+  font-family: var(--font-display);
+  font-size: var(--text-display-s);
+  line-height: var(--text-display-s--line-height);
+  letter-spacing: var(--text-display-s--letter-spacing);
+  font-weight: 350;
+}
+@utility t-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  letter-spacing: var(--text-title--letter-spacing);
+  font-weight: 500;
+}
+@utility t-lead {
+  font-family: var(--font-sans);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead--line-height);
+  font-weight: 400;
+}
+@utility t-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  font-weight: 400;
+}
+@utility t-small {
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  line-height: var(--text-small--line-height);
+}
+@utility t-caption {
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+  letter-spacing: var(--text-caption--letter-spacing);
+}
+
+/* Layout utilities -------------------------------------------------------------- */
+@utility container-page {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+@utility container-wide {
+  width: 100%;
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+@utility grid-page {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--spacing-gutter);
+  @media (min-width: 48rem) {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  @media (min-width: 64rem) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* Animated underline for text links: draws from the left on hover/focus. */
+@utility link-draw {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  transition: background-size var(--dur-base) var(--ease-weight);
+  &:hover,
+  &:focus-visible {
+    animation: link-redraw var(--dur-slow) var(--ease-expo);
+  }
+}
+@keyframes link-redraw {
+  0% {
+    background-size: 100% 1px;
+    background-position: 100% 100%;
+  }
+  45% {
+    background-size: 0% 1px;
+    background-position: 100% 100%;
+  }
+  46% {
+    background-position: 0 100%;
+  }
+  100% {
+    background-size: 100% 1px;
+    background-position: 0 100%;
+  }
+}
+
+/* Components -------------------------------------------------------------------- */
+@layer components {
+  /* Skip link */
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: var(--z-skip);
+    padding: 0.75rem 1.1rem;
+    background: var(--color-ink);
+    color: var(--color-chalk);
+    font-size: var(--text-small);
+    transform: translateY(-200%);
+    transition: transform var(--dur-fast) var(--ease-weight);
+  }
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline-color: var(--color-brass);
+  }
+
+  /* Visible placeholder for a missing client fact: [MANGLER: …] */
+  .missing {
+    display: inline;
+    padding: 0.05em 0.35em;
+    border: 1px dashed currentColor;
+    border-radius: var(--radius-xs);
+    font-family: var(--font-sans);
+    font-size: 0.875em;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--tone-accent);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* Reveal system (see src/components/providers/RevealObserver.tsx).
+     Hidden states apply only with JS (.js on <html>) and without reduced motion. */
+  .reveal-line {
+    display: inline-block;
+    overflow: clip;
+    overflow-clip-margin: 0.04em;
+    vertical-align: top;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .reveal-word {
+    display: inline-block;
+    will-change: transform;
+    transition: transform var(--dur-slower) var(--ease-expo);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--i, 0) * var(--reveal-stagger, 55ms));
+  }
+  .js [data-reveal="text"]:not([data-revealed]) .reveal-word {
+    transform: translate3d(0, 108%, 0);
+  }
+
+  [data-reveal="up"] {
+    transition:
+      opacity var(--dur-slow) var(--ease-weight),
+      transform var(--dur-slower) var(--ease-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal="up"]:not([data-revealed]) {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+  }
+
+  [data-reveal="fade"] {
+    transition: opacity var(--dur-slower) var(--ease-weight);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal="fade"]:not([data-revealed]) {
+    opacity: 0;
+  }
+
+  [data-reveal="draw"] {
+    transition: transform var(--dur-slower) var(--ease-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal="draw"][data-orientation="x"]:not([data-revealed]) {
+    transform: scaleX(0);
+  }
+  .js [data-reveal="draw"][data-orientation="y"]:not([data-revealed]) {
+    transform: scaleY(0);
+  }
+
+  /* Image reveal: a paper curtain lifts off the media. */
+  [data-reveal="media"] {
+    clip-path: inset(0 0 0 0);
+    transition: clip-path var(--dur-slower) var(--ease-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal="media"]:not([data-revealed]) {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+/* Reduced motion: no transforms, no smooth scrolling, near-instant transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .js [data-reveal]:not([data-revealed]),
+  .js [data-reveal] .reveal-word {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+}
+
+/* Print: drop chrome, keep content legible. */
+@media print {
+  [data-tone] {
+    background: none !important;
+    color: var(--color-ink) !important;
+  }
+  .skip-link,
+  [data-print-hide] {
+    display: none !important;
+  }
 }
