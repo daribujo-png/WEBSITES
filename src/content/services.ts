@@ -320,7 +320,7 @@ export const services: Service[] = [
     shortTitle: "Maling",
     lede: "Vi maler ute og inne, og gjør forarbeidet som får malingen til å vare.",
     body: [
-      "Vestlandsværet er hardt mot en fasade. Vi vasker, skraper og reparerer før vi grunner og maler, og vi velger utstyr og maling etter underlaget.",
+      "Været i Bergen er hardt mot en fasade. Vi høytrykksvasker og fjerner gammel maling der det trengs, og velger utstyr og maling etter jobben.",
       "Inne maler og tapetserer vi, og vi legger gulvbelegg og fliser. Skal du selge, kan nymalte flater gjøre boligen mer attraktiv for kjøperne.",
       "Trenger kledningen reparasjon før maling, tar tømrerne våre den delen. I et større prosjekt planlegges malingen inn fra start, fordi maleren er en del av samme firma.",
     ],

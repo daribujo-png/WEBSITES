@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "images:build": "node scripts/images/optimize.mjs"
+    "images:build": "node scripts/images/optimize.mjs",
+    "model:build": "node scripts/model/build-house.mjs && node scripts/model/build-permits.mjs",
+    "model:render": "node scripts/render/render.mjs"
   },
   "dependencies": {
     "@fontsource-variable/newsreader": "^5.3.0",

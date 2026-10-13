@@ -1,0 +1,36 @@
+{
+  "generator": "scripts/model/build-permits.mjs",
+  "units": "m",
+  "nodes": [
+    "permit_pabygg",
+    "permit_frittliggende",
+    "permit_tilbygg",
+    "permit_kjeller",
+    "permit_garasje"
+  ],
+  "materials": {
+    "existing": "permit_existing*",
+    "new": "permit_new*",
+    "accent": "permit_accent",
+    "ground": "permit_ground*"
+  },
+  "camera": {
+    "position": [
+      -20.5,
+      12.5,
+      24.5
+    ],
+    "target": [
+      0,
+      1.6,
+      0.5
+    ],
+    "fov": 30
+  },
+  "stats": {
+    "bytes": 32276,
+    "meshes": 37,
+    "vertices": 1788,
+    "triangles": 888
+  }
+}

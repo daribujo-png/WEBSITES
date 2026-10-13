@@ -7,6 +7,7 @@ import * as manifestModule from "@/content/renders";
 import type { RenderAsset, RenderManifest } from "@/lib/images";
 import { Picture, MissingImage } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { Curtain } from "./Curtain";
 
 const mod = manifestModule as unknown as Record<string, unknown>;
 const manifest = (mod.renders ?? mod.renderManifest ?? mod.manifest ?? mod.default ?? {}) as RenderManifest;
@@ -61,10 +62,11 @@ export function RenderImage({
   }
   return (
     <div
-      data-reveal={reveal && !priority ? "media" : undefined}
-      className={cn("relative overflow-hidden bg-paper-deep", fill && "absolute inset-0", className)}
+      data-reveal={reveal && !priority ? "curtain" : undefined}
+      className={cn("group/frame relative overflow-hidden bg-paper-deep", fill && "absolute inset-0", className)}
       style={fill ? undefined : { aspectRatio: aspect }}
     >
+      {reveal && !priority ? <Curtain /> : null}
       <Picture
         asset={asset}
         sizes={sizes}

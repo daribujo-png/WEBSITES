@@ -439,7 +439,7 @@ export const missingFacts: MissingFact[] = [
 export const contentNotes: { topic: string; note: string }[] = [
   {
     topic: "Referanser: rekkehus",
-    note: "Kildeteksten nevner ikke navnet Svein (det kommer fra briefen). Den nevner «Adrian» og anbefaler «Bergen Operating Group». Vi gjengir bare innholdet i tilbakemeldingen. Bekreft at referansen gjelder Bygg og Renovering Vest, og at kunden godtar å bli sitert med fornavn.",
+    note: "Kildeteksten nevner ikke navnet Svein (det kommer fra briefen). Den nevner «Adrian» og anbefaler «Bergen Operating Group», som tok jobben på kort varsel. Vi gjengir bare det briefen bekrefter: fornøyd med sluttresultatet og kommunikasjonen. Anbefalingen og «kort varsel» er utelatt fordi de står under et annet firmanavn. Bekreft at referansen gjelder Bygg og Renovering Vest, og at kunden godtar å bli sitert med fornavn.",
   },
   {
     topic: "Referanser: rekkehus, omfang",

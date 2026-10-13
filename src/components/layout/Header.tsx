@@ -18,6 +18,7 @@ import { Icon } from "@/components/ui";
 import { useLenis } from "@/components/providers";
 import { cn } from "@/lib/utils";
 import { underlineOnHover } from "@/components/sections/styles";
+import { Logo } from "./Logo";
 
 /** True when `href` is the current page (hash links never count as current). */
 function isCurrent(pathname: string, href: string) {
@@ -36,10 +37,17 @@ function useHeaderTone(pathname: string) {
       const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) * 16 || 64;
       const probe = headerH / 2;
       let dark = false;
-      document.querySelectorAll<HTMLElement>("[data-header='dark']").forEach((el) => {
-        const r = el.getBoundingClientRect();
-        if (r.top <= probe && r.bottom > probe) dark = true;
-      });
+      // Explicit dark stages, plus any large night/slate band in <main>
+      // (e.g. the "Slik bygger vi" section from the THREE components).
+      const minHeight = window.innerHeight * 0.5;
+      document
+        .querySelectorAll<HTMLElement>("[data-header='dark'], main [data-tone='night'], main [data-tone='slate']")
+        .forEach((el) => {
+          if (dark) return;
+          const r = el.getBoundingClientRect();
+          if (el.dataset.header !== "dark" && r.height < minHeight) return;
+          if (r.top <= probe && r.bottom > probe) dark = true;
+        });
       const scrolled = window.scrollY > 8;
       setState((prev) => (prev.dark === dark && prev.scrolled === scrolled ? prev : { dark, scrolled }));
     };
@@ -60,12 +68,7 @@ function useHeaderTone(pathname: string) {
 }
 
 function Wordmark() {
-  return (
-    <span className="flex items-center gap-3">
-      <Icon.GableMark size={26} className="shrink-0" />
-      <span className="t-small font-medium tracking-[-0.01em] whitespace-nowrap">{company.name}</span>
-    </span>
-  );
+  return <Logo className="h-[1.6rem] xl:h-8" />;
 }
 
 export function Header() {
@@ -90,7 +93,16 @@ export function Header() {
     const html = document.documentElement;
     const prev = html.style.overflow;
     html.style.overflow = "hidden";
-    const id = requestAnimationFrame(() => closeRef.current?.focus());
+    // The dialog turns visible as its fade starts; retry until the close
+    // button can actually take focus (visibility:hidden blocks it).
+    let id = 0;
+    let tries = 0;
+    const focusClose = () => {
+      const btn = closeRef.current;
+      btn?.focus();
+      if (btn && document.activeElement !== btn && tries++ < 30) id = requestAnimationFrame(focusClose);
+    };
+    id = requestAnimationFrame(focusClose);
     return () => {
       cancelAnimationFrame(id);
       html.style.overflow = prev;

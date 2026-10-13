@@ -1,0 +1,48 @@
+/*
+ * Above-the-fold entrance (hero + page openings) that needs no JavaScript.
+ * The scroll reveals in globals.css wait for hydration; doing that to the
+ * first screen would hold back Largest Contentful Paint. These run from the
+ * first paint instead. Same curves and durations as the motion tokens.
+ * Both start partly visible (never fully clipped, never opacity 0), so the
+ * first paint already counts as the LCP paint.
+ * Reduced motion: no animation at all.
+ */
+@keyframes byggrv-intro-rise {
+  from {
+    transform: translate3d(0, 42%, 0);
+  }
+}
+
+@keyframes byggrv-intro-up {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 1rem, 0);
+  }
+}
+
+.intro-line {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.04em;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.intro-word {
+  display: inline-block;
+  animation: byggrv-intro-rise var(--dur-slower, 1400ms) var(--ease-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  animation-delay: calc(var(--intro-delay, 0ms) + var(--i, 0) * var(--intro-stagger, 70ms));
+}
+
+.intro-up {
+  animation: byggrv-intro-up var(--dur-slow, 900ms) var(--ease-weight, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+  animation-delay: var(--intro-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-word,
+  .intro-up {
+    animation: none;
+  }
+}

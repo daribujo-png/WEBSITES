@@ -8,6 +8,7 @@ import { services } from "@/content/services";
 import { servicePath } from "@/lib/seo";
 import { Icon, TextWithMissing, MagneticButton } from "@/components/ui";
 import { underlineOnHover, underlined } from "@/components/sections/styles";
+import { Logo } from "./Logo";
 
 const YEAR = new Date().getFullYear();
 
@@ -22,7 +23,10 @@ export function Footer() {
         </h2>
 
         <div className="grid-page gap-y-10 border-b border-line pb-12 lg:items-end">
-          <p className="col-span-full t-display-m lg:col-span-8">{footer.tagline}</p>
+          <div className="col-span-full lg:col-span-8">
+            <Logo className="h-8 lg:h-10" />
+            <p className="mt-10 t-display-m">{footer.tagline}</p>
+          </div>
           <div className="col-span-full flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
             <MagneticButton href={cta.primaryHref} icon="arrow">
               {cta.primary}

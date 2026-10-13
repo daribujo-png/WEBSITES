@@ -119,7 +119,7 @@ export const photos: Record<PhotoKey, PhotoAsset> = {
     "sourceUrl": "https://byggrv.no/wp-content/uploads/2024/02/gang-for.png"
   },
   "gang-etter": {
-    "alt": "Etter: Den samme gangen ferdig, med lyst tregulv, fliser ved inngangen, hvite dører og spotlys i taket.",
+    "alt": "Etter: Den samme gangen ferdig, med lyse vegger, lyst tregulv, fliser ved inngangen, hvite fyllingsdører og spotlys i taket.",
     "width": 885,
     "height": 885,
     "sources": {
@@ -220,7 +220,7 @@ export const photos: Record<PhotoKey, PhotoAsset> = {
     "note": "Vist under «Tidligere prosjekter» på rehabilitering-siden og på takarbeid-siden."
   },
   "minigraver-skifer": {
-    "alt": "Minigraver på en hellelagt plass av skifer ved inngangen til et hvitt hus, med lysene på.",
+    "alt": "Minigraver med arbeidslysene på, på en hellelagt plass av skifer ved trappen til et hvitt hus.",
     "width": 773,
     "height": 1030,
     "sources": {
@@ -246,7 +246,7 @@ export const photos: Record<PhotoKey, PhotoAsset> = {
       ]
     },
     "placeholder": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACQAwCdASoQABUAPu1iqU2ppaOiMAgBMB2JZwAAPiTGo0X3x3oAAP58/+MMtQxk62lnplGI03PAPhazfEzCNPpCHsqWoY3vtWW+zJZ2oCM7VsAA",
-    "caption": "Grunnarbeid ved et eldre hus, fra et tidligere prosjekt.",
+    "caption": "Gravearbeid ved inngangen til et hus, fra et tidligere prosjekt.",
     "origin": "own",
     "file": "/images/byggrv/skifer-773x1030-1.jpg",
     "sourcePage": "https://byggrv.no/tjenester/rehabilitering-og-renovering/",

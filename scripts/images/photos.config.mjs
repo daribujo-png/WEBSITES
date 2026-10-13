@@ -47,7 +47,7 @@ export const photos = [
     key: "gang-etter",
     file: "gang-etter.png",
     origin: "own",
-    alt: "Etter: Den samme gangen ferdig, med lyst tregulv, fliser ved inngangen, hvite dører og spotlys i taket.",
+    alt: "Etter: Den samme gangen ferdig, med lyse vegger, lyst tregulv, fliser ved inngangen, hvite fyllingsdører og spotlys i taket.",
     caption: "Den ferdige gangen.",
   },
   {
@@ -70,8 +70,8 @@ export const photos = [
     key: "minigraver-skifer",
     file: "skifer-773x1030-1.jpg",
     origin: "own",
-    alt: "Minigraver på en hellelagt plass av skifer ved inngangen til et hvitt hus, med lysene på.",
-    caption: "Grunnarbeid ved et eldre hus, fra et tidligere prosjekt.",
+    alt: "Minigraver med arbeidslysene på, på en hellelagt plass av skifer ved trappen til et hvitt hus.",
+    caption: "Gravearbeid ved inngangen til et hus, fra et tidligere prosjekt.",
     note: "Vist under «Tidligere prosjekter» på byggrv.no/tjenester/rehabilitering-og-renovering/.",
   },
   {

@@ -1,18 +1,37 @@
 /**
- * PLACEHOLDER written by the FOUNDATION agent. The SECTIONS agent replaces
- * this file with the full home page (hero, intro, Slik bygger vi, …).
+ * Home: the whole story in the order of the brief.
+ * Hero → Alt under ett tak → Slik bygger vi (3D) → Tjenester → Fra tegning
+ * til nøkkel → Byggesøknad → Før og etter → Referanser → Om oss → Kontakt.
  */
 import { pageMetadata } from "@/lib/seo";
-import { hero } from "@/content";
-import { Section, RevealText } from "@/components/ui";
+import { BuildSequence } from "@/components/three";
+import {
+  AboutSection,
+  BeforeAfterSection,
+  ContactSection,
+  Hero,
+  Intro,
+  PermitsSection,
+  ProcessSection,
+  ReferencesSection,
+  ServicesSection,
+} from "@/components/sections";
 
 export const metadata = pageMetadata("home");
 
 export default function Home() {
   return (
-    <Section tone="night" className="pt-header">
-      <RevealText as="h1" text={hero.headline} immediate className="t-display-xl" />
-      <p className="t-lead mt-8 max-w-measure text-fg-muted">{hero.sub}</p>
-    </Section>
+    <>
+      <Hero />
+      <Intro />
+      <BuildSequence />
+      <ServicesSection />
+      <ProcessSection />
+      <PermitsSection />
+      <BeforeAfterSection />
+      <ReferencesSection />
+      <AboutSection />
+      <ContactSection />
+    </>
   );
 }

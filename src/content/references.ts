@@ -16,9 +16,9 @@ export const references: Reference[] = [
       "Kunden ba om pris på snekker, maler, rørlegger og elektriker til en innvendig rehabilitering av et rekkehus. Vi leverte snekker- og malerarbeidet.",
     scope: ["Snekkerarbeid", "Malerarbeid"],
     quote: {
-      text: "Svein roste sluttresultatet og den gode kommunikasjonen underveis, også med rørlegger og elektriker. Han anbefaler oss sterkt, og trekker fram at vi tok jobben på kort varsel.",
+      text: "Svein var fornøyd med sluttresultatet og med kommunikasjonen underveis.",
       attribution: "Svein, kunde",
-      note: "Gjengitt etter kundens tilbakemelding.",
+      note: "Fritt gjengitt etter kundens tilbakemelding.",
     },
     photoKeys: [],
     missingPhotos: "bilder fra rekkehuset",

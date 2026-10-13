@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <title>Byggrv render harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0e1416;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/three/build/three.module.js",
+          "three/addons/": "/three/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <script type="module" src="/render.js"></script>
+  </body>
+</html>
