@@ -35,6 +35,9 @@ If the variable is not set, the form opens a prefilled e-mail to post@byggrv.no 
 | `src/components/sections/`, `layout/`, `forms/` | Page sections, header/footer/action bar, contact form. |
 | `public/models/`, `public/renders/` | Meshopt-compressed GLB model and AVIF/WebP renders. |
 | `public/images/byggrv/` | Client photos (see below). |
+| `src/fonts/` | Newsreader and Schibsted Grotesk (Fontsource latin files) trimmed to the axis ranges the site uses, ~70 KB lighter. Rebuild with `python3 scripts/fonts/instance-fonts.py` (needs `pip install fonttools brotli`) if the type scale gets new weights or smaller display sizes. |
+
+Performance notes: GSAP, ScrollTrigger and Lenis are not in the first page load. They load on the first scroll, touch, pointer or key event (or when the browser is idle a few seconds after load), and set up once any running scroll has settled (`src/lib/motion.ts`). Touch-only devices never load Lenis; CSS smooth scrolling handles their in-page links. All three.js code loads lazily near its section.
 
 ## Client photos (image pipeline)
 

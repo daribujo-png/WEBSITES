@@ -68,8 +68,8 @@ Every band sets a tone. Children then use **semantic** classes that adapt automa
 
 | Family | Package | Use | Why |
 |---|---|---|---|
-| **Newsreader** (variable: opsz 6–72, wght 200–800) | `@fontsource-variable/newsreader` | All headings (`font-display`) | Its optical-size axis turns into a sharp, high-contrast display cut at large sizes, close to the serifs in architecture monographs. At small sizes it stays sturdy. `font-optical-sizing: auto` maps opsz to the font size, so no manual settings are needed. |
-| **Schibsted Grotesk** (variable: wght 400–900) | `@fontsource-variable/schibsted-grotesk` | Body, UI, labels (`font-sans`) | A clean, slightly warm grotesk, originally drawn for the Norwegian media group Schibsted. It has good æ ø å, is clear at 15–17px, and is not one of the usual template defaults. |
+| **Newsreader** (variable; shipped trimmed to opsz 20–72, wght 300–400 in `src/fonts/`) | `@fontsource-variable/newsreader` | All headings (`font-display`) | Its optical-size axis turns into a sharp, high-contrast display cut at large sizes, close to the serifs in architecture monographs. At small sizes it stays sturdy. `font-optical-sizing: auto` maps opsz to the font size, so no manual settings are needed. |
+| **Schibsted Grotesk** (variable; shipped trimmed to wght 400–600 in `src/fonts/`) | `@fontsource-variable/schibsted-grotesk` | Body, UI, labels (`font-sans`) | A clean, slightly warm grotesk, originally drawn for the Norwegian media group Schibsted. It has good æ ø å, is clear at 15–17px, and is not one of the usual template defaults. |
 
 Both fonts are loaded with `next/font/local` straight from the npm packages (see `src/lib/fonts.ts`). They are self-hosted and preloaded, use a metric-matched fallback, load only the Latin subset, and make no Google Fonts requests at runtime.
 
