@@ -1,21 +1,23 @@
 # Footage: «Fra byggeplassen»
 
-The gallery under «Fra byggeplassen» is built from `footage.json` in this folder, so you
-can add or swap photos and videos without touching HTML or JavaScript.
+The «Fra byggeplassen» gallery is built from `footage.json` in this folder, so you can
+add photos and videos without touching HTML or JavaScript.
+
+**The section is hidden until there are real photos.** It only appears (together with
+its links in the menu and the footer) once at least **three** photos or videos have
+actually loaded. There are no placeholder cards and no illustrations standing in for
+projects, so visitors never see a gallery of work that isn't there. The shipped
+`footage.json` is an empty list (`[]`), so the live site requests no photos at all.
 
 ## Quick start
 
 1. Export your photos as JPG or WebP, about **2000 px on the long side** and **under ~400 KB** each.
-2. Save them in this folder, for example `01.jpg` … `06.jpg`.
-3. In `footage.json`, add a `src` line to the card the photo belongs to:
-   `"src": "assets/footage/01.jpg",`
-4. Reload the page. That's all.
+2. Save them in this folder, for example `tilbygg-aasane.jpg`.
+3. Add one card per photo to `footage.json` (see below). Use at least three.
+4. Reload the page. The section and its menu link appear by themselves.
 
-A card without `src` shows a coloured illustration of the service with the title and
-caption on top. The shipped `footage.json` has no `src` lines yet, so the live site makes
-no requests for photos that don't exist (no 404s in the console). If a `src` points to a
-file that is missing, the card quietly keeps its illustration, so it never looks broken
-and visitors don't see a «coming soon» tag.
+A card whose file is missing or broken is simply left out. If fewer than three load,
+the section stays hidden.
 
 ## footage.json
 
@@ -25,35 +27,34 @@ An array of cards, shown in order:
 [
   {
     "type": "image",
-    "src": "assets/footage/01.jpg",
-    "title": "Nybygg",
-    "place": "Bergen",
-    "caption": "Fra tomt til nøkkelferdig bolig, til avtalt tid og pris.",
-    "alt": "Nytt hus med stående kledning i Åsane",
-    "icon": "nybygg",
+    "src": "assets/footage/tilbygg-aasane.jpg",
+    "title": "Tilbygg",
+    "caption": "Nytt soverom og vaskerom på bakkeplan.",
+    "place": "Åsane",
+    "alt": "Nytt tilbygg i oker med store vinduer mot hagen",
     "layout": "tall"
   },
   {
     "type": "video",
-    "src": "assets/footage/07.mp4",
-    "poster": "assets/footage/07-poster.jpg",
+    "src": "assets/footage/tak.mp4",
+    "poster": "assets/footage/tak-poster.jpg",
     "title": "Takarbeid",
-    "caption": "Falset stål på plass før regnet kommer.",
-    "icon": "tak"
+    "caption": "Falset stål på plass før regnet kommer."
   }
 ]
 ```
 
+Write captions about the actual job (what was done, where), not sales lines.
+
 | Field     | Required | Notes |
 |-----------|----------|-------|
 | `type`    | no       | `"image"` (default) or `"video"`. |
-| `src`     | yes*     | Path relative to the site root (`index.html`). *A card with only a `title` shows the illustration. |
+| `src`     | yes      | Path relative to the site root (`index.html`). Cards without `src` are ignored. |
 | `title`   | yes      | Short title (one to three words). |
 | `caption` | no       | One short line. |
 | `place`   | no       | Added after the caption when it isn't `Bergen`. |
-| `alt`     | no       | Alt text for screen readers. Defaults to «title, prosjekt i Bergen og omegn». |
+| `alt`     | no       | Alt text for screen readers. Defaults to «title, fra en jobb i Bergen og omegn». |
 | `poster`  | no       | Video only: still image shown before playback. |
-| `icon`    | no       | Which illustration to show until the photo exists: `nybygg`, `tilbygg`, `pabygg`, `maling`, `oppussing`, `bad`, `tak`, `ombygging`, `rehabilitering`, `elektro`, `tomrer`, `mur`, `sprenging`, `garasje`, `prosjektledelse`. If you leave it out, it is guessed from the title. |
 | `layout`  | no       | `"tall"` or `"wide"` card. If you leave it out, a pattern is used. For a tidy grid on desktop, the spans should fill rows of three. |
 
 **Video tips:** use MP4 (H.264), keep clips short (5–15 s) and silent, and aim for
@@ -63,6 +64,5 @@ An array of cards, shown in order:
 You can add up to 24 cards.
 
 > Note: `footage.json` is loaded with `fetch()`, so the site must be served over
-> http(s) (for example `python3 -m http.server`). If the page is opened as a local
-> `file://`, the six built-in cards in `index.html` are used instead. Those cards also
-> carry their illustrations in the HTML, so they look right with JavaScript turned off.
+> http(s) (for example `python3 -m http.server`). Opened as a local `file://`, or with
+> JavaScript turned off, the section stays hidden.

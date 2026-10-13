@@ -1048,12 +1048,14 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
   // The landscape pops up around the plot while the blueprint finishes, so the
   // intro starts as clean lines on white.
   {
-    // every prop stands behind or beside the plot, inside the frame of the finished house
+    // Every prop stands behind or beside the plot and, seen from the camera, inside the
+    // left/right edges of the finished house's frame (placed in screen space, then mapped
+    // back to the ground), so nothing is ever sliced by the edge of the canvas.
     const spruces = [
-      [-11.5, -7.5, 0.95], [-4.0, -12.5, 0.95], [3.5, -13.0, 1.05], [7.5, -11.5, 0.85], [-9.5, -14.5, 1.1],
+      [-9.8, -2.3, 0.95], [-9.1, -8.0, 1.0], [-6.4, -12.7, 1.1], [-1.0, -12.5, 0.9], [-13.3, -8.5, 1.05], [-0.7, -14.7, 0.95],
     ];
-    const birchesGreen = [[-11.0, 2.0, 0.85], [13.5, -2.5, 0.8], [-1.5, -10.5, 0.75], [6.0, -10.5, 0.8]];
-    const birchesOchre = [[11.2, -7.6, 0.72], [-8.5, -10.0, 0.8]];
+    const birchesGreen = [[2.1, -10.5, 0.8], [-7.8, 2.4, 0.8], [-6.1, -9.1, 0.75]];
+    const birchesOchre = [[-1.8, -10.6, 0.72], [-8.8, -4.4, 0.8]];
     const W0 = win('blueprint', 0.62, 1)[0];
     const W1 = win('grunnmur', 0, 0.9)[1];
     const mk = (name, geo, list, seed) => {
@@ -1073,8 +1075,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     mk('birchesGreen', birchGeo([0x8fa95a, 0x7d9a4c, 0xa3b968]), birchesGreen, 5);
     mk('birchesOchre', birchGeo([0xd9a441, 0xc98f2e, 0xe2b65a]), birchesOchre, 7);
     const rocks = [
-      [8.8, -6.6, 0.85], [-9.4, 5.8, 1.0], [-10.2, -6.2, 1.2], [3.5, -9.4, 0.55],
-      [7.2, -12.6, 0.8], [-9.0, -8.0, 0.7], [-6.8, 9.2, 0.5], [9.5, -8.5, 0.6],
+      [4.1, -7.6, 0.7], [-3.7, 6.3, 0.85], [-1.3, -8.4, 0.55], [-8.4, 1.0, 0.8],
+      [-2.4, -13.0, 0.8], [3.4, 7.0, 0.5], [-10.9, -2.1, 0.7], [2.7, -10.3, 0.6],
     ];
     const r = mulberry32(9);
     const e = new THREE.Euler();
@@ -2167,6 +2169,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     handle.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
     handle.position.set(0.4, 0, 0.15);
     g.add(sleeve, yoke, handle);
+    // a touch larger than life, so the tool reads at hero size
+    g.scale.setScalar(1.35);
     g.visible = false;
     g.renderOrder = 4;
     scene.add(g);
@@ -2655,7 +2659,8 @@ export function createHouseScene({ canvas, reducedMotion = false, isMobile = fal
     });
     let job;
     try {
-      job = typeof renderer.compileAsync === 'function' ? renderer.compileAsync(scene, camera) : renderer.compile(scene, camera);
+      const parallel = typeof renderer.compileAsync === 'function' && renderer.extensions.has('KHR_parallel_shader_compile');
+      job = parallel ? renderer.compileAsync(scene, camera) : renderer.compile(scene, camera);
     } catch (e) {
       job = null;
     }

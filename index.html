@@ -14,8 +14,8 @@
     })(document);
   </script>
 
-  <title>Bygg &amp; Renovering Vest AS | Nybygg, tilbygg, påbygg, oppussing og maling i Bergen</title>
-  <meta name="description" content="Vi gjør alt: nybygg, tilbygg, påbygg, oppussing, maling ute og inne, tak, bad og VVS, elektro, mur og sprenging. Alle fag under ett tak i Bergen og omegn, med egen prosjektleder.">
+  <title>Bygg &amp; Renovering Vest | Nybygg, tilbygg og maling i Bergen</title>
+  <meta name="description" content="Vi gjør alt: nybygg, tilbygg, påbygg, oppussing, maling, tak, bad og VVS, elektro, mur og sprenging. Alle fag under ett tak i Bergen og omegn.">
   <link rel="canonical" href="https://www.byggrv.no/">
   <meta name="theme-color" content="#FFFFFF">
   <meta name="color-scheme" content="light">
@@ -27,11 +27,18 @@
   <meta property="og:title" content="Bygg &amp; Renovering Vest | Vi gjør alt">
   <meta property="og:description" content="Nybygg, tilbygg, påbygg, oppussing, tak, bad og maling. Alle fag under ett tak i Bergen og omegn, med én prosjektleder fra befaring til nøkkelferdig.">
   <meta property="og:url" content="https://www.byggrv.no/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://www.byggrv.no/assets/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Et nytt hus malt i fjordblått med hvite listverk, ved siden av teksten «Vi gjør alt. Vi bygger huset. Og vi maler det.»">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Bygg &amp; Renovering Vest | Vi gjør alt">
   <meta name="twitter:description" content="Nybygg, tilbygg, påbygg, oppussing, tak, bad og maling. Alle fag under ett tak i Bergen og omegn.">
+  <meta name="twitter:image" content="https://www.byggrv.no/assets/og.jpg">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="mask-icon" href="assets/favicon.svg" color="#FF5A1F">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,6 +50,9 @@
     { "imports": { "three": "./vendor/three.module.min.js" } }
   </script>
   <link rel="modulepreload" href="js/main.js">
+  <link rel="modulepreload" href="js/house.js">
+  <link rel="modulepreload" href="vendor/three.module.min.js">
+  <link rel="modulepreload" href="vendor/addons/RoomEnvironment.js">
 
   <script type="application/ld+json">
   {
@@ -54,7 +64,7 @@
     "slogan": "Vi gjør alt. Alle fag under ett tak.",
     "url": "https://www.byggrv.no/",
     "logo": "https://www.byggrv.no/assets/logo.svg",
-    "image": "https://www.byggrv.no/assets/logo.svg",
+    "image": "https://www.byggrv.no/assets/og.jpg",
     "description": "Totalleverandør av byggetjenester for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn: nybygg, tilbygg, påbygg, oppussing og renovering, rehabilitering og restaurering, ombygging, maling innvendig og utvendig, tak, bad og VVS, elektro, mur og betong, sprenging og grunnarbeid, tømrerarbeid, garasje og terrasse. Alle fag under ett tak, med egen prosjektleder og nøkkelferdig levering til avtalt tid og pris.",
     "telephone": "+47 94 01 66 10",
     "email": "post@byggrv.no",
@@ -70,7 +80,7 @@
       { "@type": "City", "name": "Bergen" },
       { "@type": "AdministrativeArea", "name": "Bergen og omegn" }
     ],
-    "knowsAbout": ["Nybygg", "Tilbygg", "Påbygg", "Oppussing", "Renovering", "Rehabilitering", "Restaurering", "Ombygging", "Maling", "Utvendig maling", "Innvendig maling", "Takarbeid", "Bad", "VVS", "Elektro", "Mur og betong", "Sprenging", "Grunnarbeid", "Tømrer", "Garasje", "Terrasse", "Prosjektledelse", "Totalentreprise", "ENØK"],
+    "knowsAbout": ["Nybygg", "Tilbygg", "Påbygg", "Oppussing", "Renovering", "Rehabilitering", "Restaurering", "Ombygging", "Maling", "Utvendig maling", "Innvendig maling", "Takarbeid", "Bad", "VVS", "Elektro", "Mur og betong", "Sprenging", "Grunnarbeid", "Tømrerarbeid", "Garasje", "Terrasse", "Prosjektledelse", "Totalentreprise", "ENØK"],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Tjenester",
@@ -111,7 +121,7 @@
         <ul class="nav__links" role="list">
           <li><a href="#tjenester">Tjenester</a></li>
           <li><a href="#slik-jobber-vi">Slik jobber vi</a></li>
-          <li><a href="#prosjekter">Prosjekter</a></li>
+          <li data-nav-gallery hidden><a href="#prosjekter">Fra byggeplassen</a></li>
           <li><a href="#om-oss">Om oss</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
         </ul>
@@ -142,10 +152,11 @@
         <div class="hero__copy">
           <h1 class="hero__title" id="hero-title">
             <span class="hero__l1">Vi gjør</span>
-            <span class="hero__l2">alt.<svg class="hero__swash" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M6 27C52 16 118 12 176 13c44 1 82 5 116 11-30-2-64-3-101-2-56 2-114 7-180 15-6 1-9-8-5-10Z" fill="currentColor"/></svg></span>
+            <span class="hero__l2">alt.<svg class="hero__swash" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M6 21C38 11 86 8 132 9c46 1 92-2 128 2 14 2 26 5 34 9l-6 3 7 3c-28 6-70 8-116 8-40 0-80 2-120 4-24 1-44 1-58-1l4-4-6-3 3-4Z" fill="currentColor"/><path d="M226 4c26-1 50 2 66 7-20-3-44-4-66-3ZM180 37c40 1 76-1 104-5-24 5-62 8-104 7Z" fill="currentColor" opacity=".7"/></svg></span>
           </h1>
           <p class="hero__sub">Vi bygger huset. Og vi maler det.</p>
-          <p class="hero__lead">Nybygg, tilbygg, påbygg, oppussing, tak, bad og maling. Hos Bygg og Renovering Vest får du alle fagene under ett tak, og én prosjektleder som holder i hele jobben. I Bergen og omegn.</p>
+          <p class="hero__lead">Nybygg, tilbygg, påbygg, oppussing, tak, bad og maling. Du får alle fagene fra oss, og én prosjektleder som holder i hele jobben. Vi jobber i Bergen og omegn.</p>
+          <p class="hero__lead hero__lead--short" aria-hidden="true">Nybygg, tilbygg, påbygg, maling og alt imellom.</p>
           <div class="hero__ctas">
             <a class="btn btn--primary btn--lg" href="#kontakt">Få et uforpliktende tilbud</a>
             <a class="btn btn--line btn--lg" href="tel:+4794016610">
@@ -404,7 +415,7 @@
 
           <div class="hero__controls" id="hero-controls">
             <div class="hero__status">
-              <p class="hero__caption" id="build-caption" aria-live="polite" aria-atomic="true"><span class="hero__caption-dot" aria-hidden="true"></span><span id="build-caption-text">Tegner huset…</span></p>
+              <p class="hero__caption" id="build-caption"><span class="hero__caption-dot" aria-hidden="true"></span><span id="build-caption-text">Tegner huset…</span></p>
               <button class="replay" id="replay" type="button">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.5 12a7.5 7.5 0 1 0 2.3-5.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M4 3.5v4.6h4.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span id="replay-label">Vis ferdig hus</span>
@@ -413,40 +424,46 @@
             <div class="paint" role="group" aria-labelledby="paint-label">
               <p class="paint__label" id="paint-label">Velg farge på huset</p>
               <div class="paint__swatches">
-                <button class="swatch" type="button" data-color="#9B2F22" aria-pressed="false" style="--c:#9B2F22"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Falurød</span></button>
-                <button class="swatch" type="button" data-color="#D9A441" aria-pressed="false" style="--c:#D9A441"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Oker</span></button>
-                <button class="swatch" type="button" data-color="#2E5C7A" aria-pressed="true" style="--c:#2E5C7A"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Fjordblå</span></button>
-                <button class="swatch" type="button" data-color="#56704F" aria-pressed="false" style="--c:#56704F"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Mosegrønn</span></button>
-                <button class="swatch" type="button" data-color="#F4F1EA" aria-pressed="false" style="--c:#F4F1EA"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Kritthvit</span></button>
-                <button class="swatch" type="button" data-color="#2B2E2F" aria-pressed="false" style="--c:#2B2E2F"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Antrasitt</span></button>
+                <button class="swatch" type="button" data-inline="falurødt" data-color="#9B2F22" aria-pressed="false" style="--c:#9B2F22"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Falurød</span></button>
+                <button class="swatch" type="button" data-inline="oker" data-color="#D9A441" aria-pressed="false" style="--c:#D9A441"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Oker</span></button>
+                <button class="swatch" type="button" data-inline="fjordblått" data-color="#2E5C7A" aria-pressed="true" style="--c:#2E5C7A"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Fjordblå</span></button>
+                <button class="swatch" type="button" data-inline="mosegrønt" data-color="#56704F" aria-pressed="false" style="--c:#56704F"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Mosegrønn</span></button>
+                <button class="swatch" type="button" data-inline="kritthvitt" data-color="#F4F1EA" aria-pressed="false" style="--c:#F4F1EA"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Kritthvit</span></button>
+                <button class="swatch" type="button" data-inline="antrasitt" data-color="#2B2E2F" aria-pressed="false" style="--c:#2B2E2F"><span class="swatch__dot" aria-hidden="true"></span><span class="swatch__name">Antrasitt</span></button>
               </div>
-              <p class="paint__hint" id="paint-hint" aria-live="polite"></p>
+              <p class="paint__hint" id="paint-hint"></p>
             </div>
+            <p class="sr-only" id="hero-status" role="status"></p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ============ MARQUEE: everything we do ============ -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__row">
+    <div class="marquee">
+      <div class="marquee__row" aria-hidden="true">
         <div class="marquee__track">
-          <ul class="marquee__list"><li>Nybygg</li><li>Tilbygg</li><li>Påbygg</li><li>Maling</li><li>Oppussing</li><li>Tak</li><li>Bad &amp; VVS</li><li>Elektro</li><li>Ombygging</li><li>Rehabilitering</li><li>Mur &amp; betong</li><li>Sprenging</li><li>Tømrer</li><li>Garasje</li><li>Terrasse</li></ul>
-          <ul class="marquee__list"><li>Nybygg</li><li>Tilbygg</li><li>Påbygg</li><li>Maling</li><li>Oppussing</li><li>Tak</li><li>Bad &amp; VVS</li><li>Elektro</li><li>Ombygging</li><li>Rehabilitering</li><li>Mur &amp; betong</li><li>Sprenging</li><li>Tømrer</li><li>Garasje</li><li>Terrasse</li></ul>
+          <ul class="marquee__list"><li>Nybygg</li><li>Tilbygg</li><li>Påbygg</li><li>Maling</li><li>Tak</li><li>Bad og VVS</li><li>Oppussing</li><li>Elektro</li><li>Ombygging</li><li>Rehabilitering</li><li>Mur og betong</li><li>Sprenging</li><li>Tømrerarbeid</li><li>Garasje</li><li>Terrasse</li></ul>
+          <ul class="marquee__list"><li>Nybygg</li><li>Tilbygg</li><li>Påbygg</li><li>Maling</li><li>Tak</li><li>Bad og VVS</li><li>Oppussing</li><li>Elektro</li><li>Ombygging</li><li>Rehabilitering</li><li>Mur og betong</li><li>Sprenging</li><li>Tømrerarbeid</li><li>Garasje</li><li>Terrasse</li></ul>
         </div>
       </div>
+      <button class="marquee__toggle" type="button" aria-pressed="false">
+        <svg class="marquee__ic marquee__ic--pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 6v12M15.5 6v12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        <svg class="marquee__ic marquee__ic--play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 8 5.8Z" fill="currentColor"/></svg>
+        <span class="sr-only">Pause rullende tekst</span>
+      </button>
     </div>
 
     <!-- ============ SERVICES: "Vi gjør alt" ============ -->
     <section class="services section" id="tjenester" aria-labelledby="services-title">
       <div class="wrap">
-        <header class="section-head">
+        <header class="section-head section-head--row">
           <h2 class="section-title" id="services-title" data-reveal>Alt under ett tak.</h2>
-          <p class="section-lead" data-reveal>Tømrere, malere, elektrikere, rørleggere, murere og folk som kan sprenging og grunnarbeid jobber i samme firma. Du får én avtale og én prosjektleder, enten du skal bygge nytt hus eller male stua.</p>
+          <p class="section-lead" data-reveal>Fra sprenging og grunnmur til siste strøk maling har vi alle fagene i samme bedrift. Du får én avtale og én prosjektleder, enten du skal bygge nytt hus eller male stua.</p>
         </header>
 
         <ul class="svc-grid" role="list">
-          <!-- Nybygg -->
+          <!-- Nybygg, tilbygg, påbygg -->
           <li class="svc svc--xl tint-fjord" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="nybygg" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
@@ -477,18 +494,15 @@
                 <path d="M207 160v-16" stroke="#7A5A3C" stroke-width="3"/>
                 <path d="M207 92l17 54h-34Z" fill="#6E8B66"/>
                 <path d="M207 92l17 54h-17Z" fill="#4E6748"/>
-                <g class="mv mv-spark"><path d="M196 54l2.6 7 7 2.6-7 2.6-2.6 7-2.6-7-7-2.6 7-2.6Z" fill="#D9A441"/><path d="M178 28l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6Z" fill="#FF5A1F"/></g>
+                <circle class="mv mv-sun" cx="206" cy="40" r="14" fill="#D9A441"/>
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Nybygg</h3>
-              <p>Har du tomt, men ikke hus? Vi bygger boligen etter dine ønsker og leverer den nøkkelferdig, til avtalt tid og pris.</p>
-              <a class="svc__link" href="#kontakt" data-service="Nybygg">Spør om nybygg<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Nybygg">Nybygg<span class="sr-only">, spør oss om et tilbud</span></a></h3>
+              <p>Har du tomt, men ikke hus? Vi bygger boligen etter dine ønsker og leverer den nøkkelferdig.</p>
             </div>
           </li>
-
-          <!-- Tilbygg -->
-          <li class="svc svc--sm tint-oker" data-reveal>
+          <li class="svc svc--side tint-oker" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="tilbygg" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="122" cy="160" rx="100" ry="7" fill="#121413" opacity=".08"/>
@@ -510,14 +524,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Tilbygg</h3>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Tilbygg">Tilbygg<span class="sr-only">, spør oss om et tilbud</span></a></h3>
               <p>Mer plass på bakken. Nytt soverom, større stue eller et skikkelig vaskerom. Vi ordner byggesøknaden.</p>
-              <a class="svc__link" href="#kontakt" data-service="Tilbygg">Spør om tilbygg<span class="sr-only"> i kontaktskjemaet</span></a>
             </div>
           </li>
-
-          <!-- Påbygg -->
-          <li class="svc svc--sm tint-mose" data-reveal>
+          <li class="svc svc--side tint-falu" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="pabygg" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="116" cy="160" rx="88" ry="7" fill="#121413" opacity=".08"/>
@@ -539,14 +550,13 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Påbygg</h3>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Påbygg">Påbygg<span class="sr-only">, spør oss om et tilbud</span></a></h3>
               <p>Er tomta for liten til å bygge ut, bygger vi opp. En ny etasje gir mange nye kvadratmeter uten å ta av hagen.</p>
-              <a class="svc__link" href="#kontakt" data-service="Påbygg">Spør om påbygg<span class="sr-only"> i kontaktskjemaet</span></a>
             </div>
           </li>
 
-          <!-- Maling -->
-          <li class="svc svc--wide tone-falu" data-reveal>
+          <!-- Maling: a full-width band -->
+          <li class="svc svc--paint tone-falu" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="maling" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <rect x="16" y="22" width="208" height="132" rx="4" fill="#E2C9A4"/>
@@ -565,17 +575,14 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Vi maler hus</h3>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Maling">Vi maler hus<span class="sr-only">, spør oss om et tilbud</span></a></h3>
               <p>Ute og inne. Kledning, vegger, tak og listverk, på nye og gamle hus. Vi vasker, skraper og grunner før vi maler, så jobben blir gjort skikkelig.</p>
-              <ul class="chips-colors" role="list" aria-label="Typiske husfarger">
-                <li style="--c:#9B2F22">Falurød</li><li style="--c:#D9A441">Oker</li><li style="--c:#2E5C7A">Fjordblå</li><li style="--c:#56704F">Mosegrønn</li><li style="--c:#F4F1EA">Kritthvit</li><li style="--c:#2B2E2F">Antrasitt</li>
-              </ul>
-              <a class="svc__link" href="#kontakt" data-service="Maling">Spør om maling<span class="sr-only"> i kontaktskjemaet</span></a>
+              <ul class="paint-cards" role="list" aria-label="Typiske husfarger"><li style="--c:#9B2F22"><span class="paint-cards__c" aria-hidden="true"></span>Falurød</li><li style="--c:#D9A441"><span class="paint-cards__c" aria-hidden="true"></span>Oker</li><li style="--c:#2E5C7A"><span class="paint-cards__c" aria-hidden="true"></span>Fjordblå</li><li style="--c:#56704F"><span class="paint-cards__c" aria-hidden="true"></span>Mosegrønn</li><li style="--c:#F4F1EA"><span class="paint-cards__c" aria-hidden="true"></span>Kritthvit</li><li style="--c:#2B2E2F"><span class="paint-cards__c" aria-hidden="true"></span>Antrasitt</li></ul>
             </div>
           </li>
 
-          <!-- Oppussing & renovering -->
-          <li class="svc svc--md tint-pine" data-reveal>
+          <!-- Oppussing, bad, tak -->
+          <li class="svc svc--wide tint-white" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="oppussing" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="120" cy="162" rx="96" ry="6" fill="#121413" opacity=".08"/>
@@ -599,13 +606,10 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Oppussing &amp; renovering</h3>
-              <p>Nytt kjøkken, nye gulv og friske overflater. Ett rom eller hele huset, med snekker, maler, elektriker og rørlegger i samme lag.</p>
-              <a class="svc__link" href="#kontakt" data-service="Oppussing og renovering">Spør om oppussing<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Oppussing og renovering">Oppussing og renovering<span class="sr-only">, spør oss om et tilbud</span></a></h3>
+              <p>Nytt kjøkken, nytt gulv eller nye overflater, i ett rom eller i hele huset. Snekker, maler, elektriker og rørlegger kommer fra oss.</p>
             </div>
           </li>
-
-          <!-- Bad & VVS -->
           <li class="svc svc--md tone-fjord" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="bad" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
@@ -623,45 +627,31 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Bad &amp; VVS</h3>
-              <p>Nytt bad etter gjeldende forskrifter, rør og vanninstallasjoner. Vi foreslår energieffektive løsninger som kutter driftskostnadene.</p>
-              <a class="svc__link" href="#kontakt" data-service="Bad og VVS">Spør om bad og VVS<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Bad og VVS">Bad og VVS<span class="sr-only">, spør oss om et tilbud</span></a></h3>
+              <p>Nytt bad, nye rør og vanninstallasjoner, alt etter gjeldende forskrifter. Vi foreslår gjerne løsninger som bruker mindre energi.</p>
             </div>
           </li>
-
-          <!-- Tak -->
-          <li class="svc svc--md tint-falu" data-reveal>
+          <li class="svc svc--md tint-mose" data-reveal>
             <div class="svc__art">
-              <svg class="ill" data-illus="tak" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
-                <ellipse cx="124" cy="160" rx="94" ry="6" fill="#121413" opacity=".08"/>
-                <path d="M40 106 82 72l42 34v52H40Z" fill="#F4F1EA"/>
-                <path d="M124 106l82-12v52l-82 12Z" fill="#E3DED3"/>
-                <path d="M82 72l80-12 52 34-90 14Z" fill="#2B2E2F"/>
-                <path d="M90 71l43 34M98 70l43 34M106 69l43 34M114 67l43 34M122 66l43 34M130 65l43 34M138 64l43 34M146 63l43 34M154 61l43 34" stroke="#4A4F51" stroke-width="1.3"/>
-                <path d="M34 110 82 70l46 38" fill="none" stroke="#1F2223" stroke-width="5" stroke-linejoin="round"/>
-                <path d="M126 110l90-14" stroke="#9B9FA1" stroke-width="4"/>
-                <path d="M212 97v53" stroke="#9B9FA1" stroke-width="4"/>
-                <rect x="70" y="116" width="22" height="26" fill="#BBD3E1" stroke="#fff" stroke-width="3"/>
-                <rect x="150" y="112" width="18" height="22" fill="#BBD3E1" stroke="#fff" stroke-width="3" transform="skewY(-8.5)"/>
-                <g class="mv mv-rain"><path d="M118 18l-4 10M146 10l-4 10M172 22l-4 10M196 12l-4 10M222 26l-4 10M100 34l-4 10" stroke="#2E5C7A" stroke-width="2.5" stroke-linecap="round"/></g>
-              </svg>
+              <svg class="ill" data-illus="tak" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><ellipse cx="128" cy="161" rx="98" ry="6" fill="#121413" opacity=".08"/><path d="M128 112l80-12v46l-80 12Z" fill="#E3DED3"/><path d="M40 112 84 76l44 36v46H40Z" fill="#F4F1EA"/><rect x="70" y="118" width="26" height="28" fill="#BBD3E1" stroke="#fff" stroke-width="3"/><path d="M83 118v28" stroke="#fff" stroke-width="2.5"/><path d="M146 122l26-4v24l-26 4Z" fill="#BBD3E1" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><g class="mv mv-smoke" fill="#fff"><circle cx="150" cy="40" r="5"/><circle cx="158" cy="30" r="7"/></g><path d="M82 72l84-13 52 44-88 14Z" fill="#2B2E2F"/><path d="M90.4 70.7L138.8 115.6M98.8 69.4L147.6 114.2M107.2 68.1L156.4 112.8M115.6 66.8L165.2 111.4M124.0 65.5L174.0 110.0M132.4 64.2L182.8 108.6M140.8 62.9L191.6 107.2M149.2 61.6L200.4 105.8M157.6 60.3L209.2 104.4" stroke="#4A4F52" stroke-width="2"/><path d="M81 72.5l86-13.3" stroke="#4A4F52" stroke-width="5" stroke-linecap="round"/><path d="M34 116 84 71l48 46" fill="none" stroke="#2B2E2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M142 68l12-2V50l-12 2Z" fill="#9B2F22"/><path d="M140 53l16-2.5v-4L140 49Z" fill="#2B2E2F"/><path d="M128 119l92-14" stroke="#D9A441" stroke-width="5" stroke-linecap="round"/><path d="M214 106v42l6 5" fill="none" stroke="#D9A441" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><g stroke="#FF5A1F" stroke-linecap="round"><path d="M150 162 164 112M163 162 177 110" stroke-width="3.5"/><path d="M151.7 156.0L164.7 155.8M154.2 147.0L167.2 146.4M156.7 138.0L169.7 137.0M159.2 129.0L172.2 127.7M161.8 120.0L174.8 118.3" stroke-width="2.5"/></g></svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Tak</h3>
-              <p>Nytt tak, reparasjon etter skader og vedlikehold. Takrenner og nedløp, inspeksjon og gode råd, med garanti på takarbeidet.</p>
-              <a class="svc__link" href="#kontakt" data-service="Tak">Spør om tak<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h3 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Tak">Tak<span class="sr-only">, spør oss om et tilbud</span></a></h3>
+              <p>Vi legger nytt tak, reparerer skader og tar vedlikeholdet, med takrenner og nedløp. Du får garanti på takarbeidet.</p>
             </div>
           </li>
+        </ul>
 
-          <!-- Ombygging -->
-          <li class="svc svc--sm tint-fjord" data-reveal>
+        <h3 class="svc-more__title" id="more-title" data-reveal>Og alt det andre</h3>
+        <ul class="svc-mini" role="list" aria-labelledby="more-title">
+          <li class="svc svc--mini tint-fjord" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="ombygging" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
-                <rect x="34" y="26" width="172" height="128" fill="#fff" stroke="#121413" stroke-width="6"/>
-                <path d="M150 26h34" stroke="#BBD3E1" stroke-width="6"/>
-                <path d="M34 120v24" stroke="#BBD3E1" stroke-width="6"/>
-                <path d="M124 26v62" stroke="#121413" stroke-width="5"/>
-                <path d="M124 88a26 26 0 0 1 26 26" fill="none" stroke="#121413" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <rect x="34" y="26" width="172" height="128" fill="#fff" stroke="#2B2E2F" stroke-width="4"/>
+                <path d="M150 26h34" stroke="#BBD3E1" stroke-width="4.5"/>
+                <path d="M34 120v24" stroke="#BBD3E1" stroke-width="4.5"/>
+                <path d="M124 26v62" stroke="#2B2E2F" stroke-width="4"/>
+                <path d="M124 88a26 26 0 0 1 26 26" fill="none" stroke="#2B2E2F" stroke-width="1.5" stroke-dasharray="3 3"/>
                 <rect x="46" y="38" width="46" height="50" rx="3" fill="#D9A441"/>
                 <rect x="52" y="42" width="14" height="10" rx="2" fill="#F4F1EA"/>
                 <rect x="72" y="42" width="14" height="10" rx="2" fill="#F4F1EA"/>
@@ -674,14 +664,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Ombygging</h3>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Ombygging">Ombygging<span class="sr-only">, spør oss om et tilbud</span></a></h4>
               <p>Ny planløsning, flere rom eller større vinduer. Vi flytter vegger, også de bærende.</p>
-              <a class="svc__link" href="#kontakt" data-service="Ombygging">Spør om ombygging<span class="sr-only"> i kontaktskjemaet</span></a>
             </div>
           </li>
-
-          <!-- Rehabilitering & restaurering -->
-          <li class="svc svc--sm tint-kritt" data-reveal>
+          <li class="svc svc--mini tint-white" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="rehabilitering" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="120" cy="160" rx="84" ry="6" fill="#121413" opacity=".08"/>
@@ -698,25 +685,22 @@
                 <path d="M151 110v30M140 125h22" stroke="#F4F1EA" stroke-width="2.5"/>
                 <path d="M110 158v-24a10 10 0 0 1 20 0v24Z" fill="#56704F"/>
                 <rect x="104" y="156" width="32" height="4" fill="#CFCBC3"/>
-                <g class="mv mv-spark"><path d="M200 46l2.6 7 7 2.6-7 2.6-2.6 7-2.6-7-7-2.6 7-2.6Z" fill="#D9A441"/><path d="M40 60l1.8 4.8 4.8 1.8-4.8 1.8-1.8 4.8-1.8-4.8-4.8-1.8 4.8-1.8Z" fill="#FF5A1F"/></g>
+                <g class="mv mv-birds" fill="none" stroke="#2B2E2F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M182 40q6-6 12 0q6-6 12 0"/><path d="M30 58q5-5 10 0q5-5 10 0"/></g>
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Rehabilitering &amp; restaurering</h3>
-              <p>Vi setter gamle bygg i stand og tar vare på detaljene. For private og offentlige oppdragsgivere.</p>
-              <a class="svc__link" href="#kontakt" data-service="Rehabilitering og restaurering">Spør om rehabilitering<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Rehabilitering og restaurering">Rehabilitering og restaurering<span class="sr-only">, spør oss om et tilbud</span></a></h4>
+              <p>Vi setter gamle bygg i stand og tar vare på detaljene, både for private og for offentlige oppdragsgivere.</p>
             </div>
           </li>
-
-          <!-- Elektro -->
-          <li class="svc svc--sm tone-oker" data-reveal>
+          <li class="svc svc--mini tone-oker" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="elektro" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <path d="M84 0v46" stroke="#2B2E2F" stroke-width="2"/>
                 <circle class="mv mv-glow" cx="84" cy="92" r="44" fill="#FFF6DA" opacity=".35"/>
                 <rect x="76" y="46" width="16" height="14" rx="2" fill="#2B2E2F"/>
                 <path d="M84 60c-17 0-25 13-25 26 0 11 8 17 12 24h26c4-7 12-13 12-24 0-13-8-26-25-26Z" fill="#FFF6DA"/>
-                <path d="M78 102l3-12 3 7 3-7 3 12" fill="none" stroke="#FF5A1F" stroke-width="2.2" stroke-linejoin="round"/>
+                <path d="M79 110l-3-16M89 110l3-16" fill="none" stroke="#8E8A82" stroke-width="1.6"/><path d="M76 94l2.67-4 2.67 4 2.67-4 2.67 4 2.67-4 2.67 4" fill="none" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <rect x="72" y="110" width="24" height="12" rx="3" fill="#8E8A82"/>
                 <path d="M74 115h20" stroke="#6E6A63" stroke-width="1.5"/>
                 <rect x="140" y="76" width="60" height="60" rx="12" fill="#F4F1EA"/>
@@ -728,14 +712,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Elektro</h3>
-              <p>Nytt anlegg eller oppgradering av det gamle. Elektrikeren er med i laget fra første dag.</p>
-              <a class="svc__link" href="#kontakt" data-service="Elektro">Spør om elektro<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Elektro">Elektro<span class="sr-only">, spør oss om et tilbud</span></a></h4>
+              <p>Nytt el-anlegg eller oppgradering av det gamle. Vi tar elektrojobben sammen med resten av byggingen, så du slipper å lete etter en egen elektriker.</p>
             </div>
           </li>
-
-          <!-- Tømrerarbeid -->
-          <li class="svc svc--sm tint-pine" data-reveal>
+          <li class="svc svc--mini tint-falu" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="tomrer" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="110" cy="162" rx="86" ry="6" fill="#121413" opacity=".08"/>
@@ -757,14 +738,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Tømrerarbeid</h3>
-              <p>Bindingsverk, kledning, vinduer, dører og listverk. Tømrerne er ryggraden i alt vi bygger.</p>
-              <a class="svc__link" href="#kontakt" data-service="Tømrerarbeid">Spør om tømrerarbeid<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Tømrerarbeid">Tømrerarbeid<span class="sr-only">, spør oss om et tilbud</span></a></h4>
+              <p>Bindingsverk, kledning, vinduer, dører og listverk, ute og inne.</p>
             </div>
           </li>
-
-          <!-- Mur & betong -->
-          <li class="svc svc--md tint-orange" data-reveal>
+          <li class="svc svc--mini tint-white" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="mur" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="120" cy="162" rx="98" ry="6" fill="#121413" opacity=".08"/>
@@ -789,14 +767,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Mur &amp; betong</h3>
-              <p>Grunnmur, støp, piper og murarbeid. Vi har også folk som kan restaurere eldre murdetaljer.</p>
-              <a class="svc__link" href="#kontakt" data-service="Mur og betong">Spør om mur og betong<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Mur og betong">Mur og betong<span class="sr-only">, spør oss om et tilbud</span></a></h4>
+              <p>Grunnmur, støp, piper og murarbeid, på nye og gamle hus.</p>
             </div>
           </li>
-
-          <!-- Sprenging & grunnarbeid -->
-          <li class="svc svc--md tone-mose" data-reveal>
+          <li class="svc svc--mini tone-mose" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="sprenging" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <rect x="0" y="124" width="240" height="7" fill="#8AA381"/>
@@ -819,14 +794,11 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Sprenging &amp; grunnarbeid</h3>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Sprenging og grunnarbeid">Sprenging og grunnarbeid<span class="sr-only">, spør oss om et tilbud</span></a></h4>
               <p>Sprenging, graving og drenering. Vi gjør tomta klar, så huset får en god start.</p>
-              <a class="svc__link" href="#kontakt" data-service="Sprenging og grunnarbeid">Spør om grunnarbeid<span class="sr-only"> i kontaktskjemaet</span></a>
             </div>
           </li>
-
-          <!-- Garasje & terrasse -->
-          <li class="svc svc--md tint-oker" data-reveal>
+          <li class="svc svc--mini tint-oker" data-reveal>
             <div class="svc__art">
               <svg class="ill" data-illus="garasje" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <ellipse cx="124" cy="160" rx="100" ry="6" fill="#121413" opacity=".08"/>
@@ -845,16 +817,28 @@
               </svg>
             </div>
             <div class="svc__body">
-              <h3 class="svc__title">Garasje &amp; terrasse</h3>
-              <p>Garasje, carport eller en ny terrasse til sommeren. Solid bygget og tilpasset huset du har.</p>
-              <a class="svc__link" href="#kontakt" data-service="Garasje og terrasse">Spør om garasje eller terrasse<span class="sr-only"> i kontaktskjemaet</span></a>
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Garasje og terrasse">Garasje og terrasse<span class="sr-only">, spør oss om et tilbud</span></a></h4>
+              <p>Vi bygger garasje, carport og terrasse som passer til huset du har.</p>
             </div>
           </li>
-
-          <!-- Prosjektledelse & totalentreprise -->
-          <li class="svc svc--full tone-orange" data-reveal>
+          <li class="svc svc--mini svc--ask" data-reveal>
             <div class="svc__art">
-              <svg class="ill" data-illus="prosjektledelse" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
+              <svg class="ill" data-illus="annet" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
+                <path d="M54 34h132a14 14 0 0 1 14 14v62a14 14 0 0 1-14 14h-72l-34 28v-28H54a14 14 0 0 1-14-14V48a14 14 0 0 1 14-14Z" fill="#fff" stroke="#2B2E2F" stroke-width="4" stroke-linejoin="round"/>
+                <circle cx="88" cy="79" r="8" fill="#FF5A1F"/><circle cx="120" cy="79" r="8" fill="#2E5C7A"/><circle cx="152" cy="79" r="8" fill="#D9A441"/>
+              </svg>
+            </div>
+            <div class="svc__body">
+              <h4 class="svc__title"><a class="svc__link" href="#kontakt" data-service="Annet">Noe annet?<span class="sr-only">, skriv til oss i kontaktskjemaet</span></a></h4>
+              <p>Står ikke jobben din her? Ring eller skriv noen ord, så finner vi ut av det sammen.</p>
+            </div>
+          </li>
+        </ul>
+
+        <!-- Prosjektledelse og totalentreprise -->
+        <div class="svc svc--full tone-orange" data-reveal>
+          <div class="svc__art">
+            <svg class="ill" data-illus="prosjektledelse" viewBox="0 0 240 180" aria-hidden="true" focusable="false">
                 <rect x="40" y="26" width="104" height="136" rx="9" fill="#2B2E2F"/>
                 <rect x="50" y="40" width="84" height="112" rx="3" fill="#fff"/>
                 <rect x="74" y="18" width="36" height="16" rx="4" fill="#9B9FA1"/>
@@ -867,14 +851,13 @@
                 <path d="M192 108v32" stroke="#E3DED3" stroke-width="7"/>
                 <rect x="152" y="138" width="80" height="10" rx="5" fill="#E3DED3"/>
               </svg>
-            </div>
-            <div class="svc__body">
-              <h3 class="svc__title">Én prosjektleder for alt</h3>
-              <p>Prosjektledelse og totalentreprise. Du får din egen prosjektleder som koordinerer alle fagene og passer på at tidsplanen holder. Én kontaktperson, én avtale og nøkkelferdig levering til avtalt tid og pris.</p>
-              <a class="svc__link" href="#kontakt" data-service="Prosjektledelse og totalentreprise">Snakk med en prosjektleder<span class="sr-only"> via kontaktskjemaet</span></a>
-            </div>
-          </li>
-        </ul>
+          </div>
+          <div class="svc__body">
+            <h3 class="svc__title">Én prosjektleder for alt</h3>
+            <p>Vi kan ta hele jobben som totalentreprise. Da har du én person som samordner alle fagene og passer på tidsplanen, og én avtale å forholde deg til. Huset leveres nøkkelferdig til avtalt tid og pris.</p>
+            <a class="btn btn--ink svc__cta" href="#kontakt" data-service="Prosjektledelse og totalentreprise">Snakk med en prosjektleder</a>
+          </div>
+        </div>
 
         <aside class="glossary" aria-labelledby="glossary-title" data-reveal>
           <div class="glossary__head">
@@ -888,139 +871,90 @@
             <div><dt>Rehabilitering</dt><dd>Å sette bygningsdeler i stand uten å endre hva de brukes til.</dd></div>
             <div><dt>Restaurering</dt><dd>Å føre et bygg tilbake til slik det var.</dd></div>
           </dl>
-          <p class="glossary__note">Skal du bygge påbygg, rive et påbygg eller lage kjeller under et eksisterende hus, må det sendes byggesøknad med hjelp fra fagfolk. Den tar vi oss av.</p>
+          <p class="glossary__note">Skal du bygge eller rive et påbygg, eller lage kjeller under et hus som står der fra før, må du søke kommunen med hjelp fra fagfolk. Den søknaden ordner vi.</p>
         </aside>
       </div>
     </section>
 
     <!-- ============ SLIK JOBBER VI ============ -->
     <section class="process section band" id="slik-jobber-vi" aria-labelledby="process-title">
-      <div class="wrap">
-        <header class="section-head section-head--row">
+      <div class="wrap process__grid">
+        <div class="process__text">
           <h2 class="section-title" id="process-title" data-reveal>Slik jobber vi</h2>
-          <p class="section-lead" data-reveal>Enkelt for deg, fra den første telefonen til du står med nøklene i hånda.</p>
-        </header>
-        <ol class="steps" role="list">
-          <li class="step" data-reveal>
-            <span class="step__icon" style="--c:#D9A441" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M8 38V21L22 10l14 11v17Z" fill="#fff"/><path d="M8 38V21L22 10l14 11v17Z" fill="none" stroke="#121413" stroke-width="2.6" stroke-linejoin="round"/><circle cx="31" cy="29" r="7" fill="#FFF6DA" stroke="#121413" stroke-width="2.6"/><path d="M36 34l6 6" stroke="#121413" stroke-width="3" stroke-linecap="round"/></svg></span>
-            <h3>Befaring</h3>
-            <p>Vi kommer på besøk, ser på huset eller tomta og hører hva du ønsker deg.</p>
-          </li>
-          <li class="step" data-reveal>
-            <span class="step__icon" style="--c:#56704F" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M8 24V9h15l17 17-15 15Z" fill="#fff" stroke="#121413" stroke-width="2.6" stroke-linejoin="round"/><circle cx="16" cy="16" r="3" fill="#FF5A1F"/><path d="M19 28l5 5 9-10" fill="none" stroke="#56704F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Fast pris</h3>
-            <p>Du får et tydelig tilbud med pris og tidsplan, så du vet hva du får og hva det koster.</p>
-          </li>
-          <li class="step" data-reveal>
-            <span class="step__icon" style="--c:#2E5C7A" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><rect x="7" y="9" width="30" height="30" rx="2" fill="#fff" stroke="#121413" stroke-width="2.6"/><path d="M12 32V22l7-6 7 6v10Z" fill="none" stroke="#2E5C7A" stroke-width="2.2" stroke-linejoin="round"/><path d="M33 40l9-9-4-4-9 9-1 5Z" fill="#D9A441" stroke="#121413" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
-            <h3>Planlegging</h3>
-            <p>Vi tegner, velger løsninger sammen med deg og tar oss av byggesøknaden.</p>
-          </li>
-          <li class="step" data-reveal>
-            <span class="step__icon" style="--c:#9B2F22" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M30 40 16 18" stroke="#9B6B3E" stroke-width="4.5" stroke-linecap="round"/><path d="M8 16l14-8 5 8-14 8Z" fill="#fff" stroke="#121413" stroke-width="2.6" stroke-linejoin="round"/><path d="M34 12v6M31 15h6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
-            <h3>Bygging</h3>
-            <p>Alle fagene jobber i samme lag. Prosjektlederen din holder styr på tidsplanen og holder deg oppdatert.</p>
-          </li>
-          <li class="step" data-reveal>
-            <span class="step__icon" style="--c:#FF5A1F" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><circle cx="16" cy="24" r="9" fill="#fff" stroke="#121413" stroke-width="2.6"/><circle cx="16" cy="24" r="3" fill="#121413"/><path d="M25 24h17v6M36 24v5" fill="none" stroke="#121413" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Overlevering</h3>
-            <p>Vi går gjennom alt sammen med deg og gir deg nøklene. Nøkkelferdig, til avtalt tid og pris.</p>
-          </li>
-        </ol>
+          <p class="process__prose" data-reveal>Vi kommer på <strong style="--hl:var(--t-oker)">befaring</strong> og hører hva du vil. Så får du et tilbud med <strong style="--hl:var(--t-mose)">fast pris</strong> og tidsplan, før vi <strong style="--hl:var(--t-fjord)">tegner</strong>, velger løsninger sammen med deg og ordner byggesøknaden. Mens vi <strong style="--hl:var(--t-falu)">bygger</strong>, holder prosjektlederen deg oppdatert. Til slutt går vi gjennom alt sammen, og du får <strong style="--hl:#FFD9C9">nøklene</strong>.</p>
+          <p class="process__cta" data-reveal><a class="btn btn--line btn--lg" href="#kontakt">Avtal en befaring</a></p>
+        </div>
+        <figure class="process__art" data-reveal>
+          <svg viewBox="0 0 480 330" role="img" aria-labelledby="process-art-title" focusable="false">
+            <title id="process-art-title">Tegning av en husnøkkel med et fargekart på nøkkelringen.</title>
+            <ellipse cx="262" cy="300" rx="196" ry="13" fill="#121413" opacity=".07"/>
+            <g transform="rotate(28 192 126)">
+              <rect x="160" y="118" width="64" height="106" rx="10" fill="#fff" stroke="#2B2E2F" stroke-width="4"/>
+              <circle cx="192" cy="134" r="6" fill="#F6F4EF" stroke="#2B2E2F" stroke-width="3"/>
+              <rect x="171" y="150" width="42" height="16" fill="#9B2F22"/>
+              <rect x="171" y="166" width="42" height="16" fill="#D9A441"/>
+              <rect x="171" y="182" width="42" height="16" fill="#2E5C7A"/>
+              <rect x="171" y="198" width="42" height="16" fill="#56704F"/>
+            </g>
+            <circle cx="236" cy="100" r="50" fill="none" stroke="#2B2E2F" stroke-width="7"/>
+            <path d="M296 196h150v28h-20v16h-14v-16h-14v22h-14v-22h-14v12h-14v-12h-60Z" fill="#D9A441"/>
+            <path d="M298 207h146" stroke="#B9852A" stroke-width="3"/>
+            <path d="M176 172 236 122l60 50v94H176Z" fill="#D9A441"/>
+            <path d="M164 176l72-60 72 60" fill="none" stroke="#2B2E2F" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="166" y="98" width="13" height="26" fill="#9B2F22"/>
+            <circle cx="236" cy="152" r="14" fill="#F6F4EF" stroke="#2B2E2F" stroke-width="4"/>
+            <path d="M225 149.5q11 2.5 22 0" fill="none" stroke="#2B2E2F" stroke-width="7" stroke-linecap="round"/>
+            <rect x="196" y="190" width="28" height="30" fill="#BBD3E1" stroke="#fff" stroke-width="4"/>
+            <rect x="240" y="206" width="30" height="60" fill="#2E5C7A"/>
+            <circle cx="263" cy="238" r="3" fill="#D9A441"/>
+          </svg>
+        </figure>
       </div>
     </section>
 
-    <!-- ============ FRA BYGGEPLASSEN (data-driven: assets/footage/footage.json) ============ -->
-    <section class="gallery section" id="prosjekter" aria-labelledby="gallery-title">
+    <!-- ============ FRA BYGGEPLASSEN (assets/footage/footage.json) ============ -->
+    <!-- Hidden until at least three real photos or videos have loaded (see js/main.js). -->
+    <section class="gallery section" id="prosjekter" aria-labelledby="gallery-title" hidden>
       <div class="wrap">
         <header class="section-head section-head--row">
-          <h2 class="section-title" id="gallery-title" data-reveal>Fra byggeplassen</h2>
-          <p class="section-lead" data-reveal>Litt av det vi jobber med i Bergen og omegn. Nybygg og tilbygg, maling, bad og tak.</p>
+          <h2 class="section-title" id="gallery-title">Fra byggeplassen</h2>
+          <p class="section-lead">Bilder fra jobber vi har gjort i Bergen og omegn.</p>
         </header>
-        <ul class="gallery__grid" id="gallery-grid" role="list">
-          <li class="shot shot--tall tint-fjord" data-icon="nybygg" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><ellipse cx="132" cy="160" rx="96" ry="7" fill="#121413" opacity=".08"/><g class="mv mv-crane"><path d="M44 159V44" stroke="#FF5A1F" stroke-width="4"/><path d="M40 154l8-9-8-9 8-9-8-9 8-9-8-9 8-9-8-9 8-9-8-9 8-9" fill="none" stroke="#FF5A1F" stroke-width="1.4"/><path d="M26 44h150" stroke="#FF5A1F" stroke-width="4"/><path d="M44 30 28 44M44 30l130 14M44 30v14" fill="none" stroke="#FF5A1F" stroke-width="1.8"/><rect x="20" y="45" width="15" height="10" fill="#8E8A82"/><rect x="38" y="46" width="12" height="9" rx="1.5" fill="#FF5A1F"/></g><g class="mv mv-hook"><path d="M156 46v34" stroke="#2B2E2F" stroke-width="1.5"/><path d="M156 80l-14 6M156 80l14 6" stroke="#2B2E2F" stroke-width="1.2"/><rect x="138" y="86" width="36" height="6" fill="#E2C9A4"/><rect x="138" y="92" width="36" height="6" fill="#C9A47B"/></g><path d="M78 104 124 66l46 38v54H78Z" fill="#F4F1EA"/><path d="M88 106v52M98 98v60M108 90v68M140 90v68M150 98v60M160 106v52" stroke="#121413" stroke-opacity=".1"/><path d="M70 108 124 62l54 46-6 5-48-41-48 41Z" fill="#2B2E2F"/><rect x="108" y="98" width="32" height="44" fill="#BBD3E1" stroke="#fff" stroke-width="3"/><path d="M124 98v44M108 118h32" stroke="#fff" stroke-width="2.5"/><path d="M110 100l12 0-12 18Z" fill="#fff" opacity=".45"/><rect x="148" y="124" width="14" height="34" fill="#2E5C7A"/><rect x="86" y="116" width="14" height="16" fill="#BBD3E1" stroke="#fff" stroke-width="2.5"/><rect x="76" y="156" width="96" height="5" fill="#CFCBC3"/><path d="M207 160v-16" stroke="#7A5A3C" stroke-width="3"/><path d="M207 92l17 54h-34Z" fill="#6E8B66"/><path d="M207 92l17 54h-17Z" fill="#4E6748"/><g class="mv mv-spark"><path d="M196 54l2.6 7 7 2.6-7 2.6-2.6 7-2.6-7-7-2.6 7-2.6Z" fill="#D9A441"/><path d="M178 28l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6Z" fill="#FF5A1F"/></g></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Nybygg</strong> <span>Fra tomt til nøkkelferdig bolig, til avtalt tid og pris.</span></figcaption>
-            </figure>
-          </li>
-          <li class="shot tint-oker" data-icon="tilbygg" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><ellipse cx="122" cy="160" rx="100" ry="7" fill="#121413" opacity=".08"/><path d="M30 98 74 62l44 36v60H30Z" fill="#2E5C7A"/><path d="M40 100v58M52 90v68M64 80v78M84 80v78M96 90v68M108 100v58" stroke="#fff" stroke-opacity=".14"/><path d="M22 102 74 56l52 46-6 5-46-40-46 40Z" fill="#2B2E2F"/><rect x="46" y="108" width="16" height="20" fill="#BBD3E1" stroke="#F4F1EA" stroke-width="2.5"/><rect x="86" y="108" width="16" height="20" fill="#BBD3E1" stroke="#F4F1EA" stroke-width="2.5"/><rect x="67" y="132" width="14" height="26" fill="#F4F1EA"/><g class="mv mv-ext"><rect x="118" y="108" width="80" height="50" fill="#D9A441"/><path d="M130 108v50M142 108v50M186 108v50" stroke="#121413" stroke-opacity=".1"/><rect x="114" y="101" width="88" height="8" fill="#2B2E2F"/><rect x="150" y="118" width="40" height="30" fill="#BBD3E1" stroke="#F4F1EA" stroke-width="3"/><path d="M170 118v30" stroke="#F4F1EA" stroke-width="2.5"/></g><path class="mv mv-arrow" d="M150 84h40m-8-7 8 7-8 7" fill="none" stroke="#FF5A1F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="28" y="157" width="172" height="5" fill="#CFCBC3"/></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Tilbygg</strong> <span>Mer plass på bakken, med byggesøknaden ordnet.</span></figcaption>
-            </figure>
-          </li>
-          <li class="shot tone-falu" data-icon="maling" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><rect x="16" y="22" width="208" height="132" rx="4" fill="#E2C9A4"/><path d="M16 22h104c-5 18 5 36-1 54s6 34 1 52c-2 9 2 18 1 26H20a4 4 0 0 1-4-4Z" fill="#F4F1EA"/><path d="M32 22v132M48 22v132M64 22v132M80 22v132M96 22v132M112 22v132M128 22v132M144 22v132M160 22v132M176 22v132M192 22v132M208 22v132" stroke="#121413" stroke-opacity=".1"/><path d="M118 78c3 4 3 9 0 12M114 120c3 3 3 8 0 11" fill="none" stroke="#F4F1EA" stroke-width="5" stroke-linecap="round"/><g class="mv mv-roll"><rect x="110" y="56" width="20" height="58" rx="7" fill="#F4F1EA" stroke="#121413" stroke-opacity=".25"/><path d="M130 85h12v44l20 20" fill="none" stroke="#2B2E2F" stroke-width="4.5" stroke-linejoin="round"/><path d="M161 148l15 15" stroke="#FF5A1F" stroke-width="10" stroke-linecap="round"/></g><rect x="30" y="126" width="34" height="34" rx="3" fill="#D9A441"/><rect x="28" y="121" width="38" height="7" rx="2" fill="#2B2E2F"/><rect x="30" y="134" width="34" height="9" fill="#F4F1EA"/><path d="M40 128v8a3 3 0 0 0 6 0v-8" fill="#F4F1EA"/></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Maling</strong> <span>Ny farge på gammel kledning, ute og inne.</span></figcaption>
-            </figure>
-          </li>
-          <li class="shot shot--wide tint-pine" data-icon="bad" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><rect x="30" y="22" width="180" height="136" rx="4" fill="#F4F1EA"/><path d="M30 42h180M30 62h180M30 82h180M30 102h180M30 122h180M50 22v120M70 22v120M90 22v120M110 22v120M130 22v120M150 22v120M170 22v120M190 22v120" stroke="#DCD6CA" stroke-width="1.5"/><rect x="30" y="140" width="180" height="18" fill="#E3DED3"/><path d="M66 158V40h24" fill="none" stroke="#C9814A" stroke-width="4.5" stroke-linejoin="round"/><path d="M84 36h26l-4 10H88Z" fill="#2B2E2F"/><g class="mv mv-drops"><path d="M90 56v8M97 58v8M104 56v8M93 72v8M100 74v8M107 72v8M95 88v8M102 90v8" stroke="#6F97B3" stroke-width="2.5" stroke-linecap="round"/></g><rect x="138" y="36" width="44" height="46" rx="22" fill="#BBD3E1"/><path d="M150 48l12-6M152 58l18-10" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/><path d="M130 96h60v5c0 10-10 18-22 18h-16c-12 0-22-8-22-18Z" fill="#fff" stroke="#C9C4BA" stroke-width="1.5"/><path d="M160 96V84h10v5" fill="none" stroke="#2B2E2F" stroke-width="3.5" stroke-linejoin="round"/><path d="M160 119v21" stroke="#C9814A" stroke-width="4.5"/></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Bad &amp; VVS</strong> <span>Våtrom, rør og sanitær etter gjeldende forskrifter.</span></figcaption>
-            </figure>
-          </li>
-          <li class="shot tint-falu" data-icon="tak" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><ellipse cx="124" cy="160" rx="94" ry="6" fill="#121413" opacity=".08"/><path d="M40 106 82 72l42 34v52H40Z" fill="#F4F1EA"/><path d="M124 106l82-12v52l-82 12Z" fill="#E3DED3"/><path d="M82 72l80-12 52 34-90 14Z" fill="#2B2E2F"/><path d="M90 71l43 34M98 70l43 34M106 69l43 34M114 67l43 34M122 66l43 34M130 65l43 34M138 64l43 34M146 63l43 34M154 61l43 34" stroke="#4A4F51" stroke-width="1.3"/><path d="M34 110 82 70l46 38" fill="none" stroke="#1F2223" stroke-width="5" stroke-linejoin="round"/><path d="M126 110l90-14" stroke="#9B9FA1" stroke-width="4"/><path d="M212 97v53" stroke="#9B9FA1" stroke-width="4"/><rect x="70" y="116" width="22" height="26" fill="#BBD3E1" stroke="#fff" stroke-width="3"/><rect x="150" y="112" width="18" height="22" fill="#BBD3E1" stroke="#fff" stroke-width="3" transform="skewY(-8.5)"/><g class="mv mv-rain"><path d="M118 18l-4 10M146 10l-4 10M172 22l-4 10M196 12l-4 10M222 26l-4 10M100 34l-4 10" stroke="#2E5C7A" stroke-width="2.5" stroke-linecap="round"/></g></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Tak</strong> <span>Taktekking, takrenner og nedløp, bygget for vestlandsvær.</span></figcaption>
-            </figure>
-          </li>
-          <li class="shot shot--wide tint-mose" data-icon="pabygg" data-reveal>
-            <figure>
-              <div class="shot__art" aria-hidden="true"><svg class="ill" viewBox="0 0 240 180" aria-hidden="true" focusable="false"><ellipse cx="116" cy="160" rx="88" ry="7" fill="#121413" opacity=".08"/><rect x="56" y="116" width="116" height="42" fill="#9B2F22"/><rect x="70" y="126" width="18" height="20" fill="#BBD3E1" stroke="#F4F1EA" stroke-width="2.5"/><rect x="140" y="126" width="18" height="20" fill="#BBD3E1" stroke="#F4F1EA" stroke-width="2.5"/><rect x="104" y="128" width="18" height="30" fill="#F4F1EA"/><g class="mv mv-up"><path d="M56 116V78l58-36 58 36v38Z" fill="#F4F1EA"/><path d="M68 116V72M80 116V64M92 116V57M136 116V57M148 116V64M160 116V72" stroke="#121413" stroke-opacity=".1"/><path d="M46 82 114 38l68 44-6 5-62-40-62 40Z" fill="#2B2E2F"/><rect x="72" y="88" width="18" height="18" fill="#BBD3E1" stroke="#fff" stroke-width="2.5"/><rect x="105" y="82" width="18" height="24" fill="#BBD3E1" stroke="#fff" stroke-width="2.5"/><rect x="138" y="88" width="18" height="18" fill="#BBD3E1" stroke="#fff" stroke-width="2.5"/></g><path d="M48 116h132" stroke="#FF5A1F" stroke-width="2.5" stroke-dasharray="6 5"/><path class="mv mv-arrow" d="M200 112V70m-7 8 7-8 7 8" fill="none" stroke="#FF5A1F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="54" y="157" width="120" height="5" fill="#CFCBC3"/></svg></div>
-              <div class="shot__media" data-type="image"></div>
-              <figcaption><strong>Påbygg</strong> <span>En ekstra etasje på et hus som allerede står.</span></figcaption>
-            </figure>
-          </li>
-        </ul>
+        <ul class="gallery__grid" id="gallery-grid" role="list"></ul>
       </div>
     </section>
 
     <!-- ============ OM OSS ============ -->
-    <section class="about section band" id="om-oss" aria-labelledby="about-title">
+    <section class="about section" id="om-oss" aria-labelledby="about-title">
       <div class="wrap about__grid">
         <div class="about__text">
-          <h2 class="section-title" id="about-title" data-reveal>Fagfolk fra Bergen, samlet i ett firma.</h2>
-          <blockquote class="about__quote" data-reveal><p>«Målet vårt er å gjøre byggeprosessen så enkel som mulig for deg.»</p></blockquote>
+          <h2 class="section-title" id="about-title" data-reveal>Fagfolk med ulik bakgrunn, samlet i ett firma.</h2>
           <div class="about__body" data-reveal>
-            <p>Bygg og Renovering Vest AS er en gjeng dyktige og erfarne fagfolk med ulik bakgrunn. Vi har samlet tømrere, malere, elektrikere, rørleggere, murere og folk som kan sprenging og grunnarbeid i samme bedrift. Derfor kan vi ta hele jobben selv, for private og bedrifter.</p>
-            <p>Du får din egen prosjektleder, som koordinerer alle fagene og passer på at tidsplanen holder. Vi leverer nøkkelferdig til avtalt tid og pris, i Bergen og omegn, for private og offentlige oppdragsgivere.</p>
+            <p>Bygg og Renovering Vest AS er en gjeng erfarne fagfolk med ulik bakgrunn. Vi har samlet tømrer, maler, elektro, VVS, mur og betong og sprenging i én bedrift, så vi kan ta hele jobben for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn.</p>
+            <p>Vi vil at det skal være enkelt å bygge med oss. Derfor får du din egen prosjektleder, som samordner fagene og passer på at tidsplanen holder, og vi leverer nøkkelferdig til avtalt tid og pris.</p>
             <p>Når vi først er i gang, ser vi etter gode ENØK-tiltak. Det som er bra for miljøet, gjør ofte huset billigere å drive også.</p>
           </div>
         </div>
 
-        <div class="about__side">
-          <figure class="about__art" data-reveal>
-            <svg viewBox="0 0 480 300" role="img" aria-labelledby="about-art-title" focusable="false">
-              <title id="about-art-title">Seks hjelmer i ulike farger under samme tak, ett for hvert fag.</title>
-              <path d="M40 176 240 54l200 122" fill="none" stroke="#121413" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="322" y="70" width="26" height="46" fill="#9B2F22"/>
-              <rect x="318" y="64" width="34" height="9" fill="#121413"/>
-              <g transform="translate(110 236)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#9B2F22"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><rect x="-38" y="-3" width="76" height="10" rx="5" fill="#7E2419"/></g>
-              <g transform="translate(176 222)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#D9A441"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><rect x="-38" y="-3" width="76" height="10" rx="5" fill="#B9852A"/></g>
-              <g transform="translate(240 214)"><path d="M-36 0a36 36 0 0 1 72 0Z" fill="#FF5A1F"/><path d="M0-36V0" stroke="#fff" stroke-opacity=".4" stroke-width="7"/><rect x="-46" y="-3" width="92" height="12" rx="6" fill="#D9440F"/></g>
-              <g transform="translate(304 222)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#2E5C7A"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><rect x="-38" y="-3" width="76" height="10" rx="5" fill="#234863"/></g>
-              <g transform="translate(370 236)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#56704F"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><rect x="-38" y="-3" width="76" height="10" rx="5" fill="#43593E"/></g>
-              <g transform="translate(240 270)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#F4F1EA" stroke="#D8D2C6" stroke-width="2"/><path d="M0-30V0" stroke="#D8D2C6" stroke-width="6"/><rect x="-38" y="-3" width="76" height="10" rx="5" fill="#E3DED3"/></g>
-            </svg>
-          </figure>
-          <ul class="facts" role="list" data-reveal>
-            <li><span class="facts__dot" style="--c:#FF5A1F" aria-hidden="true"></span>Din egen prosjektleder</li>
-            <li><span class="facts__dot" style="--c:#2E5C7A" aria-hidden="true"></span>Nøkkelferdig til avtalt tid og pris</li>
-            <li><span class="facts__dot" style="--c:#D9A441" aria-hidden="true"></span>Alle fag i samme firma</li>
-            <li><span class="facts__dot" style="--c:#56704F" aria-hidden="true"></span>Gode ENØK-tiltak</li>
-            <li><span class="facts__dot" style="--c:#9B2F22" aria-hidden="true"></span>Private, bedrifter og offentlige</li>
-            <li><span class="facts__dot" style="--c:#2B2E2F" aria-hidden="true"></span>Bergen og omegn</li>
-          </ul>
-        </div>
+        <figure class="about__art" data-reveal>
+          <svg viewBox="0 0 480 262" role="img" aria-labelledby="about-art-title" focusable="false">
+            <title id="about-art-title">Seks hjelmer i ulike farger på rad under samme tak, én for hvert fag.</title>
+            <path d="M316 58h26v45l-26-14.5Z" fill="#9B2F22"/>
+            <rect x="311" y="52" width="36" height="9" fill="#2B2E2F"/>
+            <circle cx="240" cy="104" r="19" fill="#fff" stroke="#2B2E2F" stroke-width="6"/>
+            <path d="M240 86v36M222 104h36" stroke="#2B2E2F" stroke-width="4"/>
+            <path d="M44 156 240 46l196 110" fill="none" stroke="#2B2E2F" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="36" y="214" width="408" height="16" rx="3" fill="#E2C9A4"/>
+            <rect x="40" y="230" width="400" height="6" rx="2" fill="#C9A47B"/>
+            <path d="M66 222h60M156 221h90M278 223h70M368 221h54" stroke="#C9A47B" stroke-width="2" stroke-linecap="round"/>
+            <g transform="translate(80 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#9B2F22"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#7E2419"/></g>
+            <g transform="translate(144 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#D9A441"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#B9852A"/></g>
+            <g transform="translate(208 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#FF5A1F"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#D9440F"/></g>
+            <g transform="translate(272 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#2E5C7A"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#234863"/></g>
+            <g transform="translate(336 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#56704F"/><path d="M0-30V0" stroke="#fff" stroke-opacity=".35" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#43593E"/></g>
+            <g transform="translate(400 206)"><path d="M-30 0a30 30 0 0 1 60 0Z" fill="#F4F1EA" stroke="#D8D2C6" stroke-width="2"/><path d="M0-30V0" stroke="#D8D2C6" stroke-width="7"/><rect x="-35" y="-2" width="70" height="10" rx="5" fill="#E3DED3"/></g>
+          </svg>
+        </figure>
       </div>
     </section>
 
@@ -1088,16 +1022,16 @@
                 <label class="check"><input type="checkbox" name="tjeneste" value="Tilbygg"><span>Tilbygg</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Påbygg"><span>Påbygg</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Maling"><span>Maling</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Oppussing og renovering"><span>Oppussing &amp; renovering</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Rehabilitering og restaurering"><span>Rehabilitering &amp; restaurering</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Oppussing og renovering"><span>Oppussing og renovering</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Rehabilitering og restaurering"><span>Rehabilitering og restaurering</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Ombygging"><span>Ombygging</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Tak"><span>Tak</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Bad og VVS"><span>Bad &amp; VVS</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Bad og VVS"><span>Bad og VVS</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Elektro"><span>Elektro</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Mur og betong"><span>Mur &amp; betong</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Sprenging og grunnarbeid"><span>Sprenging &amp; grunnarbeid</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Mur og betong"><span>Mur og betong</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Sprenging og grunnarbeid"><span>Sprenging og grunnarbeid</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Tømrerarbeid"><span>Tømrerarbeid</span></label>
-                <label class="check"><input type="checkbox" name="tjeneste" value="Garasje og terrasse"><span>Garasje &amp; terrasse</span></label>
+                <label class="check"><input type="checkbox" name="tjeneste" value="Garasje og terrasse"><span>Garasje og terrasse</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Prosjektledelse og totalentreprise"><span>Prosjektledelse</span></label>
                 <label class="check"><input type="checkbox" name="tjeneste" value="Annet"><span>Noe annet</span></label>
               </div>
@@ -1130,7 +1064,7 @@
             <p class="form__hint">Fyll inn telefon eller e-post, så vi kan svare deg. Felt merket * må fylles ut.</p>
 
             <div class="form__foot">
-              <button class="btn btn--primary btn--lg" type="submit">Lag e-post</button>
+              <button class="btn btn--primary btn--lg" type="submit">Send forespørsel</button>
               <p class="form__note">Skjemaet åpner e-postprogrammet ditt med alt ferdig utfylt. Du ser over og trykker send.</p>
             </div>
             <p class="form__status" id="form-status" role="status" aria-live="polite"></p>
@@ -1146,7 +1080,7 @@
       <div class="footer__paint" aria-hidden="true"><i style="--c:#9B2F22"></i><i style="--c:#D9A441"></i><i style="--c:#2E5C7A"></i><i style="--c:#56704F"></i><i style="--c:#FF5A1F"></i><i style="--c:#2B2E2F"></i></div>
       <div class="footer__top">
         <div class="footer__col">
-          <p class="footer__label">Bygg &amp; Renovering Vest AS</p>
+          <p class="footer__label">Bygg og Renovering Vest AS</p>
           <address>Breisteinvegen 206<br>5111 Breistein</address>
         </div>
         <div class="footer__col">
@@ -1159,7 +1093,7 @@
           <ul role="list">
             <li><a href="#tjenester">Tjenester</a></li>
             <li><a href="#slik-jobber-vi">Slik jobber vi</a></li>
-            <li><a href="#prosjekter">Prosjekter</a></li>
+            <li data-nav-gallery hidden><a href="#prosjekter">Fra byggeplassen</a></li>
             <li><a href="#om-oss">Om oss</a></li>
             <li><a href="#kontakt">Kontakt</a></li>
           </ul>

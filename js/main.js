@@ -715,7 +715,8 @@ function createSvgHouse({ svg, host, reducedMotion: rm = false }) {
   function tick(now) {
     raf = 0;
     if (disposed || !active) return;
-    const dt = lastNow ? Math.min(64, now - lastNow) : 16;
+    // close to wall-clock time, so a slow device drops frames instead of stretching the build
+    const dt = lastNow ? Math.min(250, now - lastNow) : 16;
     lastNow = now;
     let more = false;
     if (mode === 'rewind') {
@@ -887,7 +888,8 @@ function setupNavScroll() {
       if (h !== hidden) { hidden = h; nav.classList.toggle('is-hidden', h); }
     }
     let cur = null;
-    for (const { a, t } of targets) if (t.getBoundingClientRect().top <= vh * 0.4) cur = a;
+    // a hidden section (the gallery before it has photos) has no box: skip it
+    for (const { a, t } of targets) if (!t.hidden && t.getBoundingClientRect().top <= vh * 0.4) cur = a;
     if (cur !== current) {
       if (current) current.removeAttribute('aria-current');
       if (cur) cur.setAttribute('aria-current', 'true');
@@ -956,7 +958,7 @@ function setupMenu() {
    Reveals + marquee
    -------------------------------------------------------------------------- */
 function setupReveals() {
-  $$('.svc-grid, .gallery__grid, .contact__list').forEach((grid) => {
+  $$('.svc-grid, .svc-mini, .gallery__grid, .contact__list').forEach((grid) => {
     Array.from(grid.children).forEach((c, i) => c.style.setProperty('--d', `${((i % 4) * 0.08).toFixed(2)}s`));
   });
   // Gallery cards sit in a horizontal scroller on phones: they reveal together (see revealGallery).
