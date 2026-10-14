@@ -1,0 +1,58 @@
+
+== house.glb  raw 1625.6K  gz 1017.2K  br 938.6K  ext=[EXT_meshopt_compression,KHR_materials_emissive_strength,KHR_mesh_quantization]
+   counts {"nodes":125,"meshNodes":94,"meshes":94,"primitives":94,"materials":47,"textures":0,"accessors":299,"bufferViews":1}  tris 226860  verts 181704  gpu 3385.3K
+   drawCallEstimate {"allPrimsVisible":94,"ifMergedPerGroupPerMaterial":81}  vcolPrims 48  u32idx 0
+   blend=[glass] doubleSided=[]
+   group                       prims     tris    verts   gpuKB  glbKB  mats
+   env_maple_b                     2    44656    24322  546.7K 202.5K  2
+   env_maple_a                     2    44432    24202  544.0K 200.5K  2
+   layer_nokkelferdig              7    25192    16614  334.3K 141.4K  7
+   env_terrain                     2    22780    19295  359.6K 120.3K  2
+   layer_kledning                  7     9280    18178  262.5K 113.7K  5
+   env_birch_03                    2     5210     3217   68.2K  33.1K  2
+   env_birch_02                    2     5190     3195   67.9K  33.0K  2
+   env_birch_08                    2     5190     3195   67.9K  33.0K  2
+   env_birch_06                    2     5170     3197   67.8K  33.3K  2
+   env_birch_01                    2     5160     3192   67.6K  36.4K  2
+   env_birch_11                    2     5160     3192   67.6K  33.2K  2
+   env_birch_10                    2     5150     3163   67.2K  32.6K  2
+   env_birch_04                    2     5120     3160   67.0K  33.1K  2
+   env_birch_05                    2     5120     3160   67.0K  33.1K  2
+   env_birch_09                    2     5080     3128   66.4K  32.9K  2
+   env_birch_07                    2     5070     3123   66.3K  32.5K  2
+   layer_bindingsverk              5     4928     9758  143.0K  67.0K  3
+   layer_installasjoner            2     3732     4020   57.2K  26.4K  2
+   layer_grunnarbeid               3     3640    10806  148.0K  85.5K  2
+   layer_interior                 18     2740     4554   56.4K  49.2K  12
+   layer_vinduer                   5     2580     4404   53.8K  32.4K  5
+   layer_isolasjon                 2     2136     3413   42.5K  22.7K  2
+   layer_tak                       4     1956     2956   39.3K  24.6K  4
+   env_hills                       1     1080     2160   31.6K  16.9K  1
+   layer_tomt                      5      844     1644   19.4K  18.3K  5
+   layer_fundament                 7      264      456    6.0K  11.2K  5
+   glb bytes by material (top 8): maple_leaf 373.1K, birch_leaf 302.4K, shrub 111.5K, cladding_wood 82.7K, frame_wood 81.6K, blast_rock 80.8K, rock 65.7K, birch_bark 63.7K
+
+== permits.glb  raw 31.5K  gz 6.3K  br 5.0K  ext=[EXT_meshopt_compression,KHR_materials_emissive_strength,KHR_mesh_quantization]
+   counts {"nodes":42,"meshNodes":37,"meshes":36,"primitives":36,"materials":9,"textures":0,"accessors":44,"bufferViews":1}  tris 888  verts 1748  gpu 20.6K
+   drawCallEstimate {"allPrimsVisible":37,"ifMergedPerGroupPerMaterial":34}  vcolPrims 0  u32idx 0
+   blend=[] doubleSided=[]
+   group                       prims     tris    verts   gpuKB  glbKB  mats
+   permit_kjeller                  8      206      396    4.7K   1.5K  7
+   permit_garasje                  7      194      376    4.4K   1.2K  7
+   permit_frittliggende            7      172      344    4.0K   1.7K  7
+   permit_tilbygg                  8      170      340    4.0K   0.5K  7
+   permit_pabygg                   7      146      292    3.4K   1.7K  6
+   glb bytes by material (top 8): permit_window 2.2K, permit_ground 1.3K, permit_new 0.7K, permit_new_roof 0.7K, permit_existing 0.5K, permit_existing_roof 0.4K, permit_accent 0.4K, permit_opening 0.3K
+
+== JS chunks (3D-related): 3  raw 1071.6K  gz 287.6K  br 237.3K
+   2-byhsu7rqmfo.js              1016.5K gz  271.2K br  222.5K  three,gltf-loader,r3f,PermitCanvas,house.meta.json,lighting.ts
+   0zejj0knbxro4.js                75.3K gz   21.6K br   19.1K  gsap-st,lenis
+   2khblt934m9wm.js                68.9K gz   26.6K br   24.1K  gsap-st
+   2p2jd75im6m_h.js                42.4K gz   17.1K br   15.5K  gsap-st
+   0adcljbpfwdp9.js                39.5K gz   14.1K br   12.4K  gsap-st,lenis
+   0h42vztb7mn03.js                31.7K gz    9.8K br    8.9K  postfx,BuildCanvas,house.meta.json
+   06xiws5j0imcs.js                23.3K gz    6.5K br    5.8K  postfx
+   2j9yyl5qtr4km.js                18.3K gz    5.3K br    4.8K  lenis
+   home initial HTML chunks: 11  gz 219.6K  3D in initial: []
+
+wrote /tmp/claude-0/-home-user-WEBSITES/b52489a3-dfad-5be2-b7ef-4b1d7307930f/scratchpad/perf3d/results/baseline/assets.json

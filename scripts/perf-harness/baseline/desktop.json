@@ -1,0 +1,3131 @@
+{
+  "profile": "desktop",
+  "config": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "dpr": 1,
+    "mobile": false,
+    "cpu": 1,
+    "net": null
+  },
+  "load": {
+    "profile": "desktop",
+    "loadEventWallMs": 194,
+    "canvases": {
+      "hero": {
+        "ok": true,
+        "trigger": 1831.800000000745,
+        "chunks": [
+          {
+            "file": "06xiws5j0imcs.js",
+            "tags": [
+              "postfx"
+            ],
+            "start": 1887.9,
+            "end": 1898,
+            "transfer": 7177,
+            "decoded": 23875
+          },
+          {
+            "file": "2-byhsu7rqmfo.js",
+            "tags": [
+              "three",
+              "r3f",
+              "gltf",
+              "PermitCanvas"
+            ],
+            "start": 1888.7,
+            "end": 1944,
+            "transfer": 278060,
+            "decoded": 1040936
+          }
+        ],
+        "glb": {
+          "start": 2348.2,
+          "end": 2446.1,
+          "transfer": 1049492,
+          "encoded": 1049192,
+          "decoded": 1664564,
+          "cached": false
+        },
+        "compileStart": 3238.6,
+        "compileEnd": 3269.9,
+        "compileMs": 31.299999999813735,
+        "firstFrame": 4020.4,
+        "firstFrameRenderMs": 732.5999999996275,
+        "ready": 4026.1,
+        "relToTrigger": {
+          "chunksDone": 112.2,
+          "glbStart": 516.4,
+          "glbEnd": 614.3,
+          "sceneMounted_compileStart": 1406.8,
+          "compileEnd": 1438.1,
+          "firstFrame": 2188.6,
+          "ready": 2194.3
+        },
+        "programLinks": {
+          "beforeCompile": 18,
+          "duringCompileAsync": 4,
+          "afterCompileToReady": 4,
+          "afterReady": 0
+        },
+        "longtasks": {
+          "triggerToGlbEnd": {
+            "n": 4,
+            "total": 245,
+            "max": 73
+          },
+          "glbEndToCompileStart_parseMount": {
+            "n": 2,
+            "total": 710,
+            "max": 588
+          },
+          "compile": {
+            "n": 0,
+            "total": 0,
+            "max": 0
+          },
+          "compileEndToReady_firstFrames": {
+            "n": 1,
+            "total": 736,
+            "max": 736
+          },
+          "triggerToReady": {
+            "n": 7,
+            "total": 1691,
+            "max": 736
+          }
+        }
+      },
+      "build": {
+        "ok": true,
+        "trigger": 4303.200000000186,
+        "chunks": [
+          {
+            "file": "0h42vztb7mn03.js",
+            "tags": [
+              "postfx",
+              "BuildCanvas"
+            ],
+            "start": 4351.9,
+            "end": 4361.6,
+            "transfer": 10743,
+            "decoded": 32494
+          }
+        ],
+        "glb": {
+          "start": 2348.2,
+          "end": 2446.1,
+          "transfer": 1049492,
+          "encoded": 1049192,
+          "decoded": 1664564,
+          "cached": false
+        },
+        "compileStart": 19604.5,
+        "compileEnd": 20599.5,
+        "compileMs": 995,
+        "firstFrame": 20610.7,
+        "firstFrameRenderMs": 2,
+        "ready": 20618.3,
+        "relToTrigger": {
+          "chunksDone": 58.4,
+          "glbStart": -1955,
+          "glbEnd": -1857.1,
+          "sceneMounted_compileStart": 15301.3,
+          "compileEnd": 16296.3,
+          "firstFrame": 16307.5,
+          "ready": 16315.1
+        },
+        "programLinks": {
+          "beforeCompile": 12,
+          "duringCompileAsync": 23,
+          "afterCompileToReady": 0,
+          "afterReady": 0
+        },
+        "longtasks": {
+          "triggerToGlbEnd": {
+            "n": 0,
+            "total": 0,
+            "max": 0
+          },
+          "glbEndToCompileStart_parseMount": {
+            "n": 5,
+            "total": 11074,
+            "max": 5760
+          },
+          "compile": {
+            "n": 1,
+            "total": 955,
+            "max": 955
+          },
+          "compileEndToReady_firstFrames": {
+            "n": 0,
+            "total": 0,
+            "max": 0
+          },
+          "triggerToReady": {
+            "n": 3,
+            "total": 10583,
+            "max": 5760
+          }
+        }
+      },
+      "permit": {
+        "ok": true,
+        "trigger": 20970.200000000186,
+        "chunks": [],
+        "glb": {
+          "start": 50227.9,
+          "end": 50234.9,
+          "transfer": 6812,
+          "encoded": 6512,
+          "decoded": 32268,
+          "cached": false
+        },
+        "compileStart": 50661.2,
+        "compileEnd": 50676.4,
+        "compileMs": 15.299999999813735,
+        "firstFrame": 50704,
+        "firstFrameRenderMs": 20.899999999441206,
+        "ready": 50706.7,
+        "relToTrigger": {
+          "chunksDone": null,
+          "glbStart": 29257.7,
+          "glbEnd": 29264.7,
+          "sceneMounted_compileStart": 29691,
+          "compileEnd": 29706.2,
+          "firstFrame": 29733.8,
+          "ready": 29736.5
+        },
+        "programLinks": {
+          "beforeCompile": 8,
+          "duringCompileAsync": 1,
+          "afterCompileToReady": 0,
+          "afterReady": 0
+        },
+        "longtasks": {
+          "triggerToGlbEnd": {
+            "n": 3,
+            "total": 22934,
+            "max": 12359
+          },
+          "glbEndToCompileStart_parseMount": {
+            "n": 2,
+            "total": 398,
+            "max": 265
+          },
+          "compile": {
+            "n": 0,
+            "total": 0,
+            "max": 0
+          },
+          "compileEndToReady_firstFrames": {
+            "n": 0,
+            "total": 0,
+            "max": 0
+          },
+          "triggerToReady": {
+            "n": 5,
+            "total": 23332,
+            "max": 12359
+          }
+        }
+      }
+    },
+    "before3dTrigger": {
+      "glbRequested": false,
+      "threeChunksRequested": [],
+      "webglContexts": 0,
+      "lcp": {
+        "t": 352,
+        "size": 87785,
+        "tag": "P",
+        "url": null
+      },
+      "fcp": 352,
+      "longtasksTotal": 111
+    },
+    "cpuProfile": {
+      "top": [
+        {
+          "fn": "(idle) :-1:-1",
+          "selfMs": 6160.5
+        },
+        {
+          "fn": "getContext :-1:-1",
+          "selfMs": 5425.1
+        },
+        {
+          "fn": "setSize 2-byhsu7rqmfo.js:341:26341",
+          "selfMs": 3872
+        },
+        {
+          "fn": "getProgramInfoLog :-1:-1",
+          "selfMs": 2355.4
+        },
+        {
+          "fn": "(program) :-1:-1",
+          "selfMs": 343
+        },
+        {
+          "fn": "(garbage collector) :-1:-1",
+          "selfMs": 109.4
+        },
+        {
+          "fn": "getShaderInfoLog :-1:-1",
+          "selfMs": 91.6
+        },
+        {
+          "fn": "I turbopack-3-ry682tkyiqk.js:0:6194",
+          "selfMs": 56.3
+        },
+        {
+          "fn": "(anon) 2p2jd75im6m_h.js:0:1328",
+          "selfMs": 53.2
+        },
+        {
+          "fn": "getProgramParameter :-1:-1",
+          "selfMs": 42.9
+        },
+        {
+          "fn": "get actualScroll 2j9yyl5qtr4km.js:0:17352",
+          "selfMs": 33
+        },
+        {
+          "fn": "eH 2p2jd75im6m_h.js:0:10045",
+          "selfMs": 30.8
+        },
+        {
+          "fn": "getExtension :-1:-1",
+          "selfMs": 25.4
+        },
+        {
+          "fn": "shaderSource :-1:-1",
+          "selfMs": 21
+        },
+        {
+          "fn": "dL 2-byhsu7rqmfo.js:352:64625",
+          "selfMs": 14.4
+        },
+        {
+          "fn": "uK 2-byhsu7rqmfo.js:295:10386",
+          "selfMs": 13.9
+        },
+        {
+          "fn": "getParameters 2-byhsu7rqmfo.js:317:4193",
+          "selfMs": 9.8
+        },
+        {
+          "fn": "iX 2khblt934m9wm.js:0:58981",
+          "selfMs": 8.9
+        },
+        {
+          "fn": "(anon) 2-byhsu7rqmfo.js:0:161",
+          "selfMs": 8.3
+        },
+        {
+          "fn": "e1 2-byhsu7rqmfo.js:341:41544",
+          "selfMs": 8.1
+        },
+        {
+          "fn": "(anon) :-1:-1",
+          "selfMs": 8
+        },
+        {
+          "fn": "bufferData :-1:-1",
+          "selfMs": 7.1
+        },
+        {
+          "fn": "(anon) :275:9",
+          "selfMs": 6.4
+        },
+        {
+          "fn": "ax 2-byhsu7rqmfo.js:0:235152",
+          "selfMs": 6.3
+        },
+        {
+          "fn": "getActiveUniform :-1:-1",
+          "selfMs": 6
+        },
+        {
+          "fn": "multiplyMatrices 2-byhsu7rqmfo.js:0:48451",
+          "selfMs": 5.4
+        },
+        {
+          "fn": "hn 2-byhsu7rqmfo.js:341:62165",
+          "selfMs": 5.4
+        },
+        {
+          "fn": "render 06xiws5j0imcs.js:23:3603",
+          "selfMs": 5.3
+        },
+        {
+          "fn": "ue 2-byhsu7rqmfo.js:295:2349",
+          "selfMs": 5.3
+        },
+        {
+          "fn": "renderBufferDirect 2-byhsu7rqmfo.js:341:29188",
+          "selfMs": 5.1
+        }
+      ],
+      "byFile": [
+        {
+          "file": "(idle)",
+          "selfMs": 6160.5
+        },
+        {
+          "file": "getContext",
+          "selfMs": 5425.1
+        },
+        {
+          "file": "2-byhsu7rqmfo.js [three,r3f,gltf,PermitCanvas]",
+          "selfMs": 4194.9
+        },
+        {
+          "file": "getProgramInfoLog",
+          "selfMs": 2355.4
+        },
+        {
+          "file": "(program)",
+          "selfMs": 343
+        },
+        {
+          "file": "(garbage collector)",
+          "selfMs": 109.4
+        },
+        {
+          "file": "2p2jd75im6m_h.js [gsap]",
+          "selfMs": 98.1
+        },
+        {
+          "file": "getShaderInfoLog",
+          "selfMs": 91.6
+        },
+        {
+          "file": "turbopack-3-ry682tkyiqk.js",
+          "selfMs": 59.9
+        },
+        {
+          "file": "getProgramParameter",
+          "selfMs": 42.9
+        },
+        {
+          "file": "2j9yyl5qtr4km.js [lenis]",
+          "selfMs": 34.4
+        },
+        {
+          "file": "2khblt934m9wm.js [gsap]",
+          "selfMs": 33.2
+        },
+        {
+          "file": "getExtension",
+          "selfMs": 25.4
+        },
+        {
+          "file": "3dmm3v_fq28gc.js",
+          "selfMs": 25.4
+        },
+        {
+          "file": "shaderSource",
+          "selfMs": 21
+        }
+      ]
+    },
+    "bytes": {
+      "js3d": {
+        "files": [
+          "06xiws5j0imcs.js",
+          "2-byhsu7rqmfo.js",
+          "0h42vztb7mn03.js"
+        ],
+        "transfer": 295980,
+        "decoded": 1097305
+      },
+      "glb": [
+        {
+          "name": "/models/house.glb",
+          "transfer": 1049492,
+          "decoded": 1664564,
+          "ms": 98
+        },
+        {
+          "name": "/models/permits.glb",
+          "transfer": 6812,
+          "decoded": 32268,
+          "ms": 7
+        }
+      ],
+      "allTransfer": 2194286
+    },
+    "webglContexts": [
+      {
+        "id": 0,
+        "kind": "detached",
+        "attrs": null,
+        "draws": 0,
+        "programsLinked": 0,
+        "shadersCompiled": 0,
+        "bufferMB": 0,
+        "texUploads": 0
+      },
+      {
+        "id": 1,
+        "kind": "hero",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": false,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "draws": 696,
+        "programsLinked": 26,
+        "shadersCompiled": 52,
+        "bufferMB": 3.67,
+        "texUploads": 53
+      },
+      {
+        "id": 2,
+        "kind": "build",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": false,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "draws": 590,
+        "programsLinked": 37,
+        "shadersCompiled": 74,
+        "bufferMB": 3.94,
+        "texUploads": 32
+      },
+      {
+        "id": 3,
+        "kind": "permit:pabygg",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": true,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "draws": 70,
+        "programsLinked": 9,
+        "shadersCompiled": 18,
+        "bufferMB": 0.11,
+        "texUploads": 15
+      }
+    ],
+    "renderers": [
+      {
+        "kind": "hero",
+        "frameloop": "demand",
+        "dpr": 1,
+        "drawingBuffer": {
+          "w": 1497,
+          "h": 936
+        },
+        "antialias": false,
+        "shadowMap": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": false
+        },
+        "programs": 22,
+        "memory": {
+          "geometries": 90,
+          "textures": 17
+        },
+        "compiles": [
+          {
+            "ms": 31.3,
+            "syncMs": 20.3,
+            "programsBefore": 14,
+            "programsAfter": 18
+          }
+        ],
+        "total": {
+          "renders": 110,
+          "sceneRenders": 12,
+          "postRenders": 105,
+          "mainToTarget": 5,
+          "calls": 696,
+          "triangles": 1524722,
+          "lines": 0,
+          "points": 0,
+          "cpu": 1431.7,
+          "cpuMax": 732.6,
+          "mainCpu": 1094.4
+        }
+      },
+      {
+        "kind": "build",
+        "frameloop": "demand",
+        "dpr": 1,
+        "drawingBuffer": {
+          "w": 1440,
+          "h": 900
+        },
+        "antialias": false,
+        "shadowMap": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": true
+        },
+        "programs": 25,
+        "memory": {
+          "geometries": 96,
+          "textures": 19
+        },
+        "compiles": [
+          {
+            "ms": 995,
+            "syncMs": 35.3,
+            "programsBefore": 0,
+            "programsAfter": 23
+          }
+        ],
+        "total": {
+          "renders": 192,
+          "sceneRenders": 24,
+          "postRenders": 186,
+          "mainToTarget": 6,
+          "calls": 590,
+          "triangles": 1430764,
+          "lines": 0,
+          "points": 0,
+          "cpu": 15621.9,
+          "cpuMax": 12306.3,
+          "mainCpu": 15093.1
+        }
+      },
+      {
+        "kind": "permit:pabygg",
+        "frameloop": "demand",
+        "dpr": 1,
+        "drawingBuffer": {
+          "w": 688,
+          "h": 516
+        },
+        "antialias": true,
+        "shadowMap": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": true
+        },
+        "programs": 5,
+        "memory": {
+          "geometries": 11,
+          "textures": 4
+        },
+        "compiles": [
+          {
+            "ms": 15.3,
+            "syncMs": 4.9,
+            "programsBefore": 4,
+            "programsAfter": 5
+          }
+        ],
+        "total": {
+          "renders": 37,
+          "sceneRenders": 9,
+          "postRenders": 35,
+          "mainToTarget": 0,
+          "calls": 70,
+          "triangles": 18584,
+          "lines": 104,
+          "points": 0,
+          "cpu": 406.4,
+          "cpuMax": 224.9,
+          "mainCpu": 153.2
+        }
+      }
+    ],
+    "workers": {
+      "created": 2,
+      "posted": 271,
+      "messages": 271,
+      "firstPost": 2480,
+      "lastMessage": 50257.200000000186
+    },
+    "reactCommits": {
+      "byRenderer": {
+        "react-dom": 25,
+        "@react-three/fiber": 14
+      },
+      "total": 39
+    },
+    "longtasksAll": {
+      "n": 17,
+      "total": 35717,
+      "max": 12359
+    },
+    "errors": [
+      "warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  "states": {
+    "profile": "desktop",
+    "hero": {
+      "kind": "hero",
+      "invalidated": 2,
+      "wallMs": 9581.9,
+      "gl": {
+        "draws": 200,
+        "tris": 431916,
+        "instances": 0,
+        "useProgram": 48,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 50,
+        "clears": 28
+      },
+      "mainFrames": 2,
+      "threeInfo": {
+        "renders": 30,
+        "postRenders": 28,
+        "mainToTarget": 2,
+        "calls": 200,
+        "triangles": 431916,
+        "lines": 0
+      },
+      "renderCpuMs": 7.3,
+      "mainRenderCpuMs": 5.6,
+      "gpuSyncMs": [
+        4492.2,
+        4376.5
+      ],
+      "drainMs": [
+        54.1,
+        43.9
+      ],
+      "frameCpuMs": [
+        1.4,
+        1
+      ],
+      "newPrograms": [],
+      "describe": {
+        "id": 0,
+        "kind": "hero",
+        "frameloop": "demand",
+        "r3fDpr": 1,
+        "r3fDprRange": null,
+        "size": {
+          "w": 1440,
+          "h": 900
+        },
+        "pixelRatio": 1,
+        "drawingBuffer": {
+          "w": 1440,
+          "h": 900
+        },
+        "antialias": false,
+        "webgl2": true,
+        "toneMapping": 6,
+        "shadowMap": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": false
+        },
+        "localClippingEnabled": false,
+        "programs": 18,
+        "programNames": {
+          "plan_line": 1,
+          "terrain": 2,
+          "glass": 2,
+          "sky": 2,
+          "": 9,
+          "concrete": 1,
+          "OutputShader": 1
+        },
+        "memory": {
+          "geometries": 90,
+          "textures": 17
+        },
+        "scene": {
+          "objects": 144,
+          "meshes": 95,
+          "visibleMeshes": 89,
+          "castShadowVisible": 83,
+          "receiveShadowVisible": 86,
+          "transparentVisible": 3,
+          "ghostVisible": 0,
+          "doubleSideVisible": 0,
+          "clippedVisible": 0,
+          "visibleTris": 225704,
+          "lineSegmentsVisible": 0,
+          "materialsAll": 50,
+          "materialsVisible": 46,
+          "geometries": 95,
+          "lights": {
+            "HemisphereLight": 1,
+            "DirectionalLight": 2,
+            "PointLight": 10
+          },
+          "lightsVisible": {
+            "HemisphereLight": 1,
+            "DirectionalLight": 2,
+            "PointLight": 10
+          },
+          "shadowCasters": [
+            {
+              "type": "DirectionalLight",
+              "mapSize": 2048,
+              "radius": 3,
+              "autoUpdate": true
+            }
+          ],
+          "fog": true,
+          "environment": true
+        },
+        "compiles": [
+          {
+            "ms": 577.7,
+            "syncMs": 15.4,
+            "programsBefore": 0,
+            "programsAfter": 18
+          }
+        ],
+        "total": {
+          "renders": 110,
+          "sceneRenders": 12,
+          "postRenders": 105,
+          "mainToTarget": 5,
+          "calls": 700,
+          "triangles": 1535142,
+          "lines": 0,
+          "points": 0,
+          "cpu": 641.6,
+          "cpuMax": 338,
+          "mainCpu": 354.6
+        }
+      },
+      "shot": "shots/desktop-hero.png"
+    },
+    "build": {
+      "s00-tomt": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 11404.2,
+        "gl": {
+          "draws": 102,
+          "tris": 371604,
+          "instances": 0,
+          "useProgram": 30,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 102,
+          "triangles": 371604,
+          "lines": 0
+        },
+        "renderCpuMs": 4.7,
+        "mainRenderCpuMs": 3.4,
+        "gpuSyncMs": [
+          2070.1,
+          2183.7
+        ],
+        "drainMs": [
+          6522.9,
+          13.5
+        ],
+        "frameCpuMs": [
+          0.6,
+          0.8
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 23,
+          "programNames": {
+            "plan_line": 2,
+            "": 12,
+            "terrain": 4,
+            "pit_earth": 1,
+            "glass": 1,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 33,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 35,
+            "castShadowVisible": 5,
+            "receiveShadowVisible": 33,
+            "transparentVisible": 0,
+            "ghostVisible": 0,
+            "doubleSideVisible": 5,
+            "clippedVisible": 5,
+            "visibleTris": 172620,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 13,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 207,
+            "sceneRenders": 25,
+            "postRenders": 200,
+            "mainToTarget": 7,
+            "calls": 459,
+            "triangles": 1341366,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1303.8,
+            "cpuMax": 581.8,
+            "mainCpu": 322.7
+          }
+        },
+        "step": 0,
+        "shot": "shots/desktop-build-s00-tomt.png"
+      },
+      "s03-bindingsverk": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 17502.7,
+        "gl": {
+          "draws": 142,
+          "tris": 394868,
+          "instances": 0,
+          "useProgram": 44,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 142,
+          "triangles": 394868,
+          "lines": 0
+        },
+        "renderCpuMs": 5.4,
+        "mainRenderCpuMs": 3.9,
+        "gpuSyncMs": [
+          3842.1,
+          3988
+        ],
+        "drainMs": [
+          9046.6,
+          12
+        ],
+        "frameCpuMs": [
+          1.1,
+          0.5
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 24,
+          "programNames": {
+            "plan_line": 2,
+            "": 12,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 1,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 47,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 44,
+            "castShadowVisible": 16,
+            "receiveShadowVisible": 42,
+            "transparentVisible": 0,
+            "ghostVisible": 0,
+            "doubleSideVisible": 14,
+            "clippedVisible": 14,
+            "visibleTris": 178088,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 22,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 252,
+            "sceneRenders": 28,
+            "postRenders": 242,
+            "mainToTarget": 10,
+            "calls": 672,
+            "triangles": 1933668,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1326.3,
+            "cpuMax": 581.8,
+            "mainCpu": 342.4
+          }
+        },
+        "step": 3,
+        "shot": "shots/desktop-build-s03-bindingsverk.png"
+      },
+      "s05-tak": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 20613.1,
+        "gl": {
+          "draws": 166,
+          "tris": 411236,
+          "instances": 0,
+          "useProgram": 50,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 166,
+          "triangles": 411236,
+          "lines": 0
+        },
+        "renderCpuMs": 10.9,
+        "mainRenderCpuMs": 9.7,
+        "gpuSyncMs": [
+          5299.9,
+          5298.9
+        ],
+        "drainMs": [
+          9343,
+          45
+        ],
+        "frameCpuMs": [
+          0.9,
+          0.7
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 24,
+          "programNames": {
+            "plan_line": 2,
+            "": 12,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 1,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 53,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 50,
+            "castShadowVisible": 22,
+            "receiveShadowVisible": 48,
+            "transparentVisible": 0,
+            "ghostVisible": 0,
+            "doubleSideVisible": 20,
+            "clippedVisible": 20,
+            "visibleTris": 182180,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 28,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 297,
+            "sceneRenders": 31,
+            "postRenders": 284,
+            "mainToTarget": 13,
+            "calls": 921,
+            "triangles": 2550522,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1341.7,
+            "cpuMax": 581.8,
+            "mainCpu": 356.2
+          }
+        },
+        "step": 5,
+        "shot": "shots/desktop-build-s05-tak.png"
+      },
+      "s08-installasjoner-xray": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 16132.2,
+        "gl": {
+          "draws": 152,
+          "tris": 409456,
+          "instances": 0,
+          "useProgram": 44,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 152,
+          "triangles": 409456,
+          "lines": 0
+        },
+        "renderCpuMs": 6.5,
+        "mainRenderCpuMs": 3.4,
+        "gpuSyncMs": [
+          3657,
+          3415.5
+        ],
+        "drainMs": [
+          8396.2,
+          46.3
+        ],
+        "frameCpuMs": [
+          2.7,
+          1.1
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 67,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 64,
+            "castShadowVisible": 4,
+            "receiveShadowVisible": 31,
+            "transparentVisible": 32,
+            "ghostVisible": 31,
+            "doubleSideVisible": 2,
+            "clippedVisible": 34,
+            "visibleTris": 197772,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 13,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 342,
+            "sceneRenders": 34,
+            "postRenders": 326,
+            "mainToTarget": 16,
+            "calls": 1149,
+            "triangles": 3164706,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1512.9,
+            "cpuMax": 581.8,
+            "mainCpu": 523.6
+          }
+        },
+        "step": 8,
+        "shot": "shots/desktop-build-s08-installasjoner-xray.png"
+      },
+      "s09-interior-section": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 24498.7,
+        "gl": {
+          "draws": 272,
+          "tris": 434596,
+          "instances": 0,
+          "useProgram": 64,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 272,
+          "triangles": 434596,
+          "lines": 0
+        },
+        "renderCpuMs": 9.3,
+        "mainRenderCpuMs": 8.3,
+        "gpuSyncMs": [
+          6647.1,
+          6612.4
+        ],
+        "drainMs": [
+          10579.2,
+          35.9
+        ],
+        "frameCpuMs": [
+          0.5,
+          0.6
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 85,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 82,
+            "castShadowVisible": 51,
+            "receiveShadowVisible": 80,
+            "transparentVisible": 3,
+            "ghostVisible": 0,
+            "doubleSideVisible": 49,
+            "clippedVisible": 52,
+            "visibleTris": 200512,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 60,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 387,
+            "sceneRenders": 37,
+            "postRenders": 368,
+            "mainToTarget": 19,
+            "calls": 1557,
+            "triangles": 3816600,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1530.1,
+            "cpuMax": 581.8,
+            "mainCpu": 539.4
+          }
+        },
+        "step": 9,
+        "shot": "shots/desktop-build-s09-interior-section.png"
+      },
+      "s10-nokkelferdig": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 23729.4,
+        "gl": {
+          "draws": 352,
+          "tris": 841464,
+          "instances": 0,
+          "useProgram": 66,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 352,
+          "triangles": 841464,
+          "lines": 0
+        },
+        "renderCpuMs": 11.2,
+        "mainRenderCpuMs": 9.6,
+        "gpuSyncMs": [
+          6260.2,
+          6306.9
+        ],
+        "drainMs": [
+          10504,
+          35.6
+        ],
+        "frameCpuMs": [
+          2.5,
+          0.5
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 95,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 89,
+            "castShadowVisible": 83,
+            "receiveShadowVisible": 86,
+            "transparentVisible": 3,
+            "ghostVisible": 0,
+            "doubleSideVisible": 56,
+            "clippedVisible": 59,
+            "visibleTris": 225704,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 67,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 432,
+            "sceneRenders": 40,
+            "postRenders": 410,
+            "mainToTarget": 22,
+            "calls": 2085,
+            "triangles": 5078796,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1551.9,
+            "cpuMax": 581.8,
+            "mainCpu": 559.1
+          }
+        },
+        "step": 10,
+        "shot": "shots/desktop-build-s10-nokkelferdig.png"
+      },
+      "s10-exploded": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 17657.3,
+        "gl": {
+          "draws": 362,
+          "tris": 863324,
+          "instances": 0,
+          "useProgram": 66,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 362,
+          "triangles": 863324,
+          "lines": 0
+        },
+        "renderCpuMs": 12.5,
+        "mainRenderCpuMs": 11.5,
+        "gpuSyncMs": [
+          6003.6,
+          5995.7
+        ],
+        "drainMs": [
+          5018.9,
+          4.2
+        ],
+        "frameCpuMs": [
+          0.8,
+          0.7
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 95,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 89,
+            "castShadowVisible": 83,
+            "receiveShadowVisible": 86,
+            "transparentVisible": 3,
+            "ghostVisible": 0,
+            "doubleSideVisible": 56,
+            "clippedVisible": 59,
+            "visibleTris": 225704,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 67,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 477,
+            "sceneRenders": 43,
+            "postRenders": 452,
+            "mainToTarget": 25,
+            "calls": 2628,
+            "triangles": 6373782,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1567.4,
+            "cpuMax": 581.8,
+            "mainCpu": 573.3
+          }
+        },
+        "step": 10,
+        "shot": "shots/desktop-build-s10-exploded.png"
+      },
+      "s10-plan": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 23264.8,
+        "gl": {
+          "draws": 346,
+          "tris": 822064,
+          "instances": 0,
+          "useProgram": 66,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 346,
+          "triangles": 822064,
+          "lines": 0
+        },
+        "renderCpuMs": 8.9,
+        "mainRenderCpuMs": 8.4,
+        "gpuSyncMs": [
+          5510.2,
+          5803.2
+        ],
+        "drainMs": [
+          11318,
+          4.4
+        ],
+        "frameCpuMs": [
+          0.9,
+          0.4
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 95,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 89,
+            "castShadowVisible": 83,
+            "receiveShadowVisible": 86,
+            "transparentVisible": 3,
+            "ghostVisible": 0,
+            "doubleSideVisible": 56,
+            "clippedVisible": 59,
+            "visibleTris": 225704,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 67,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 537,
+            "sceneRenders": 47,
+            "postRenders": 508,
+            "mainToTarget": 29,
+            "calls": 3323,
+            "triangles": 8027610,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1582.8,
+            "cpuMax": 581.8,
+            "mainCpu": 587.5
+          }
+        },
+        "step": 10,
+        "shot": "shots/desktop-build-s10-plan.png"
+      },
+      "s10-day": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 25322.1,
+        "gl": {
+          "draws": 326,
+          "tris": 841438,
+          "instances": 0,
+          "useProgram": 50,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 18,
+          "clears": 6
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 4,
+          "postRenders": 2,
+          "mainToTarget": 2,
+          "calls": 326,
+          "triangles": 841438,
+          "lines": 0
+        },
+        "renderCpuMs": 7.7,
+        "mainRenderCpuMs": 7.6,
+        "gpuSyncMs": [
+          6062,
+          6388.4
+        ],
+        "drainMs": [
+          12241,
+          3.9
+        ],
+        "frameCpuMs": [
+          0.1,
+          0
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 95,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 89,
+            "castShadowVisible": 83,
+            "receiveShadowVisible": 86,
+            "transparentVisible": 3,
+            "ghostVisible": 0,
+            "doubleSideVisible": 56,
+            "clippedVisible": 59,
+            "visibleTris": 225704,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 67,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 558,
+            "sceneRenders": 51,
+            "postRenders": 525,
+            "mainToTarget": 33,
+            "calls": 3988,
+            "triangles": 9710499,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1604.4,
+            "cpuMax": 581.8,
+            "mainCpu": 608.6
+          }
+        },
+        "step": 10,
+        "shot": "shots/desktop-build-s10-day.png"
+      },
+      "s03-exploded": {
+        "kind": "build",
+        "invalidated": 2,
+        "wallMs": 26810.8,
+        "gl": {
+          "draws": 148,
+          "tris": 414388,
+          "instances": 0,
+          "useProgram": 44,
+          "linkProgram": 0,
+          "compileShader": 0,
+          "texUploads": 0,
+          "bufferData": 0,
+          "bufferBytes": 0,
+          "bindFramebuffer": 54,
+          "clears": 30
+        },
+        "mainFrames": 2,
+        "threeInfo": {
+          "renders": 30,
+          "postRenders": 28,
+          "mainToTarget": 2,
+          "calls": 148,
+          "triangles": 414388,
+          "lines": 0
+        },
+        "renderCpuMs": 5.2,
+        "mainRenderCpuMs": 3,
+        "gpuSyncMs": [
+          4045,
+          4004.4
+        ],
+        "drainMs": [
+          18125.1,
+          3.1
+        ],
+        "frameCpuMs": [
+          2.1,
+          0.4
+        ],
+        "newPrograms": [],
+        "describe": {
+          "id": 1,
+          "kind": "build",
+          "frameloop": "demand",
+          "r3fDpr": 1,
+          "r3fDprRange": null,
+          "size": {
+            "w": 1440,
+            "h": 900
+          },
+          "pixelRatio": 1,
+          "drawingBuffer": {
+            "w": 1440,
+            "h": 900
+          },
+          "antialias": false,
+          "webgl2": true,
+          "toneMapping": 6,
+          "shadowMap": {
+            "enabled": true,
+            "type": 1,
+            "autoUpdate": true
+          },
+          "localClippingEnabled": true,
+          "programs": 27,
+          "programNames": {
+            "plan_line": 2,
+            "": 14,
+            "terrain": 4,
+            "pit_earth": 2,
+            "glass": 2,
+            "sky": 2,
+            "OutputShader": 1
+          },
+          "memory": {
+            "geometries": 95,
+            "textures": 19
+          },
+          "scene": {
+            "objects": 204,
+            "meshes": 155,
+            "visibleMeshes": 44,
+            "castShadowVisible": 16,
+            "receiveShadowVisible": 42,
+            "transparentVisible": 0,
+            "ghostVisible": 0,
+            "doubleSideVisible": 14,
+            "clippedVisible": 14,
+            "visibleTris": 178088,
+            "lineSegmentsVisible": 0,
+            "materialsAll": 75,
+            "materialsVisible": 22,
+            "geometries": 95,
+            "lights": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "lightsVisible": {
+              "HemisphereLight": 1,
+              "DirectionalLight": 2,
+              "PointLight": 10
+            },
+            "shadowCasters": [
+              {
+                "type": "DirectionalLight",
+                "mapSize": 2048,
+                "radius": 3,
+                "autoUpdate": true
+              }
+            ],
+            "fog": true,
+            "environment": true
+          },
+          "compiles": [
+            {
+              "ms": 1167.9,
+              "syncMs": 25.8,
+              "programsBefore": 0,
+              "programsAfter": 23
+            }
+          ],
+          "total": {
+            "renders": 633,
+            "sceneRenders": 56,
+            "postRenders": 595,
+            "mainToTarget": 38,
+            "calls": 4457,
+            "triangles": 10950247,
+            "lines": 0,
+            "points": 0,
+            "cpu": 1621.5,
+            "cpuMax": 581.8,
+            "mainCpu": 622.7
+          }
+        },
+        "step": 3,
+        "shot": "shots/desktop-build-s03-exploded.png"
+      }
+    },
+    "permit": {
+      "kind": "permit:pabygg",
+      "invalidated": 2,
+      "wallMs": 13221.8,
+      "gl": {
+        "draws": 36,
+        "tris": 5000,
+        "instances": 0,
+        "useProgram": 8,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 4,
+        "clears": 4
+      },
+      "mainFrames": 2,
+      "threeInfo": {
+        "renders": 2,
+        "postRenders": 0,
+        "mainToTarget": 0,
+        "calls": 36,
+        "triangles": 5000,
+        "lines": 104
+      },
+      "renderCpuMs": 1.9,
+      "mainRenderCpuMs": 1.9,
+      "gpuSyncMs": [
+        76.4,
+        82.2
+      ],
+      "drainMs": [
+        12438.3,
+        4.6
+      ],
+      "frameCpuMs": [
+        0,
+        0
+      ],
+      "newPrograms": [],
+      "describe": {
+        "id": 2,
+        "kind": "permit:pabygg",
+        "frameloop": "demand",
+        "r3fDpr": 1,
+        "r3fDprRange": null,
+        "size": {
+          "w": 688,
+          "h": 516
+        },
+        "pixelRatio": 1,
+        "drawingBuffer": {
+          "w": 688,
+          "h": 516
+        },
+        "antialias": true,
+        "webgl2": true,
+        "toneMapping": 7,
+        "shadowMap": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": true
+        },
+        "localClippingEnabled": false,
+        "programs": 4,
+        "programNames": {
+          "permit_ground": 1,
+          "": 2,
+          "sky": 1
+        },
+        "memory": {
+          "geometries": 11,
+          "textures": 4
+        },
+        "scene": {
+          "objects": 69,
+          "meshes": 55,
+          "visibleMeshes": 11,
+          "castShadowVisible": 7,
+          "receiveShadowVisible": 7,
+          "transparentVisible": 3,
+          "ghostVisible": 0,
+          "doubleSideVisible": 0,
+          "clippedVisible": 0,
+          "visibleTris": 2354,
+          "lineSegmentsVisible": 3,
+          "materialsAll": 27,
+          "materialsVisible": 10,
+          "geometries": 48,
+          "lights": {
+            "HemisphereLight": 1,
+            "DirectionalLight": 2
+          },
+          "lightsVisible": {
+            "HemisphereLight": 1,
+            "DirectionalLight": 2
+          },
+          "shadowCasters": [
+            {
+              "type": "DirectionalLight",
+              "mapSize": 1024,
+              "radius": 3,
+              "autoUpdate": true
+            }
+          ],
+          "fog": false,
+          "environment": true
+        },
+        "compiles": [
+          {
+            "ms": 115.8,
+            "syncMs": 6.8,
+            "programsBefore": 0,
+            "programsAfter": 4
+          }
+        ],
+        "total": {
+          "renders": 39,
+          "sceneRenders": 11,
+          "postRenders": 35,
+          "mainToTarget": 0,
+          "calls": 106,
+          "triangles": 23584,
+          "lines": 208,
+          "points": 0,
+          "cpu": 162.9,
+          "cpuMax": 107.5,
+          "mainCpu": 110.2
+        }
+      },
+      "shot": "shots/desktop-permit.png"
+    },
+    "buildReady": true,
+    "webglContexts": [
+      {
+        "id": 0,
+        "kind": "detached",
+        "attrs": null,
+        "programsLinked": 0,
+        "bufferMB": 0
+      },
+      {
+        "id": 1,
+        "kind": "hero",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": false,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "programsLinked": 22,
+        "bufferMB": 3.67
+      },
+      {
+        "id": 2,
+        "kind": "build",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": false,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "programsLinked": 39,
+        "bufferMB": 3.81
+      },
+      {
+        "id": 3,
+        "kind": "permit:pabygg",
+        "attrs": {
+          "alpha": true,
+          "depth": true,
+          "stencil": false,
+          "antialias": true,
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "powerPreference": "high-performance",
+          "failIfMajorPerformanceCaveat": false
+        },
+        "programsLinked": 8,
+        "bufferMB": 0.11
+      }
+    ],
+    "errors": [
+      "warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.",
+      "warning: [.WebGL-0x22a402520600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: [.WebGL-0x22a402520600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: [.WebGL-0x22a402520600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: [.WebGL-0x22a402520600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ]
+  },
+  "scrub": {
+    "profile": "desktop",
+    "speedPxPerS": 1200,
+    "buildReady": true,
+    "scrollDistancePx": 8252,
+    "scrub": {
+      "ms": 73057.2,
+      "rafDelta": {
+        "n": 19,
+        "median": 1800,
+        "p95": 11616.2,
+        "max": 15132.8,
+        "mean": 3586.71
+      },
+      "framesOver33": 17,
+      "framesOver50": 15,
+      "rafCallbackCpu": {
+        "n": 20,
+        "median": 10.1,
+        "p95": 296,
+        "max": 3003.2,
+        "mean": 175.11
+      },
+      "longtasks": {
+        "n": 3,
+        "total": 3371,
+        "max": 3011
+      },
+      "gl": {
+        "draws": 2258,
+        "tris": 5323626,
+        "instances": 0,
+        "useProgram": 478,
+        "linkProgram": 4,
+        "compileShader": 8,
+        "texUploads": 1,
+        "bufferData": 189,
+        "bufferBytes": 1543116,
+        "bindFramebuffer": 459,
+        "clears": 252
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 45,
+          "sceneRenders": 3,
+          "postRenders": 42,
+          "mainToTarget": 3,
+          "calls": 294,
+          "triangles": 632244,
+          "lines": 0,
+          "points": 0,
+          "cpu": 18.9,
+          "cpuMax": 5.2,
+          "mainCpu": 15.3
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 210,
+          "sceneRenders": 14,
+          "postRenders": 196,
+          "mainToTarget": 14,
+          "calls": 1964,
+          "triangles": 4691382,
+          "lines": 0,
+          "points": 0,
+          "cpu": 3381.7,
+          "cpuMax": 2975.2,
+          "mainCpu": 3367.1
+        }
+      ],
+      "newPrograms": [
+        {
+          "kind": "build",
+          "name": "pit_earth",
+          "key": "physical,STANDARD,,highp,srgb-linear,306,1024,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,"
+        },
+        {
+          "kind": "build",
+          "name": "glass",
+          "key": "physical,STANDARD,,highp,srgb-linear,306,1024,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,"
+        },
+        {
+          "kind": "build",
+          "name": "",
+          "key": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,fal"
+        },
+        {
+          "kind": "build",
+          "name": "",
+          "key": "physical,STANDARD,,highp,srgb-linear,306,1024,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,"
+        }
+      ],
+      "settled": true,
+      "cpuProfile": {
+        "top": [
+          {
+            "fn": "(idle) :-1:-1",
+            "selfMs": 68779.5
+          },
+          {
+            "fn": "getProgramInfoLog :-1:-1",
+            "selfMs": 3110.2
+          },
+          {
+            "fn": "(program) :-1:-1",
+            "selfMs": 387.2
+          },
+          {
+            "fn": "(garbage collector) :-1:-1",
+            "selfMs": 94.7
+          },
+          {
+            "fn": "getShaderInfoLog :-1:-1",
+            "selfMs": 80.8
+          },
+          {
+            "fn": "(anon) 2p2jd75im6m_h.js:0:1328",
+            "selfMs": 46.5
+          },
+          {
+            "fn": "getProgramParameter :-1:-1",
+            "selfMs": 39.9
+          },
+          {
+            "fn": "get actualScroll 2j9yyl5qtr4km.js:0:17352",
+            "selfMs": 38.1
+          },
+          {
+            "fn": "scrollTo :-1:-1",
+            "selfMs": 29
+          },
+          {
+            "fn": "getPropertyValue :-1:-1",
+            "selfMs": 18.1
+          },
+          {
+            "fn": "(anon) 2-byhsu7rqmfo.js:341:29287",
+            "selfMs": 12.8
+          },
+          {
+            "fn": "setTimeout :-1:-1",
+            "selfMs": 10.9
+          },
+          {
+            "fn": "(anon) 2-byhsu7rqmfo.js:0:545823",
+            "selfMs": 9.5
+          },
+          {
+            "fn": "uniform3f :-1:-1",
+            "selfMs": 7
+          },
+          {
+            "fn": "renderBufferDirect 2-byhsu7rqmfo.js:341:29188",
+            "selfMs": 6.9
+          },
+          {
+            "fn": "setup 2-byhsu7rqmfo.js:0:545513",
+            "selfMs": 5.9
+          },
+          {
+            "fn": "P.quiet :357:12",
+            "selfMs": 5.8
+          },
+          {
+            "fn": "uniform1f :-1:-1",
+            "selfMs": 5.2
+          },
+          {
+            "fn": "now :18:14",
+            "selfMs": 4.9
+          },
+          {
+            "fn": "P.pendingFrames :347:20",
+            "selfMs": 4.8
+          },
+          {
+            "fn": "l4 2-byhsu7rqmfo.js:295:1897",
+            "selfMs": 4.6
+          },
+          {
+            "fn": "uniformMatrix4fv :-1:-1",
+            "selfMs": 4.4
+          },
+          {
+            "fn": "setValue 2-byhsu7rqmfo.js:295:8525",
+            "selfMs": 4.1
+          },
+          {
+            "fn": "updateMatrixWorld 2-byhsu7rqmfo.js:0:62540",
+            "selfMs": 4.1
+          },
+          {
+            "fn": "enableVertexAttribArray :-1:-1",
+            "selfMs": 4
+          },
+          {
+            "fn": "proto.<computed> :78:27",
+            "selfMs": 3.3
+          },
+          {
+            "fn": "c 0zejj0knbxro4.js:0:2879",
+            "selfMs": 3.3
+          },
+          {
+            "fn": "e0 2-byhsu7rqmfo.js:341:41042",
+            "selfMs": 3.2
+          },
+          {
+            "fn": "e1 2-byhsu7rqmfo.js:341:41544",
+            "selfMs": 3
+          },
+          {
+            "fn": "(anon) 0h42vztb7mn03.js:0:8777",
+            "selfMs": 3
+          }
+        ],
+        "byFile": [
+          {
+            "file": "(idle)",
+            "selfMs": 68779.5
+          },
+          {
+            "file": "getProgramInfoLog",
+            "selfMs": 3110.2
+          },
+          {
+            "file": "(program)",
+            "selfMs": 387.2
+          },
+          {
+            "file": "2-byhsu7rqmfo.js [three,r3f,gltf,PermitCanvas]",
+            "selfMs": 129
+          },
+          {
+            "file": "(garbage collector)",
+            "selfMs": 94.7
+          },
+          {
+            "file": "getShaderInfoLog",
+            "selfMs": 80.8
+          },
+          {
+            "file": "2p2jd75im6m_h.js [gsap]",
+            "selfMs": 50.3
+          },
+          {
+            "file": "2j9yyl5qtr4km.js [lenis]",
+            "selfMs": 40.5
+          },
+          {
+            "file": "getProgramParameter",
+            "selfMs": 39.9
+          },
+          {
+            "file": "scrollTo",
+            "selfMs": 29
+          },
+          {
+            "file": "getPropertyValue",
+            "selfMs": 18.1
+          },
+          {
+            "file": "3dmm3v_fq28gc.js",
+            "selfMs": 16.4
+          },
+          {
+            "file": "setTimeout",
+            "selfMs": 10.9
+          },
+          {
+            "file": "uniform3f",
+            "selfMs": 7
+          },
+          {
+            "file": "now",
+            "selfMs": 6.5
+          }
+        ]
+      },
+      "reactCommits": {
+        "total": 13,
+        "byRenderer": {
+          "react-dom": 7,
+          "@react-three/fiber": 6
+        }
+      },
+      "endStep": 10
+    },
+    "explodedAnim": {
+      "ms": 30037.6,
+      "rafDelta": {
+        "n": 3,
+        "median": 6366.3,
+        "p95": 6483.2,
+        "max": 6483.2,
+        "mean": 6377.53
+      },
+      "framesOver33": 3,
+      "framesOver50": 3,
+      "rafCallbackCpu": {
+        "n": 4,
+        "median": 7.4,
+        "p95": 10,
+        "max": 10,
+        "mean": 7.38
+      },
+      "longtasks": {
+        "n": 0,
+        "total": 0,
+        "max": 0
+      },
+      "gl": {
+        "draws": 815,
+        "tris": 1917266,
+        "instances": 0,
+        "useProgram": 156,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 133,
+        "clears": 74
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 15,
+          "sceneRenders": 1,
+          "postRenders": 14,
+          "mainToTarget": 1,
+          "calls": 98,
+          "triangles": 210748,
+          "lines": 0,
+          "points": 0,
+          "cpu": 2.4,
+          "cpuMax": 2,
+          "mainCpu": 2
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 60,
+          "sceneRenders": 4,
+          "postRenders": 56,
+          "mainToTarget": 4,
+          "calls": 717,
+          "triangles": 1706518,
+          "lines": 0,
+          "points": 0,
+          "cpu": 23.6,
+          "cpuMax": 9,
+          "mainCpu": 21.7
+        }
+      ],
+      "newPrograms": [],
+      "settled": false,
+      "reactCommits": {
+        "total": 4,
+        "byRenderer": {
+          "react-dom": 2,
+          "@react-three/fiber": 2
+        }
+      }
+    },
+    "explodedBack": {
+      "ms": 30009.1,
+      "rafDelta": {
+        "n": 3,
+        "median": 6666.4,
+        "p95": 10099.7,
+        "max": 10099.7,
+        "mean": 7533.03
+      },
+      "framesOver33": 3,
+      "framesOver50": 3,
+      "rafCallbackCpu": {
+        "n": 4,
+        "median": 10.4,
+        "p95": 14.5,
+        "max": 14.5,
+        "mean": 9.43
+      },
+      "longtasks": {
+        "n": 0,
+        "total": 0,
+        "max": 0
+      },
+      "gl": {
+        "draws": 706,
+        "tris": 1684098,
+        "instances": 0,
+        "useProgram": 132,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 108,
+        "clears": 60
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 0,
+          "sceneRenders": 0,
+          "postRenders": 0,
+          "mainToTarget": 0,
+          "calls": 0,
+          "triangles": 0,
+          "lines": 0,
+          "points": 0,
+          "cpu": 0,
+          "cpuMax": 0,
+          "mainCpu": 0
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 60,
+          "sceneRenders": 4,
+          "postRenders": 56,
+          "mainToTarget": 4,
+          "calls": 706,
+          "triangles": 1684098,
+          "lines": 0,
+          "points": 0,
+          "cpu": 31,
+          "cpuMax": 13.6,
+          "mainCpu": 28.8
+        }
+      ],
+      "newPrograms": [],
+      "settled": false,
+      "reactCommits": {
+        "total": 2,
+        "byRenderer": {
+          "react-dom": 1,
+          "@react-three/fiber": 1
+        }
+      }
+    },
+    "dayAnim": {
+      "ms": 30015.2,
+      "rafDelta": {
+        "n": 3,
+        "median": 6616.5,
+        "p95": 6632.9,
+        "max": 6632.9,
+        "mean": 6533.07
+      },
+      "framesOver33": 3,
+      "framesOver50": 3,
+      "rafCallbackCpu": {
+        "n": 4,
+        "median": 8.2,
+        "p95": 12.5,
+        "max": 12.5,
+        "mean": 7.25
+      },
+      "longtasks": {
+        "n": 0,
+        "total": 0,
+        "max": 0
+      },
+      "gl": {
+        "draws": 690,
+        "tris": 1678315,
+        "instances": 0,
+        "useProgram": 124,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 90,
+        "clears": 48
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 0,
+          "sceneRenders": 0,
+          "postRenders": 0,
+          "mainToTarget": 0,
+          "calls": 0,
+          "triangles": 0,
+          "lines": 0,
+          "points": 0,
+          "cpu": 0,
+          "cpuMax": 0,
+          "mainCpu": 0
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 47,
+          "sceneRenders": 4,
+          "postRenders": 43,
+          "mainToTarget": 4,
+          "calls": 690,
+          "triangles": 1678315,
+          "lines": 0,
+          "points": 0,
+          "cpu": 26.3,
+          "cpuMax": 11.5,
+          "mainCpu": 25.3
+        }
+      ],
+      "newPrograms": [],
+      "settled": false,
+      "reactCommits": {
+        "total": 2,
+        "byRenderer": {
+          "react-dom": 1,
+          "@react-three/fiber": 1
+        }
+      }
+    },
+    "blueAnim": {
+      "ms": 30014.6,
+      "rafDelta": {
+        "n": 5,
+        "median": 6183.1,
+        "p95": 6466.4,
+        "max": 6466.4,
+        "mean": 5039.8
+      },
+      "framesOver33": 5,
+      "framesOver50": 5,
+      "rafCallbackCpu": {
+        "n": 6,
+        "median": 6.5,
+        "p95": 9.8,
+        "max": 9.8,
+        "mean": 6.18
+      },
+      "longtasks": {
+        "n": 0,
+        "total": 0,
+        "max": 0
+      },
+      "gl": {
+        "draws": 1055,
+        "tris": 2519792,
+        "instances": 0,
+        "useProgram": 198,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 162,
+        "clears": 90
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 0,
+          "sceneRenders": 0,
+          "postRenders": 0,
+          "mainToTarget": 0,
+          "calls": 0,
+          "triangles": 0,
+          "lines": 0,
+          "points": 0,
+          "cpu": 0,
+          "cpuMax": 0,
+          "mainCpu": 0
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 90,
+          "sceneRenders": 6,
+          "postRenders": 84,
+          "mainToTarget": 6,
+          "calls": 1055,
+          "triangles": 2519792,
+          "lines": 0,
+          "points": 0,
+          "cpu": 33.2,
+          "cpuMax": 8.5,
+          "mainCpu": 30.5
+        }
+      ],
+      "newPrograms": [],
+      "settled": false,
+      "reactCommits": {
+        "total": 2,
+        "byRenderer": {
+          "react-dom": 1,
+          "@react-three/fiber": 1
+        }
+      }
+    },
+    "heroPointer": {
+      "ms": 52834.7,
+      "rafDelta": {
+        "n": 10,
+        "median": 4816.6,
+        "p95": 7016.4,
+        "max": 7016.4,
+        "mean": 4768.15
+      },
+      "framesOver33": 10,
+      "framesOver50": 10,
+      "rafCallbackCpu": {
+        "n": 11,
+        "median": 3.5,
+        "p95": 6.6,
+        "max": 6.6,
+        "mean": 4.05
+      },
+      "longtasks": {
+        "n": 0,
+        "total": 0,
+        "max": 0
+      },
+      "gl": {
+        "draws": 1100,
+        "tris": 2375538,
+        "instances": 0,
+        "useProgram": 264,
+        "linkProgram": 0,
+        "compileShader": 0,
+        "texUploads": 0,
+        "bufferData": 0,
+        "bufferBytes": 0,
+        "bindFramebuffer": 275,
+        "clears": 154
+      },
+      "renderers": [
+        {
+          "id": 0,
+          "kind": "hero",
+          "renders": 165,
+          "sceneRenders": 11,
+          "postRenders": 154,
+          "mainToTarget": 11,
+          "calls": 1100,
+          "triangles": 2375538,
+          "lines": 0,
+          "points": 0,
+          "cpu": 39.5,
+          "cpuMax": 5.8,
+          "mainCpu": 35.3
+        },
+        {
+          "id": 1,
+          "kind": "build",
+          "renders": 0,
+          "sceneRenders": 0,
+          "postRenders": 0,
+          "mainToTarget": 0,
+          "calls": 0,
+          "triangles": 0,
+          "lines": 0,
+          "points": 0,
+          "cpu": 0,
+          "cpuMax": 0,
+          "mainCpu": 0
+        }
+      ],
+      "newPrograms": [],
+      "settled": false,
+      "reactCommits": {
+        "total": 0,
+        "byRenderer": {
+          "react-dom": 0,
+          "@react-three/fiber": 0
+        }
+      }
+    },
+    "errors": [
+      "warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+    ]
+  },
+  "fallbacks": {
+    "reducedMotion": {
+      "webglContexts": 0,
+      "glbRequested": false,
+      "galleryVisible": true
+    },
+    "noWebGL": {
+      "glbRequested": false,
+      "stagePresent": false,
+      "fallbackNote": 4721,
+      "heroPosterImg": true
+    },
+    "coldIdle": {
+      "lcp": {
+        "t": 176,
+        "size": 87785,
+        "tag": "P",
+        "url": null
+      },
+      "fcp": 176,
+      "glbRequestedWithoutScroll": false,
+      "threeChunksWithoutScroll": [],
+      "webglContextsWithoutScroll": 0
+    }
+  }
+}

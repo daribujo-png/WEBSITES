@@ -1,0 +1,1500 @@
+{
+  "when": "2026-10-14T09:57:25.711Z",
+  "root": "/home/user/WEBSITES",
+  "models": {
+    "house.glb": {
+      "file": "public/models/house.glb",
+      "bytes": {
+        "raw": 1664564,
+        "gzip9": 1041569,
+        "brotli11": 961173
+      },
+      "compressed": {
+        "byGroup": {
+          "env_maple_b": 207320,
+          "env_maple_a": 205319,
+          "layer_nokkelferdig": 144810,
+          "env_terrain": 123172,
+          "layer_kledning": 116400,
+          "layer_grunnarbeid": 87527,
+          "layer_bindingsverk": 68571,
+          "layer_interior": 50370,
+          "env_birch_01": 37227,
+          "env_birch_06": 34108,
+          "env_birch_11": 33985,
+          "env_birch_05": 33943,
+          "env_birch_04": 33889,
+          "env_birch_03": 33855,
+          "env_birch_08": 33794,
+          "env_birch_02": 33757,
+          "env_birch_09": 33681,
+          "env_birch_10": 33390,
+          "env_birch_07": 33295,
+          "layer_vinduer": 33142,
+          "layer_installasjoner": 27062,
+          "layer_tak": 25189,
+          "layer_isolasjon": 23260,
+          "layer_tomt": 18737,
+          "env_hills": 17300,
+          "layer_fundament": 11430
+        },
+        "byMaterial": {
+          "maple_leaf": 382051,
+          "birch_leaf": 309694,
+          "shrub": 114159,
+          "cladding_wood": 84719,
+          "frame_wood": 83556,
+          "blast_rock": 82703,
+          "rock": 67229,
+          "birch_bark": 65228,
+          "terrain": 59242,
+          "maple_bark": 30588,
+          "window_frame": 27676,
+          "interior_wall": 22064,
+          "hill": 17300,
+          "el_line": 15902,
+          "roof_metal": 14223,
+          "wood_fibre": 13895,
+          "vvs_line": 11161,
+          "windbreak": 9366,
+          "deck_wood": 9138,
+          "seal_tape": 9101,
+          "entry_dark": 8846,
+          "floor_oak": 8712,
+          "plan_line": 8558,
+          "concrete": 7785,
+          "lamp_glow": 7705,
+          "steel": 6821,
+          "glulam": 6469,
+          "gravel": 6409,
+          "glass": 5670,
+          "pit_earth": 4824,
+          "paving": 4715,
+          "roof_deck": 3932,
+          "sanitary": 3757,
+          "textile": 3665,
+          "door_wood": 3600,
+          "stake_wood": 3481,
+          "tile_wall": 3352,
+          "string_line": 3232,
+          "furniture_wood": 1237,
+          "kitchen_front": 607,
+          "stake_mark": 518,
+          "eps": 330,
+          "radon_membrane": 318,
+          "tile_floor": 298,
+          "worktop": 286,
+          "bath_membrane": 226,
+          "brass": 188
+        },
+        "jsonChunkBytes": 129644
+      },
+      "extensionsUsed": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization"
+      ],
+      "extensionsRequired": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "counts": {
+        "nodes": 125,
+        "meshNodes": 94,
+        "meshes": 94,
+        "primitives": 94,
+        "materials": 47,
+        "textures": 0,
+        "accessors": 299,
+        "bufferViews": 1
+      },
+      "totals": {
+        "tris": 226860,
+        "verts": 181704,
+        "gpuBytes": 3466593
+      },
+      "attributeFormats": {
+        "NORMAL=VEC3:Int8Array:norm": 94,
+        "POSITION=VEC3:Int16Array:norm": 94,
+        "COLOR_0=VEC3:Uint8Array:norm": 48
+      },
+      "groups": {
+        "layer_tomt": {
+          "meshNodes": 5,
+          "prims": 5,
+          "tris": 844,
+          "verts": 1644,
+          "gpuBytes": 19878,
+          "materials": {
+            "plan_line": 1,
+            "stake_wood": 1,
+            "stake_mark": 1,
+            "string_line": 1,
+            "terrain": 1
+          }
+        },
+        "layer_grunnarbeid": {
+          "meshNodes": 3,
+          "prims": 3,
+          "tris": 3640,
+          "verts": 10806,
+          "gpuBytes": 151512,
+          "materials": {
+            "pit_earth": 1,
+            "blast_rock": 2
+          }
+        },
+        "layer_fundament": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 264,
+          "verts": 456,
+          "gpuBytes": 6192,
+          "materials": {
+            "concrete": 2,
+            "gravel": 2,
+            "eps": 1,
+            "radon_membrane": 1,
+            "terrain": 1
+          }
+        },
+        "layer_bindingsverk": {
+          "meshNodes": 5,
+          "prims": 5,
+          "tris": 4928,
+          "verts": 9758,
+          "gpuBytes": 146388,
+          "materials": {
+            "frame_wood": 3,
+            "glulam": 1,
+            "roof_deck": 1
+          }
+        },
+        "layer_isolasjon": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 2136,
+          "verts": 3413,
+          "gpuBytes": 43533,
+          "materials": {
+            "wood_fibre": 1,
+            "windbreak": 1
+          }
+        },
+        "layer_tak": {
+          "meshNodes": 4,
+          "prims": 4,
+          "tris": 1956,
+          "verts": 2956,
+          "gpuBytes": 40284,
+          "materials": {
+            "frame_wood": 1,
+            "glulam": 1,
+            "roof_deck": 1,
+            "roof_metal": 1
+          }
+        },
+        "layer_vinduer": {
+          "meshNodes": 5,
+          "prims": 5,
+          "tris": 2580,
+          "verts": 4404,
+          "gpuBytes": 55116,
+          "materials": {
+            "window_frame": 1,
+            "glass": 1,
+            "seal_tape": 1,
+            "door_wood": 1,
+            "brass": 1
+          }
+        },
+        "layer_kledning": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 9280,
+          "verts": 18178,
+          "gpuBytes": 268818,
+          "materials": {
+            "cladding_wood": 3,
+            "window_frame": 1,
+            "frame_wood": 1,
+            "entry_dark": 1,
+            "concrete": 1
+          }
+        },
+        "layer_installasjoner": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 3732,
+          "verts": 4020,
+          "gpuBytes": 58572,
+          "materials": {
+            "el_line": 1,
+            "vvs_line": 1
+          }
+        },
+        "layer_interior": {
+          "meshNodes": 18,
+          "prims": 18,
+          "tris": 2740,
+          "verts": 4554,
+          "gpuBytes": 57714,
+          "materials": {
+            "interior_wall": 2,
+            "floor_oak": 2,
+            "window_frame": 1,
+            "glass": 2,
+            "kitchen_front": 1,
+            "worktop": 1,
+            "steel": 2,
+            "bath_membrane": 1,
+            "tile_floor": 2,
+            "tile_wall": 1,
+            "sanitary": 2,
+            "furniture_wood": 1
+          }
+        },
+        "layer_nokkelferdig": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 25192,
+          "verts": 16614,
+          "gpuBytes": 342366,
+          "materials": {
+            "deck_wood": 1,
+            "lamp_glow": 1,
+            "window_frame": 1,
+            "furniture_wood": 1,
+            "textile": 1,
+            "paving": 1,
+            "shrub": 1
+          }
+        },
+        "env_terrain": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 22780,
+          "verts": 19295,
+          "gpuBytes": 368220,
+          "materials": {
+            "terrain": 1,
+            "rock": 1
+          }
+        },
+        "env_maple_a": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 44432,
+          "verts": 24202,
+          "gpuBytes": 557016,
+          "materials": {
+            "maple_bark": 1,
+            "maple_leaf": 1
+          }
+        },
+        "env_maple_b": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 44656,
+          "verts": 24322,
+          "gpuBytes": 559800,
+          "materials": {
+            "maple_bark": 1,
+            "maple_leaf": 1
+          }
+        },
+        "env_birch_01": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5160,
+          "verts": 3192,
+          "gpuBytes": 69264,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_02": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5190,
+          "verts": 3195,
+          "gpuBytes": 69480,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_03": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5210,
+          "verts": 3217,
+          "gpuBytes": 69864,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_04": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5120,
+          "verts": 3160,
+          "gpuBytes": 68640,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_05": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5120,
+          "verts": 3160,
+          "gpuBytes": 68640,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_06": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5170,
+          "verts": 3197,
+          "gpuBytes": 69384,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_07": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5070,
+          "verts": 3123,
+          "gpuBytes": 67896,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_08": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5190,
+          "verts": 3195,
+          "gpuBytes": 69480,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_09": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5080,
+          "verts": 3128,
+          "gpuBytes": 68016,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_10": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5150,
+          "verts": 3163,
+          "gpuBytes": 68856,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_birch_11": {
+          "meshNodes": 2,
+          "prims": 2,
+          "tris": 5160,
+          "verts": 3192,
+          "gpuBytes": 69264,
+          "materials": {
+            "birch_bark": 1,
+            "birch_leaf": 1
+          }
+        },
+        "env_hills": {
+          "meshNodes": 1,
+          "prims": 1,
+          "tris": 1080,
+          "verts": 2160,
+          "gpuBytes": 32400,
+          "materials": {
+            "hill": 1
+          }
+        }
+      },
+      "materials": {
+        "plan_line": {
+          "prims": 1,
+          "tris": 648,
+          "verts": 1296
+        },
+        "stake_wood": {
+          "prims": 1,
+          "tris": 72,
+          "verts": 144
+        },
+        "stake_mark": {
+          "prims": 1,
+          "tris": 72,
+          "verts": 144
+        },
+        "string_line": {
+          "prims": 1,
+          "tris": 48,
+          "verts": 54
+        },
+        "terrain": {
+          "prims": 3,
+          "tris": 19760,
+          "verts": 10181
+        },
+        "pit_earth": {
+          "prims": 1,
+          "tris": 112,
+          "verts": 222
+        },
+        "blast_rock": {
+          "prims": 2,
+          "tris": 3528,
+          "verts": 10584
+        },
+        "concrete": {
+          "prims": 3,
+          "tris": 224,
+          "verts": 354
+        },
+        "gravel": {
+          "prims": 2,
+          "tris": 60,
+          "verts": 108
+        },
+        "eps": {
+          "prims": 1,
+          "tris": 24,
+          "verts": 48
+        },
+        "radon_membrane": {
+          "prims": 1,
+          "tris": 24,
+          "verts": 48
+        },
+        "frame_wood": {
+          "prims": 5,
+          "tris": 6420,
+          "verts": 12762
+        },
+        "glulam": {
+          "prims": 2,
+          "tris": 60,
+          "verts": 120
+        },
+        "roof_deck": {
+          "prims": 2,
+          "tris": 92,
+          "verts": 164
+        },
+        "wood_fibre": {
+          "prims": 1,
+          "tris": 1308,
+          "verts": 2082
+        },
+        "windbreak": {
+          "prims": 1,
+          "tris": 828,
+          "verts": 1331
+        },
+        "roof_metal": {
+          "prims": 1,
+          "tris": 1536,
+          "verts": 2116
+        },
+        "window_frame": {
+          "prims": 4,
+          "tris": 2000,
+          "verts": 3234
+        },
+        "glass": {
+          "prims": 3,
+          "tris": 264,
+          "verts": 528
+        },
+        "seal_tape": {
+          "prims": 1,
+          "tris": 708,
+          "verts": 1244
+        },
+        "door_wood": {
+          "prims": 1,
+          "tris": 84,
+          "verts": 168
+        },
+        "brass": {
+          "prims": 1,
+          "tris": 12,
+          "verts": 24
+        },
+        "cladding_wood": {
+          "prims": 3,
+          "tris": 7152,
+          "verts": 14064
+        },
+        "entry_dark": {
+          "prims": 1,
+          "tris": 620,
+          "verts": 1144
+        },
+        "el_line": {
+          "prims": 1,
+          "tris": 2228,
+          "verts": 2535
+        },
+        "vvs_line": {
+          "prims": 1,
+          "tris": 1504,
+          "verts": 1485
+        },
+        "interior_wall": {
+          "prims": 2,
+          "tris": 1976,
+          "verts": 3229
+        },
+        "floor_oak": {
+          "prims": 2,
+          "tris": 260,
+          "verts": 496
+        },
+        "kitchen_front": {
+          "prims": 1,
+          "tris": 48,
+          "verts": 96
+        },
+        "worktop": {
+          "prims": 1,
+          "tris": 24,
+          "verts": 48
+        },
+        "steel": {
+          "prims": 2,
+          "tris": 168,
+          "verts": 191
+        },
+        "bath_membrane": {
+          "prims": 1,
+          "tris": 12,
+          "verts": 24
+        },
+        "tile_floor": {
+          "prims": 2,
+          "tris": 24,
+          "verts": 48
+        },
+        "tile_wall": {
+          "prims": 1,
+          "tris": 48,
+          "verts": 84
+        },
+        "sanitary": {
+          "prims": 2,
+          "tris": 72,
+          "verts": 144
+        },
+        "furniture_wood": {
+          "prims": 2,
+          "tris": 108,
+          "verts": 216
+        },
+        "deck_wood": {
+          "prims": 1,
+          "tris": 624,
+          "verts": 1226
+        },
+        "lamp_glow": {
+          "prims": 1,
+          "tris": 1268,
+          "verts": 1036
+        },
+        "textile": {
+          "prims": 1,
+          "tris": 60,
+          "verts": 120
+        },
+        "paving": {
+          "prims": 1,
+          "tris": 132,
+          "verts": 276
+        },
+        "shrub": {
+          "prims": 1,
+          "tris": 22800,
+          "verts": 13500
+        },
+        "rock": {
+          "prims": 1,
+          "tris": 3060,
+          "verts": 9180
+        },
+        "maple_bark": {
+          "prims": 2,
+          "tris": 4608,
+          "verts": 3212
+        },
+        "maple_leaf": {
+          "prims": 2,
+          "tris": 84480,
+          "verts": 45312
+        },
+        "birch_bark": {
+          "prims": 11,
+          "tris": 6020,
+          "verts": 4562
+        },
+        "birch_leaf": {
+          "prims": 11,
+          "tris": 50600,
+          "verts": 30360
+        },
+        "hill": {
+          "prims": 1,
+          "tris": 1080,
+          "verts": 2160
+        }
+      },
+      "vertexColorPrims": 48,
+      "uint32IndexPrims": 0,
+      "doubleSidedMaterials": [],
+      "blendMaterials": [
+        "glass"
+      ],
+      "emissiveMaterials": [
+        "plan_line",
+        "string_line",
+        "el_line",
+        "vvs_line",
+        "lamp_glow"
+      ],
+      "largestMeshes": [
+        {
+          "node": "env_maple_b_krone",
+          "group": "env_maple_b",
+          "material": "maple_leaf",
+          "tris": 42400,
+          "verts": 22740
+        },
+        {
+          "node": "env_maple_a_krone",
+          "group": "env_maple_a",
+          "material": "maple_leaf",
+          "tris": 42080,
+          "verts": 22572
+        },
+        {
+          "node": "nokkelferdig_beplantning",
+          "group": "layer_nokkelferdig",
+          "material": "shrub",
+          "tris": 22800,
+          "verts": 13500
+        },
+        {
+          "node": "env_terrain_ground",
+          "group": "env_terrain",
+          "material": "terrain",
+          "tris": 19720,
+          "verts": 10115
+        },
+        {
+          "node": "kledning_bord",
+          "group": "layer_kledning",
+          "material": "cladding_wood",
+          "tris": 6228,
+          "verts": 12456
+        },
+        {
+          "node": "env_birch_01_krone",
+          "group": "env_birch_01",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_02_krone",
+          "group": "env_birch_02",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_03_krone",
+          "group": "env_birch_03",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_04_krone",
+          "group": "env_birch_04",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_05_krone",
+          "group": "env_birch_05",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_06_krone",
+          "group": "env_birch_06",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_07_krone",
+          "group": "env_birch_07",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_08_krone",
+          "group": "env_birch_08",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_09_krone",
+          "group": "env_birch_09",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_10_krone",
+          "group": "env_birch_10",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "env_birch_11_krone",
+          "group": "env_birch_11",
+          "material": "birch_leaf",
+          "tris": 4600,
+          "verts": 2760
+        },
+        {
+          "node": "bindingsverk_vegger",
+          "group": "layer_bindingsverk",
+          "material": "frame_wood",
+          "tris": 3408,
+          "verts": 6816
+        },
+        {
+          "node": "env_terrain_rock",
+          "group": "env_terrain",
+          "material": "rock",
+          "tris": 3060,
+          "verts": 9180
+        },
+        {
+          "node": "grunnarbeid_sprengstein",
+          "group": "layer_grunnarbeid",
+          "material": "blast_rock",
+          "tris": 2520,
+          "verts": 7560
+        },
+        {
+          "node": "env_maple_a_stamme",
+          "group": "env_maple_a",
+          "material": "maple_bark",
+          "tris": 2352,
+          "verts": 1630
+        },
+        {
+          "node": "env_maple_b_stamme",
+          "group": "env_maple_b",
+          "material": "maple_bark",
+          "tris": 2256,
+          "verts": 1582
+        },
+        {
+          "node": "installasjoner_el",
+          "group": "layer_installasjoner",
+          "material": "el_line",
+          "tris": 2228,
+          "verts": 2535
+        },
+        {
+          "node": "interior_vegger",
+          "group": "layer_interior",
+          "material": "interior_wall",
+          "tris": 1860,
+          "verts": 3017
+        },
+        {
+          "node": "vinduer_karm",
+          "group": "layer_vinduer",
+          "material": "window_frame",
+          "tris": 1560,
+          "verts": 2536
+        },
+        {
+          "node": "tak_tekking",
+          "group": "layer_tak",
+          "material": "roof_metal",
+          "tris": 1536,
+          "verts": 2116
+        }
+      ],
+      "meshCount": 94,
+      "drawCallEstimate": {
+        "allPrimsVisible": 94,
+        "ifMergedPerGroupPerMaterial": 81
+      },
+      "transientNodes": [
+        {
+          "name": "tomt_situasjonsplan",
+          "hideFrom": "bindingsverk"
+        },
+        {
+          "name": "tomt_stikning",
+          "hideFrom": "fundament"
+        },
+        {
+          "name": "tomt_mark",
+          "hideFrom": "grunnarbeid"
+        },
+        {
+          "name": "grunnarbeid_steinmasser",
+          "hideFrom": "bindingsverk"
+        }
+      ]
+    },
+    "permits.glb": {
+      "file": "public/models/permits.glb",
+      "bytes": {
+        "raw": 32268,
+        "gzip9": 6490,
+        "brotli11": 5171
+      },
+      "compressed": {
+        "byGroup": {
+          "permit_pabygg": 1781,
+          "permit_frittliggende": 1732,
+          "permit_kjeller": 1560,
+          "permit_garasje": 1225,
+          "permit_tilbygg": 519
+        },
+        "byMaterial": {
+          "permit_window": 2291,
+          "permit_ground": 1337,
+          "permit_new": 764,
+          "permit_new_roof": 695,
+          "permit_existing": 552,
+          "permit_existing_roof": 430,
+          "permit_accent": 365,
+          "permit_opening": 257,
+          "permit_ground_section": 126
+        },
+        "jsonChunkBytes": 25368
+      },
+      "extensionsUsed": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization"
+      ],
+      "extensionsRequired": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "counts": {
+        "nodes": 42,
+        "meshNodes": 37,
+        "meshes": 36,
+        "primitives": 36,
+        "materials": 9,
+        "textures": 0,
+        "accessors": 44,
+        "bufferViews": 1
+      },
+      "totals": {
+        "tris": 888,
+        "verts": 1748,
+        "gpuBytes": 21060
+      },
+      "attributeFormats": {
+        "NORMAL=VEC3:Int8Array:norm": 37,
+        "POSITION=VEC3:Int16Array:norm": 37
+      },
+      "groups": {
+        "permit_pabygg": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 146,
+          "verts": 292,
+          "gpuBytes": 3504,
+          "materials": {
+            "permit_ground": 1,
+            "permit_existing": 1,
+            "permit_window": 2,
+            "permit_accent": 1,
+            "permit_new": 1,
+            "permit_new_roof": 1
+          }
+        },
+        "permit_frittliggende": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 172,
+          "verts": 344,
+          "gpuBytes": 4128,
+          "materials": {
+            "permit_ground": 1,
+            "permit_existing": 1,
+            "permit_existing_roof": 1,
+            "permit_window": 1,
+            "permit_new": 1,
+            "permit_new_roof": 1,
+            "permit_opening": 1
+          }
+        },
+        "permit_tilbygg": {
+          "meshNodes": 8,
+          "prims": 8,
+          "tris": 170,
+          "verts": 340,
+          "gpuBytes": 4080,
+          "materials": {
+            "permit_ground": 1,
+            "permit_existing": 1,
+            "permit_existing_roof": 1,
+            "permit_window": 2,
+            "permit_new": 1,
+            "permit_new_roof": 1,
+            "permit_accent": 1
+          }
+        },
+        "permit_kjeller": {
+          "meshNodes": 8,
+          "prims": 8,
+          "tris": 206,
+          "verts": 396,
+          "gpuBytes": 4800,
+          "materials": {
+            "permit_ground": 1,
+            "permit_ground_section": 1,
+            "permit_existing": 1,
+            "permit_existing_roof": 1,
+            "permit_window": 2,
+            "permit_new": 1,
+            "permit_accent": 1
+          }
+        },
+        "permit_garasje": {
+          "meshNodes": 7,
+          "prims": 7,
+          "tris": 194,
+          "verts": 376,
+          "gpuBytes": 4548,
+          "materials": {
+            "permit_ground": 1,
+            "permit_existing": 1,
+            "permit_existing_roof": 1,
+            "permit_window": 1,
+            "permit_new": 1,
+            "permit_opening": 1,
+            "permit_accent": 1
+          }
+        }
+      },
+      "materials": {
+        "permit_ground": {
+          "prims": 5,
+          "tris": 132,
+          "verts": 236
+        },
+        "permit_existing": {
+          "prims": 5,
+          "tris": 68,
+          "verts": 136
+        },
+        "permit_window": {
+          "prims": 8,
+          "tris": 384,
+          "verts": 768
+        },
+        "permit_accent": {
+          "prims": 4,
+          "tris": 48,
+          "verts": 96
+        },
+        "permit_new": {
+          "prims": 5,
+          "tris": 64,
+          "verts": 128
+        },
+        "permit_new_roof": {
+          "prims": 3,
+          "tris": 60,
+          "verts": 120
+        },
+        "permit_existing_roof": {
+          "prims": 4,
+          "tris": 96,
+          "verts": 192
+        },
+        "permit_opening": {
+          "prims": 2,
+          "tris": 24,
+          "verts": 48
+        },
+        "permit_ground_section": {
+          "prims": 1,
+          "tris": 12,
+          "verts": 24
+        }
+      },
+      "vertexColorPrims": 0,
+      "uint32IndexPrims": 0,
+      "doubleSidedMaterials": [],
+      "blendMaterials": [],
+      "emissiveMaterials": [],
+      "largestMeshes": [
+        {
+          "node": "eksisterende_vinduer",
+          "group": "permit_frittliggende",
+          "material": "permit_window",
+          "tris": 72,
+          "verts": 144
+        },
+        {
+          "node": "eksisterende_vinduer",
+          "group": "permit_tilbygg",
+          "material": "permit_window",
+          "tris": 72,
+          "verts": 144
+        },
+        {
+          "node": "eksisterende_vinduer",
+          "group": "permit_kjeller",
+          "material": "permit_window",
+          "tris": 72,
+          "verts": 144
+        },
+        {
+          "node": "eksisterende_vinduer",
+          "group": "permit_garasje",
+          "material": "permit_window",
+          "tris": 72,
+          "verts": 144
+        },
+        {
+          "node": "grunn",
+          "group": "permit_kjeller",
+          "material": "permit_ground",
+          "tris": 48,
+          "verts": 80
+        },
+        {
+          "node": "grunn",
+          "group": "permit_garasje",
+          "material": "permit_ground",
+          "tris": 48,
+          "verts": 84
+        },
+        {
+          "node": "eksisterende_vinduer",
+          "group": "permit_pabygg",
+          "material": "permit_window",
+          "tris": 36,
+          "verts": 72
+        },
+        {
+          "node": "ny_vinduer",
+          "group": "permit_pabygg",
+          "material": "permit_window",
+          "tris": 36,
+          "verts": 72
+        },
+        {
+          "node": "ny_tak",
+          "group": "permit_pabygg",
+          "material": "permit_new_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "eksisterende_tak",
+          "group": "permit_frittliggende",
+          "material": "permit_existing_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "ny_tak",
+          "group": "permit_frittliggende",
+          "material": "permit_new_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "eksisterende_tak",
+          "group": "permit_tilbygg",
+          "material": "permit_existing_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "eksisterende_tak",
+          "group": "permit_kjeller",
+          "material": "permit_existing_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "eksisterende_tak",
+          "group": "permit_garasje",
+          "material": "permit_existing_roof",
+          "tris": 24,
+          "verts": 48
+        },
+        {
+          "node": "ny",
+          "group": "permit_pabygg",
+          "material": "permit_new",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "eksisterende",
+          "group": "permit_frittliggende",
+          "material": "permit_existing",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "ny",
+          "group": "permit_frittliggende",
+          "material": "permit_new",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "eksisterende",
+          "group": "permit_tilbygg",
+          "material": "permit_existing",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "eksisterende",
+          "group": "permit_kjeller",
+          "material": "permit_existing",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "eksisterende",
+          "group": "permit_garasje",
+          "material": "permit_existing",
+          "tris": 14,
+          "verts": 28
+        },
+        {
+          "node": "grunn",
+          "group": "permit_pabygg",
+          "material": "permit_ground",
+          "tris": 12,
+          "verts": 24
+        },
+        {
+          "node": "eksisterende",
+          "group": "permit_pabygg",
+          "material": "permit_existing",
+          "tris": 12,
+          "verts": 24
+        },
+        {
+          "node": "ny_skjot",
+          "group": "permit_pabygg",
+          "material": "permit_accent",
+          "tris": 12,
+          "verts": 24
+        },
+        {
+          "node": "grunn",
+          "group": "permit_frittliggende",
+          "material": "permit_ground",
+          "tris": 12,
+          "verts": 24
+        },
+        {
+          "node": "ny_apning",
+          "group": "permit_frittliggende",
+          "material": "permit_opening",
+          "tris": 12,
+          "verts": 24
+        }
+      ],
+      "meshCount": 37,
+      "drawCallEstimate": {
+        "allPrimsVisible": 37,
+        "ifMergedPerGroupPerMaterial": 34
+      },
+      "transientNodes": []
+    }
+  },
+  "meta": {
+    "house.meta.json": {
+      "raw": 21901,
+      "gzip9": 4428,
+      "brotli11": 3755,
+      "interiorLights": 6,
+      "exteriorLights": 4,
+      "topKeys": [
+        "generator",
+        "units",
+        "up",
+        "orientation",
+        "model",
+        "bbox",
+        "sceneBbox",
+        "floors",
+        "cutHeights",
+        "steps",
+        "layers",
+        "transient",
+        "hotspots",
+        "environment",
+        "materials",
+        "interiorLights",
+        "exteriorLights",
+        "footprint",
+        "camera",
+        "lighting",
+        "stats"
+      ]
+    },
+    "permits.meta.json": {
+      "raw": 1398,
+      "gzip9": 380,
+      "brotli11": 341,
+      "topKeys": [
+        "generator",
+        "units",
+        "nodes",
+        "materials",
+        "lighting",
+        "cameras",
+        "stats"
+      ]
+    }
+  },
+  "chunks": {
+    "all": [
+      {
+        "file": "2-byhsu7rqmfo.js",
+        "raw": 1040936,
+        "gzip9": 277709,
+        "brotli11": 227889,
+        "tags": [
+          "three",
+          "gltf-loader",
+          "r3f",
+          "PermitCanvas",
+          "house.meta.json",
+          "lighting.ts"
+        ]
+      },
+      {
+        "file": "3dmm3v_fq28gc.js",
+        "raw": 229820,
+        "gzip9": 71809,
+        "brotli11": 61450,
+        "tags": []
+      },
+      {
+        "file": "1ar3ax_-2xzvy.js",
+        "raw": 168704,
+        "gzip9": 46418,
+        "brotli11": 39393,
+        "tags": []
+      },
+      {
+        "file": "0cz1d0mv5g_q7.js",
+        "raw": 112594,
+        "gzip9": 39520,
+        "brotli11": 35158,
+        "tags": []
+      },
+      {
+        "file": "0zejj0knbxro4.js",
+        "raw": 77060,
+        "gzip9": 22082,
+        "brotli11": 19567,
+        "tags": [
+          "gsap-st",
+          "lenis"
+        ]
+      },
+      {
+        "file": "2khblt934m9wm.js",
+        "raw": 70562,
+        "gzip9": 27208,
+        "brotli11": 24634,
+        "tags": [
+          "gsap-st"
+        ]
+      },
+      {
+        "file": "2p2jd75im6m_h.js",
+        "raw": 43373,
+        "gzip9": 17473,
+        "brotli11": 15920,
+        "tags": [
+          "gsap-st"
+        ]
+      },
+      {
+        "file": "0adcljbpfwdp9.js",
+        "raw": 40418,
+        "gzip9": 14417,
+        "brotli11": 12684,
+        "tags": [
+          "gsap-st",
+          "lenis"
+        ]
+      },
+      {
+        "file": "0h42vztb7mn03.js",
+        "raw": 32494,
+        "gzip9": 10080,
+        "brotli11": 9156,
+        "tags": [
+          "postfx",
+          "BuildCanvas",
+          "house.meta.json"
+        ]
+      },
+      {
+        "file": "2r4s4h5xul1n-.js",
+        "raw": 28739,
+        "gzip9": 7618,
+        "brotli11": 6736,
+        "tags": []
+      },
+      {
+        "file": "0qisy8tz3e-4l.js",
+        "raw": 24574,
+        "gzip9": 9940,
+        "brotli11": 8825,
+        "tags": []
+      },
+      {
+        "file": "06xiws5j0imcs.js",
+        "raw": 23875,
+        "gzip9": 6666,
+        "brotli11": 5956,
+        "tags": [
+          "postfx"
+        ]
+      },
+      {
+        "file": "2j9yyl5qtr4km.js",
+        "raw": 18689,
+        "gzip9": 5437,
+        "brotli11": 4896,
+        "tags": [
+          "lenis"
+        ]
+      },
+      {
+        "file": "109581wys9qhr.js",
+        "raw": 14104,
+        "gzip9": 3627,
+        "brotli11": 3245,
+        "tags": []
+      },
+      {
+        "file": "0umf92h1sb77c.js",
+        "raw": 13822,
+        "gzip9": 3516,
+        "brotli11": 3141,
+        "tags": []
+      },
+      {
+        "file": "turbopack-3-ry682tkyiqk.js",
+        "raw": 10030,
+        "gzip9": 3942,
+        "brotli11": 3512,
+        "tags": []
+      },
+      {
+        "file": "2xg4g3eiaoiwh.js",
+        "raw": 9076,
+        "gzip9": 3516,
+        "brotli11": 3300,
+        "tags": []
+      },
+      {
+        "file": "1x6obpmlu1_c2.js",
+        "raw": 5361,
+        "gzip9": 1974,
+        "brotli11": 1661,
+        "tags": []
+      },
+      {
+        "file": "2-zpyo2t9ug1m.js",
+        "raw": 3210,
+        "gzip9": 1621,
+        "brotli11": 1454,
+        "tags": []
+      }
+    ],
+    "threeRelated": [
+      "2-byhsu7rqmfo.js",
+      "0h42vztb7mn03.js",
+      "06xiws5j0imcs.js"
+    ],
+    "threeRelatedTotals": {
+      "raw": 1097305,
+      "gzip9": 294455,
+      "brotli11": 243001
+    },
+    "homeInitialHtmlChunks": [
+      "1x6obpmlu1_c2.js",
+      "2r4s4h5xul1n-.js",
+      "3dmm3v_fq28gc.js",
+      "1ar3ax_-2xzvy.js",
+      "turbopack-3-ry682tkyiqk.js",
+      "109581wys9qhr.js",
+      "0adcljbpfwdp9.js",
+      "0qisy8tz3e-4l.js",
+      "2xg4g3eiaoiwh.js",
+      "0zejj0knbxro4.js",
+      "0cz1d0mv5g_q7.js"
+    ],
+    "homeInitialTotals": {
+      "raw": 720480,
+      "gzip9": 224863,
+      "brotli11": 195531
+    },
+    "threeInInitialHtml": []
+  }
+}
