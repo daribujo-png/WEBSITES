@@ -148,7 +148,8 @@ async function main() {
   }
 
   await fs.mkdir(OUT, { recursive: true });
-  const stats = await writeGLB(roots, MATERIALS, path.join(OUT, "permits.glb"), { sceneName: "Permits" });
+  // one mesh per material and diagram (the canvas outlines each mesh with EdgesGeometry)
+  const stats = await writeGLB(roots, MATERIALS, path.join(OUT, "permits.glb"), { sceneName: "Permits", layout: "flat", allColors: true });
   const meta = {
     generator: "scripts/model/build-permits.mjs",
     units: "m",
@@ -159,7 +160,7 @@ async function main() {
     stats,
   };
   await fs.writeFile(path.join(OUT, "permits.meta.json"), JSON.stringify(meta, null, 2) + "\n");
-  console.log(`permits.glb ${(stats.bytes / 1024).toFixed(1)} KB · meshes ${stats.meshes}`);
+  console.log(`permits.glb ${(stats.bytes / 1024).toFixed(1)} KB · meshes ${stats.meshes} · materials ${stats.materials} · triangles ${stats.triangles}`);
 }
 
 main().catch((e) => {

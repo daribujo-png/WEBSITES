@@ -171,3 +171,48 @@ export const LIGHTING = {
     bloom: null,
   },
 };
+
+/**
+ * Directions (unit vectors towards the light) the shadow-casting key light can
+ * take: every preset's key, and the in-betweens the live canvas passes through
+ * when it blends two presets (it interpolates the key *position* linearly),
+ * each widened by a small cone. The model builder keeps every triangle that
+ * can end up in a shadow map along these directions (see cullOccluded).
+ */
+export function shadowLightDirections({ steps = 8, cone = 0.035 } = {}) {
+  const keys = Object.values(LIGHTING)
+    .map((p) => p.key)
+    .filter((k) => k && k.castShadow)
+    .map((k) => k.position);
+  const norm = (v) => {
+    const l = Math.hypot(v[0], v[1], v[2]);
+    return [v[0] / l, v[1] / l, v[2] / l];
+  };
+  const out = [];
+  const add = (v) => {
+    const d = norm(v);
+    out.push(d);
+    // a ring of four around it
+    const a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    const u = norm([d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]]);
+    const w = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+    for (const [s, t] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]) {
+      out.push(norm([d[0] + cone * (s * u[0] + t * w[0]), d[1] + cone * (s * u[1] + t * w[1]), d[2] + cone * (s * u[2] + t * w[2])]));
+    }
+  };
+  for (let i = 0; i < keys.length; i++) {
+    add(keys[i]);
+    for (let j = i + 1; j < keys.length; j++) {
+      for (let k = 1; k < steps; k++) {
+        const t = k / steps;
+        add([0, 1, 2].map((a) => keys[i][a] + (keys[j][a] - keys[i][a]) * t));
+      }
+    }
+  }
+  return out;
+}

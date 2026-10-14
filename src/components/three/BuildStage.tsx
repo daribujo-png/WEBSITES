@@ -6,8 +6,12 @@
  * CSS-sticky inside a tall wrapper (the pin); GSAP ScrollTrigger, synced
  * with Lenis by the SmoothScroll provider, scrubs the build position over
  * the wrapper. The canvas loads when the stage is near and renders on
- * demand. Until it is ready (or if WebGL fails) the stage shows the static
- * render of the active step.
+ * demand. Until it is ready (or if WebGL fails, or frames stay too slow) the
+ * stage shows the static render of the active step.
+ *
+ * Loading: when the stage is one viewport and a bit away, the device tier is
+ * probed (lib/gpu-tier), and the 3D chunk and the right house variant start
+ * downloading side by side (not one after the other).
  */
 import dynamic from "next/dynamic";
 import {
@@ -26,14 +30,25 @@ import { getRender } from "@/content/renders";
 import { Icon, Picture } from "@/components/ui";
 import { getLenis } from "@/components/providers";
 import { withGsap } from "@/lib/motion";
-import { useFinePointer, useIsDesktop, webglAvailable } from "@/lib/hooks";
+import { DESKTOP_QUERY, useFinePointer, useIsDesktop } from "@/lib/hooks";
+import { gpuInfo } from "@/lib/gpu-tier";
 import { cn } from "@/lib/utils";
 import { createStageStore, type StageStore, type StageUi } from "./lib/stageStore";
 import { progressToT, stepToProgress, totalUnits } from "./lib/scrollMap";
+import { prefetchHouse } from "./lib/modelSource";
 import { CanvasBoundary } from "./CanvasBoundary";
 import { StageHotspots } from "./StageHotspots";
+import type { Quality } from "./BuildCanvas";
 
 const BuildCanvas = dynamic(() => import("./BuildCanvas"), { ssr: false, loading: () => null });
+
+/** Why the stage gave way to the gallery: no WebGL, or a device too weak for the 3D stage. */
+export type StageFallback = "webgl" | "lowpower";
+
+type TestWindow = Window & {
+  /** Test hook: keep adaptive quality on under a forced tier (?3d=…). */
+  __byggrv3dAdaptive?: boolean;
+};
 
 const N = buildSteps.length;
 /** Scroll length per step, in viewport heights. */
@@ -59,7 +74,7 @@ function useStageUi(store: StageStore): StageUi {
   return useSyncExternalStore(store.subscribeUi, store.getUi, store.getUi);
 }
 
-export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
+export function BuildStage({ onFallback }: { onFallback: (reason: StageFallback) => void }) {
   const store = useMemo(() => createStageStore(N), []);
   const ui = useStageUi(store);
   const desktop = useIsDesktop();
@@ -71,7 +86,8 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
   const regionRef = useRef<HTMLDivElement>(null);
   const fillRefs = useRef<(HTMLDivElement | null)[]>([]);
   const triggerRef = useRef<{ start: number; end: number } | null>(null);
-  const [near, setNear] = useState(false);
+  /** Canvas settings, decided once when the stage first comes near (null until then). */
+  const [canvas, setCanvas] = useState<{ quality: Quality; adaptive: boolean } | null>(null);
 
   /*
    * Scrub. The stage is CSS-sticky inside a wrapper whose scroll length is
@@ -110,17 +126,32 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
     });
   }, [store]);
 
-  /* Load the canvas one viewport ahead; render only while on screen. */
+  /*
+   * One viewport ahead: probe the device, start the 3D chunk and the house
+   * model downloading together and mount the canvas. Render only while on screen.
+   */
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
+    const w = window as TestWindow;
     const ahead = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          ahead.disconnect();
-          if (webglAvailable()) setNear(true);
-          else onNoWebGL();
-        }
+        if (!entries.some((e) => e.isIntersecting)) return;
+        ahead.disconnect();
+        const info = gpuInfo();
+        if (!info.webgl) return onFallback("webgl");
+        if (info.tier === "off") return onFallback("lowpower");
+        const quality: Quality = info.tier === "high" && window.matchMedia(DESKTOP_QUERY).matches ? "high" : "low";
+        prefetchHouse(quality === "high" ? "high" : "lite");
+        // Same module as the dynamic() above: the chunk downloads now, alongside the model,
+        // and parses the model (meshopt decoding runs in workers) before the canvas mounts.
+        import("./BuildCanvas")
+          .then((m) => m.preloadHouse(quality))
+          .catch(() => {
+            // reported by the error boundary when the canvas mounts
+          });
+        // The canvas mounts as soon as its chunk is in (next/dynamic), while the model may still be downloading.
+        setCanvas({ quality, adaptive: !info.override || w.__byggrv3dAdaptive === true });
       },
       { rootMargin: "120% 0px 120% 0px" },
     );
@@ -131,7 +162,7 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
       ahead.disconnect();
       onScreen.disconnect();
     };
-  }, [store, onNoWebGL]);
+  }, [store, onFallback]);
 
   /* Measure the clear region (CSS decides the layout; the canvas follows). */
   useEffect(() => {
@@ -171,6 +202,7 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
 
   const onReady = useCallback(() => store.setUi({ ready: true }), [store]);
   const onError = useCallback(() => store.setUi({ failed: true, ready: false }), [store]);
+  const onSlow = useCallback(() => store.setUi({ slow: true, ready: false }), [store]);
 
   /* Desktop: gentle, constrained drag (no free orbit, no zoom). */
   const drag = useRef<{ id: number; x: number; y: number; az: number; el: number } | null>(null);
@@ -197,7 +229,8 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
   };
 
   const step = buildSteps[ui.active];
-  const quality = desktop ? "high" : "low";
+  const live = canvas !== null && !ui.failed && !ui.slow;
+  const note = ui.failed ? buildSequenceCopy.webglFallback : ui.slow ? buildSequenceCopy.lowPowerFallback : null;
 
   return (
     <>
@@ -245,7 +278,7 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
           {/* Static renders: while the model loads, and as the fallback. */}
           {!ui.ready ? <StepPosters active={ui.active} /> : null}
 
-          {near && !ui.failed ? (
+          {live ? (
             <div
               className={cn(
                 "absolute inset-0 transition-opacity duration-[1400ms] ease-weight",
@@ -253,7 +286,14 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
               )}
             >
               <CanvasBoundary onError={onError}>
-                <BuildCanvas store={store} quality={quality} onReady={onReady} onError={onError} />
+                <BuildCanvas
+                  store={store}
+                  quality={canvas.quality}
+                  adaptive={canvas.adaptive}
+                  onReady={onReady}
+                  onError={onError}
+                  onSlow={onSlow}
+                />
               </CanvasBoundary>
             </div>
           ) : null}
@@ -282,9 +322,9 @@ export function BuildStage({ onNoWebGL }: { onNoWebGL: () => void }) {
           <div className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+0.75rem)] z-(--z-raised) lg:top-[calc(var(--header-h)+1.25rem)]">
             <div className="container-page flex items-start justify-end gap-6">
               {ui.ready && !ui.failed ? <StageControls store={store} ui={ui} /> : null}
-              {ui.failed ? (
+              {note ? (
                 <p role="status" className="t-caption max-w-[22rem] text-fg-muted lg:text-right">
-                  {buildSequenceCopy.webglFallback}
+                  {note}
                 </p>
               ) : null}
             </div>

@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { V, col, makeNoise2D, rng } from "./builder.mjs";
 import { HW, WINGS, Y, outline, wingQuad, WP } from "./house-spec.mjs";
 import { LAWN, PIT_OUT, terrainHeight } from "./env.mjs";
+import { Q } from "./quality.mjs";
 
 const nz = makeNoise2D(5);
 
@@ -157,17 +158,23 @@ export function buildGrunnarbeid(layer) {
     c.multiplyScalar(0.9 + r() * 0.2);
     return c;
   };
+  const { pile: pileCount, loose: looseCount, planar } = Q().blastRock;
   const addRock = (mb, x, y, z, s) => {
     const geo = new THREE.DodecahedronGeometry(s, 0);
     const pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      pos.setXYZ(i, pos.getX(i) * (0.8 + r() * 0.5), pos.getY(i) * (0.6 + r() * 0.4), pos.getZ(i) * (0.8 + r() * 0.5));
+    if (planar) {
+      // lite: one random stretch per stone keeps the faces planar, so each face welds to 5 vertices
+      geo.scale(0.8 + r() * 0.5, 0.6 + r() * 0.4, 0.8 + r() * 0.5);
+    } else {
+      for (let i = 0; i < pos.count; i++) {
+        pos.setXYZ(i, pos.getX(i) * (0.8 + r() * 0.5), pos.getY(i) * (0.6 + r() * 0.4), pos.getZ(i) * (0.8 + r() * 0.5));
+      }
     }
     const m = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(r() * 3, r() * 3, r() * 3)).setPosition(x, y, z);
     mb.geometry(geo, m, rockTone());
     geo.dispose();
   };
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < pileCount; i++) {
     const a = r() * Math.PI * 2;
     const d = Math.sqrt(r()) * 2.6;
     const h = (1 - d / 2.8) * 1.5;
@@ -176,7 +183,7 @@ export function buildGrunnarbeid(layer) {
   // loose blasted rock in the north part of the pit
   const loose = layer.mb("blast_rock", "grunnarbeid_sprengstein_grop");
   const bA = WINGS.A;
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < looseCount; i++) {
     const u = 0.5 + r() * 3.5;
     const v = -(HW + 0.2 + r() * 0.5);
     const p = WP(bA, u, v);

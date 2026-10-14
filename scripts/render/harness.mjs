@@ -1,6 +1,9 @@
 /**
  * Static server + headless Chromium for the render harness.
  * Serves scripts/render/page/, three from node_modules and public/models.
+ * `/models/house.glb` is the parts model written by `npm run model:build`
+ * (scripts/render/.cache/house.parts.glb: one node per part, which the shots
+ * hide and clip by name); the live site's merged house.glb has no part names.
  * Playwright is resolved from NODE_PATH (global install), e.g.
  *   NODE_PATH=$(npm root -g) node scripts/render/render.mjs
  */
@@ -15,6 +18,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const PAGE = path.join(ROOT, "scripts/render/page");
 const THREE_DIR = path.join(ROOT, "node_modules/three");
 const MODELS = path.join(ROOT, "public/models");
+export const PARTS_GLB = path.join(ROOT, "scripts/render/.cache/house.parts.glb");
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -24,7 +28,18 @@ const TYPES = {
   ".wasm": "application/wasm",
 };
 
-export async function startServer() {
+/**
+ * @param opts.models  overrides: { "house.glb": "/abs/path.glb", … } (default: the parts model)
+ */
+export async function startServer({ models = {} } = {}) {
+  const overrides = { "house.glb": PARTS_GLB, ...models };
+  for (const [name, file] of Object.entries(overrides)) {
+    try {
+      await fs.access(file);
+    } catch {
+      throw new Error(`${file} is missing (for /models/${name}). Run npm run model:build first.`);
+    }
+  }
   const server = http.createServer(async (req, res) => {
     const url = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (url === "/favicon.ico") {
@@ -33,9 +48,9 @@ export async function startServer() {
     }
     let file;
     if (url.startsWith("/three/")) file = path.join(THREE_DIR, url.slice(7));
-    else if (url.startsWith("/models/")) file = path.join(MODELS, url.slice(8));
+    else if (url.startsWith("/models/")) file = overrides[url.slice(8)] ?? path.join(MODELS, url.slice(8));
     else file = path.join(PAGE, url === "/" ? "index.html" : url.slice(1));
-    const base = [THREE_DIR, MODELS, PAGE].find((b) => file.startsWith(b));
+    const base = [THREE_DIR, MODELS, PAGE].find((b) => file.startsWith(b)) ?? Object.values(overrides).find((f) => f === file);
     if (!base) {
       res.writeHead(403).end();
       return;

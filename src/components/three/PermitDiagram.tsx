@@ -4,15 +4,16 @@
  * Permit diagram for one building type: grey = the house you have, oak = the
  * new part. The render (renders.permit-<type>) is always there; on desktop a
  * small live canvas loads when the diagram is in view and fades in over it,
- * turns slowly on hover/focus and can be dragged. Phones, reduced motion and
- * WebGL failure keep the render.
+ * turns slowly on hover/focus and can be dragged. Phones, reduced motion,
+ * WebGL failure and devices in the "off" tier (lib/gpu-tier) keep the render.
  */
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { PermitTypeId } from "@/content/types";
 import { getRender } from "@/content/renders";
 import { Picture } from "@/components/ui";
-import { useFinePointer, useInView, useIsDesktop, useReducedMotion, webglAvailable } from "@/lib/hooks";
+import { useFinePointer, useInView, useIsDesktop, useReducedMotion } from "@/lib/hooks";
+import { gpuInfo } from "@/lib/gpu-tier";
 import { cn } from "@/lib/utils";
 import { CanvasBoundary } from "./CanvasBoundary";
 import { createInputStore } from "./lib/inputStore";
@@ -33,11 +34,19 @@ export function PermitDiagram({ type, className }: { type: PermitTypeId; classNa
   const input = useMemo(() => createInputStore<PermitInputState>({ active: false, yaw: 0, dragging: false }), []);
 
   const allowed = !reduced && desktop && fine;
-  if (phase === "poster" && allowed && inView) setPhase(webglAvailable() ? "loading" : "failed");
+  if (phase === "poster" && allowed && inView) {
+    const info = gpuInfo();
+    setPhase(info.webgl && info.tier !== "off" ? "loading" : "failed");
+  }
   const live = allowed && (phase === "loading" || phase === "ready");
   const ready = live && phase === "ready";
   const onReady = useCallback(() => setPhase("ready"), []);
   const onError = useCallback(() => setPhase("failed"), []);
+
+  // Switching type keeps this diagram (and its WebGL context); only the drag pose resets.
+  useEffect(() => {
+    input.set({ yaw: 0 });
+  }, [input, type]);
 
   // Hover or keyboard focus on the surrounding panel starts the slow turn.
   useEffect(() => {

@@ -8,8 +8,11 @@
  * once the browser is idle, the hero is in view and the visitor has moved
  * the mouse (or scrolled/typed), then fades in over the poster with
  * identical framing. Fine pointers can drag gently within limits
- * (no free orbit, no zoom). Phones, reduced motion and WebGL failure keep the
- * poster (phones still get the scroll drift from the hero section).
+ * (no free orbit, no zoom). Phones, reduced motion, WebGL failure and GPUs
+ * below the "high" tier (lib/gpu-tier: older integrated graphics) keep the
+ * poster, which is the same picture at rest (phones still get the scroll
+ * drift from the hero section). The house model starts downloading together
+ * with the canvas chunk.
  */
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
@@ -17,10 +20,12 @@ import { hero } from "@/content";
 import { getRender } from "@/content/renders";
 import { Icon } from "@/components/ui";
 import { largestSource, placeholderStyle, toSrcSet, type RenderAsset } from "@/lib/images";
-import { useFinePointer, useIdle, useInView, useIsDesktop, useReducedMotion, webglAvailable } from "@/lib/hooks";
+import { useFinePointer, useIdle, useInView, useIsDesktop, useReducedMotion } from "@/lib/hooks";
+import { gpuInfo } from "@/lib/gpu-tier";
 import { cn } from "@/lib/utils";
 import { CanvasBoundary } from "./CanvasBoundary";
 import { createInputStore } from "./lib/inputStore";
+import { prefetchHouse } from "./lib/modelSource";
 import type { HeroInputState } from "./HeroCanvas";
 
 const HeroCanvas = dynamic(() => import("./HeroCanvas"), { ssr: false, loading: () => null });
@@ -58,7 +63,8 @@ function HeroPoster({ landscape, portrait }: { landscape: RenderAsset; portrait:
   );
 }
 
-type Phase = "poster" | "loading" | "ready" | "failed";
+/** "static": the device keeps the poster for good (GPU below the high tier). */
+type Phase = "poster" | "static" | "loading" | "ready" | "failed";
 
 const ENGAGE_EVENTS = ["pointermove", "pointerdown", "wheel", "keydown", "scroll"] as const;
 
@@ -95,8 +101,11 @@ export function HeroHouse({ className }: { className?: string }) {
   );
 
   const allowed = !reduced && desktop;
-  // WebGL is probed only now (after idle, desktop, in view), never during hydration.
-  if (phase === "poster" && allowed && idle && engaged && inView) setPhase(webglAvailable() ? "loading" : "failed");
+  // WebGL and the GPU tier are probed only now (after idle, desktop, in view), never during hydration.
+  if (phase === "poster" && allowed && idle && engaged && inView) {
+    const info = gpuInfo();
+    setPhase(!info.webgl ? "failed" : info.tier === "high" ? "loading" : "static");
+  }
   const live = allowed && (phase === "loading" || phase === "ready");
   const dragEnabled = live && phase === "ready" && fine;
 
@@ -106,6 +115,11 @@ export function HeroHouse({ className }: { className?: string }) {
   useEffect(() => {
     input.set({ visible: inView });
   }, [input, inView]);
+
+  // The model downloads alongside the canvas chunk (not after it has loaded and run).
+  useEffect(() => {
+    if (phase === "loading") prefetchHouse("high");
+  }, [phase]);
 
   // Scroll drift: the camera rises and turns a little as the hero scrolls away.
   useEffect(() => {

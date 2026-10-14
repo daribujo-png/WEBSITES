@@ -3,7 +3,7 @@
  * windows/doors and inner lining — all derived from the same wall list so
  * openings line up through every layer.
  */
-import { V, col, rng, rectMinusOpenings, subtractIntervals } from "./builder.mjs";
+import { V, col, rectMinusOpenings, subtractIntervals, sharedRng } from "./builder.mjs";
 import {
   CLAD_OUT,
   CLADDING_RAW,
@@ -21,8 +21,18 @@ import {
   rafterTop,
   rake,
 } from "./house-spec.mjs";
+import { Q } from "./quality.mjs";
 
-const r = rng(42);
+const r = sharedRng(42);
+
+/**
+ * Box faces that are covered in every build state, per kind of part (quality
+ * profile `coveredFaces`): stud ends sit on plates and under headers; the back
+ * of boards, trims and battens lies on the layer below. Lite also leaves out
+ * board and batten bottoms (they face the ground) and the sides of
+ * under-boards (behind the over-boards).
+ */
+const covered = (kind) => Q().coveredFaces?.[kind];
 
 /** All six outer walls. */
 export function wallList() {
@@ -44,7 +54,12 @@ export function wallList() {
  * yTop may be a function of the axis coordinate (sloped gable tops).
  * For eave walls, `mitre` clamps the start of the box to the mitred joint.
  */
-export function wallBox(mb, wall, a0, a1, d0, d1, y0, y1, color, { mitre = false, yTop, yBot } = {}) {
+/**
+ * Box in a wall's frame: axis a0…a1, depth d0…d1 (outwards from the frame
+ * face), height y0…y1 (or yBot/yTop functions of a). `skip` leaves faces out
+ * (see MeshBuilder.hexa: back = d0 side, front = d1 side, start/end = a0/a1).
+ */
+export function wallBox(mb, wall, a0, a1, d0, d1, y0, y1, color, { mitre = false, yTop, yBot, skip } = {}) {
   const { wing } = wall;
   const pt = (a, d, y) => {
     if (wall.type === "eave") {
@@ -72,7 +87,7 @@ export function wallBox(mb, wall, a0, a1, d0, d1, y0, y1, color, { mitre = false
     pt(a1, d1, top(a1)),
     pt(s1, d1, top(s1)),
   ];
-  mb.hexa(c, color);
+  mb.hexa(c, color, skip);
 }
 
 /** Axis extent of a wall at depth d (frame members use d inside the frame). */
@@ -128,6 +143,7 @@ export function buildFrame(layer) {
       const d0 = -STUD_D;
       const d1 = 0;
       const box = (b0, b1, y0, y1, opts = {}) => wallBox(mbStuds, wall, b0, b1, d0, d1, y0, y1, studColor(), opts);
+      const stud = (b0, b1, y0, y1, opts = {}) => box(b0, b1, y0, y1, { ...opts, skip: covered("stud") });
       // plates
       box(ga0, ga1, zone.y0, zone.y0 + STUD_W, { mitre: isEave });
       if (zone.sloped) {
@@ -155,25 +171,25 @@ export function buildFrame(layer) {
         if (blocked) {
           // cripples below sill / above header inside the opening span
           if (p > blocked.a0 + 0.03 && p < blocked.a1 - 0.03) {
-            if (blocked.y0 - STUD_W - yb > 0.05) box(p - STUD_W / 2, p + STUD_W / 2, yb, blocked.y0 - STUD_W);
+            if (blocked.y0 - STUD_W - yb > 0.05) stud(p - STUD_W / 2, p + STUD_W / 2, yb, blocked.y0 - STUD_W);
             const hTop = blocked.y1 + 0.198;
             const topHere = Math.min(studTop(p - STUD_W / 2), studTop(p + STUD_W / 2));
             if (topHere - hTop > 0.05)
-              box(p - STUD_W / 2, p + STUD_W / 2, hTop, 0, { yTop: (a) => studTop(a), mitre: isEave });
+              stud(p - STUD_W / 2, p + STUD_W / 2, hTop, 0, { yTop: (a) => studTop(a), mitre: isEave });
           }
           continue;
         }
-        box(p - STUD_W / 2, p + STUD_W / 2, yb, 0, { yTop: studTop, mitre: isEave });
+        stud(p - STUD_W / 2, p + STUD_W / 2, yb, 0, { yTop: studTop, mitre: isEave });
       }
       // opening framing
       for (const o of ops) {
         const oy0 = Math.max(o.y0, yb);
         const headerTop = o.y1 + 0.198;
         // king + jack studs each side
-        box(o.a0 - 2 * STUD_W, o.a0 - STUD_W, yb, 0, { yTop: studTop });
-        box(o.a0 - STUD_W, o.a0, yb, o.y1);
-        box(o.a1 + STUD_W, o.a1 + 2 * STUD_W, yb, 0, { yTop: studTop });
-        box(o.a1, o.a1 + STUD_W, yb, o.y1);
+        stud(o.a0 - 2 * STUD_W, o.a0 - STUD_W, yb, 0, { yTop: studTop });
+        stud(o.a0 - STUD_W, o.a0, yb, o.y1);
+        stud(o.a1 + STUD_W, o.a1 + 2 * STUD_W, yb, 0, { yTop: studTop });
+        stud(o.a1, o.a1 + STUD_W, yb, o.y1);
         // header
         box(o.a0 - STUD_W, o.a1 + STUD_W, o.y1, headerTop);
         // sill
@@ -293,10 +309,11 @@ export function buildCladding(layer) {
           const c0 = Math.max(s0, -maxA);
           const c1 = Math.min(s1, maxA);
           if (c1 - c0 < 0.05) continue;
-          wallBox(mbBatten, wall, c0, c1, SKIN.battens[0], SKIN.battens[1], y, y + 0.036, col("#cdb184"));
+          wallBox(mbBatten, wall, c0, c1, SKIN.battens[0], SKIN.battens[1], y, y + 0.036, col("#cdb184"), { skip: covered("batten") });
         } else {
           wallBox(mbBatten, wall, s0, s1, SKIN.battens[0], SKIN.battens[1], y, y + 0.036, col("#cdb184"), {
             mitre: Math.abs(s0 - a0) < 1e-6,
+            skip: covered("batten"),
           });
         }
       }
@@ -304,7 +321,7 @@ export function buildCladding(layer) {
     // boards
     const boardPositions = [];
     for (let p = a0 + UNDER_W / 2; p < end - UNDER_W / 2 + 0.05; p += PITCH_B) boardPositions.push(p);
-    const piece = (b0, b1, d0, d1) => {
+    const piece = (b0, b1, d0, d1, skip) => {
       const cuts = ops.filter((o) => b1 > o.a0 - 0.002 && b0 < o.a1 + 0.002).map((o) => [o.y0 - (o.y0 > 0.6 ? 0 : 0.2), o.y1]);
       const yTopMax = isEave ? topFn() : Math.max(topFn(b0), topFn(b1));
       for (const [y0, y1] of subtractIntervals(yBottom, yTopMax + 0.01, cuts)) {
@@ -312,13 +329,14 @@ export function buildCladding(layer) {
         wallBox(mb, wall, Math.max(b0, isEave ? -99 : a0), Math.min(b1, end), d0, d1, y0, y1, tone(), {
           mitre: isEave,
           yTop: reachesTop ? topFn : undefined,
+          skip,
         });
       }
     };
     for (const p of boardPositions) {
-      piece(p - UNDER_W / 2, p + UNDER_W / 2, SKIN.under[0], SKIN.under[1]);
+      piece(p - UNDER_W / 2, p + UNDER_W / 2, SKIN.under[0], SKIN.under[1], covered("under"));
       const q = p + PITCH_B / 2;
-      if (q + OVER_W / 2 < end) piece(q - OVER_W / 2, q + OVER_W / 2, SKIN.over[0], SKIN.over[1]);
+      if (q + OVER_W / 2 < end) piece(q - OVER_W / 2, q + OVER_W / 2, SKIN.over[0], SKIN.over[1], covered("over"));
     }
     // trims around openings
     const tw = 0.11;
@@ -327,10 +345,11 @@ export function buildCladding(layer) {
       const d0 = SKIN.trim[0];
       const d1 = SKIN.trim[1];
       const trimTone = tone();
-      wallBox(mbTrim, wall, o.a0 - tw, o.a0, d0, d1, o.y0 - (o.y0 > 0.6 ? tw : 0.1), o.y1 + tw, trimTone);
-      wallBox(mbTrim, wall, o.a1, o.a1 + tw, d0, d1, o.y0 - (o.y0 > 0.6 ? tw : 0.1), o.y1 + tw, trimTone);
-      wallBox(mbTrim, wall, o.a0 - tw, o.a1 + tw, d0, d1, o.y1, o.y1 + tw, trimTone);
-      if (o.y0 > 0.6) wallBox(mbTrim, wall, o.a0, o.a1, d0, d1, o.y0 - tw, o.y0, trimTone);
+      const ts = { skip: covered("trim") };
+      wallBox(mbTrim, wall, o.a0 - tw, o.a0, d0, d1, o.y0 - (o.y0 > 0.6 ? tw : 0.1), o.y1 + tw, trimTone, ts);
+      wallBox(mbTrim, wall, o.a1, o.a1 + tw, d0, d1, o.y0 - (o.y0 > 0.6 ? tw : 0.1), o.y1 + tw, trimTone, ts);
+      wallBox(mbTrim, wall, o.a0 - tw, o.a1 + tw, d0, d1, o.y1, o.y1 + tw, trimTone, ts);
+      if (o.y0 > 0.6) wallBox(mbTrim, wall, o.a0, o.a1, d0, d1, o.y0 - tw, o.y0, trimTone, ts);
       // drip flashing above
       wallBox(mbFlash, wall, o.a0 - tw - 0.02, o.a1 + tw + 0.02, d0, d1 + 0.04, o.y1 + tw, o.y1 + tw + 0.014, null);
     }

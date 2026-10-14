@@ -3,7 +3,7 @@
  * floors, ceilings, inner lining, stair, kitchen, bathroom and WC.
  */
 import * as THREE from "three";
-import { V, col, rng } from "./builder.mjs";
+import { V, col, sharedRng } from "./builder.mjs";
 import {
   BATH,
   BEND,
@@ -23,7 +23,7 @@ import {
 } from "./house-spec.mjs";
 import { wallPanels } from "./walls.mjs";
 
-const r = rng(5);
+const r = sharedRng(5);
 const IN = HW - STUD_D; // inner face of outer walls
 
 /** Box in wing coordinates with optional mitre clamp of the u-start per corner. */

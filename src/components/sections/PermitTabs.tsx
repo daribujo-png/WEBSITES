@@ -3,8 +3,9 @@
 /**
  * The five building types we apply for, as an accessible tab set
  * (WAI-ARIA tabs, automatic activation, arrow keys / Home / End).
- * Only the selected panel mounts its <PermitDiagram>, so there is never more
- * than one 3D canvas in this section. All titles and texts stay in the DOM.
+ * One <PermitDiagram> shows the selected type: switching tabs swaps the model
+ * inside the same 3D canvas (no new WebGL context per tab), so there is never
+ * more than one canvas in this section. All titles and texts stay in the DOM.
  */
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import type { PermitType } from "@/content/types";
@@ -93,7 +94,7 @@ export function PermitTabs({ types, label, note, dragHint }: PermitTabsProps) {
       {/* The diagram of the selected type. Its description is in the panel text (sr-only). */}
       <figure className="group/permit col-span-full lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1">
         <div className="relative bg-paper-deep lg:max-w-[43rem]">
-          <PermitDiagram key={current.id} type={current.id} />
+          <PermitDiagram type={current.id} />
         </div>
         <figcaption className="t-caption mt-3 flex flex-wrap justify-between gap-x-6 gap-y-1 text-fg-muted lg:max-w-[43rem]">
           <span>{note}</span>

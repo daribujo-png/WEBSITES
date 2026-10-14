@@ -179,6 +179,37 @@ function linToHex(rgb) {
   return `#${c.getHexString()}`;
 }
 
+/**
+ * Lite model only: plain materials that differ from each other only in colour
+ * (and slightly in roughness) share one material per class. Their colour is
+ * multiplied into COLOR_0, the class material is white. Materials the live
+ * canvas treats by name (glass, el_line, vvs_line, lamp_glow, plan_line,
+ * string_line, cladding_wood, hill) and the environment materials the stage
+ * look replaces by name (terrain, rock, maple_*, birch_*) are never merged.
+ */
+export const LITE_MATERIAL_CLASSES = {
+  plain_rough: {
+    spec: { color: "#ffffff", roughness: 0.94, vertexColors: true },
+    members: ["pit_earth", "blast_rock", "gravel", "concrete", "eps", "wood_fibre", "roof_deck", "interior_wall", "textile", "paving", "shrub"],
+  },
+  plain_wood: {
+    spec: { color: "#ffffff", roughness: 0.8, vertexColors: true },
+    members: ["stake_wood", "frame_wood", "deck_wood", "glulam"],
+  },
+  plain_satin: {
+    spec: { color: "#ffffff", roughness: 0.56, metallic: 0.06, vertexColors: true },
+    members: ["stake_mark", "windbreak", "seal_tape", "window_frame", "door_wood", "entry_dark", "floor_oak", "kitchen_front", "bath_membrane", "furniture_wood"],
+  },
+  plain_gloss: {
+    spec: { color: "#ffffff", roughness: 0.32, vertexColors: true },
+    members: ["worktop", "tile_floor", "tile_wall", "sanitary", "radon_membrane"],
+  },
+  plain_metal: {
+    spec: { color: "#ffffff", roughness: 0.3, metallic: 1, vertexColors: true },
+    members: ["steel", "brass"],
+  },
+};
+
 export function materialSpecs() {
   return {
     // site plan

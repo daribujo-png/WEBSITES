@@ -387,6 +387,7 @@ export class LightRig {
   readonly interior: { light: THREE.PointLight; spec: PointLightSpec }[] = [];
   readonly exterior: { light: THREE.PointLight; spec: PointLightSpec }[] = [];
   private target: THREE.Vector3;
+  private pointsOn = true;
 
   constructor(opts: LightRigOptions) {
     this.target = new THREE.Vector3(...(opts.shadowTarget ?? [0, 2, 0.5]));
@@ -417,6 +418,22 @@ export class LightRig {
     }
   }
 
+  /**
+   * Point lights on or off as a group. While all of them are dark (the stage
+   * steps, daylight) they are switched off, so every material skips them;
+   * callers compile both states up front, so switching never recompiles.
+   */
+  setPointLights(on: boolean) {
+    if (on === this.pointsOn) return;
+    this.pointsOn = on;
+    for (const { light } of this.interior) light.visible = on;
+    for (const { light } of this.exterior) light.visible = on;
+  }
+
+  get hasPointLights() {
+    return this.interior.length + this.exterior.length > 0;
+  }
+
   /** `interiorOverride` lifts the warm interior lights (e.g. the section view). */
   apply(r: ResolvedLighting, interiorOverride = 0) {
     this.hemi.color.copy(r.hemiSky);
@@ -434,11 +451,11 @@ export class LightRig {
     for (const { light, spec } of this.interior) {
       light.color.copy(r.interiorColor);
       light.intensity = interior * spec.intensity;
-      light.visible = true;
     }
     for (const { light, spec } of this.exterior) {
       light.intensity = r.exterior * spec.intensity;
     }
+    this.setPointLights(interior > 1e-4 || r.exterior > 1e-4);
   }
 }
 

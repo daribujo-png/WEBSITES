@@ -159,10 +159,11 @@ function directional(spec, target, shot) {
   l.target.position.set(...target);
   if (spec.castShadow) {
     l.castShadow = true;
-    l.shadow.mapSize.set(4096, 4096);
+    const size = shot.shadowMapSize || 4096;
+    l.shadow.mapSize.set(size, size);
     const s = shot.shadowExtent || 18;
     Object.assign(l.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 1, far: 160 });
-    l.shadow.bias = -0.0003;
+    l.shadow.bias = shot.shadowBias ?? -0.0003;
     l.shadow.normalBias = shot.normalBias ?? 0.04;
     l.shadow.radius = 4;
   }
@@ -388,6 +389,8 @@ function swapMaterial(name, fn) {
 function applyXray({ keep = ["installasjoner"], ghostOpacity = 0.05, ghostColor = "#9fb3c8" } = {}) {
   const ghost = new THREE.MeshBasicMaterial({ color: ghostColor, transparent: true, opacity: ghostOpacity, depthWrite: false });
   const edge = new THREE.MeshStandardMaterial({ color: "#2a3b4a", roughness: 1, transparent: true, opacity: 0.18, depthWrite: false });
+  const edgeFlat = edge.clone();
+  edgeFlat.flatShading = true; // meshes without normals (house-lite.glb)
   for (const [mesh] of orig) {
     if (!mesh.visible) continue;
     const lid = layerOf(mesh);
@@ -397,7 +400,7 @@ function applyXray({ keep = ["installasjoner"], ghostOpacity = 0.05, ghostColor 
       mesh.material.emissiveIntensity *= 1.4;
       continue;
     }
-    mesh.material = lid === "fundament" || lid === "bindingsverk" ? edge : ghost;
+    mesh.material = lid === "fundament" || lid === "bindingsverk" ? (mesh.geometry.attributes.normal ? edge : edgeFlat) : ghost;
     mesh.castShadow = false;
   }
 }
@@ -405,11 +408,15 @@ function applyXray({ keep = ["installasjoner"], ghostOpacity = 0.05, ghostColor 
 function applyClay({ color = "#c4bdb0", highlight = [], highlightColor = "#b08b5e", keepEnv = true } = {}) {
   const clay = new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 });
   const glassClay = new THREE.MeshStandardMaterial({ color: "#c9c4ba", roughness: 0.3, metalness: 0 });
+  const flat = (m) => Object.assign(m.clone(), { flatShading: true }); // meshes without normals (house-lite.glb)
+  const clayFlat = flat(clay);
+  const glassClayFlat = flat(glassClay);
   for (const [mesh, mat] of orig) {
     if (!mesh.visible) continue;
     const lid = layerOf(mesh);
     if (!lid) continue;
-    mesh.material = mat.name === "glass" ? glassClay : clay;
+    const hasNormals = Boolean(mesh.geometry.attributes.normal);
+    mesh.material = mat.name === "glass" ? (hasNormals ? glassClay : glassClayFlat) : hasNormals ? clay : clayFlat;
   }
   for (const h of highlight) {
     matchNodes(h).forEach((o) =>

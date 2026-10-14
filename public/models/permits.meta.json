@@ -83,9 +83,12 @@
     }
   },
   "stats": {
-    "bytes": 32268,
-    "meshes": 37,
-    "vertices": 1788,
-    "triangles": 888
+    "bytes": 26168,
+    "meshes": 34,
+    "vertices": 1724,
+    "triangles": 888,
+    "instancedTriangles": 0,
+    "flatMeshes": 0,
+    "materials": 9
   }
 }

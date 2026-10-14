@@ -285,6 +285,7 @@ export const buildSequenceCopy = {
   loading: "Laster 3D-modellen",
   webglFallback:
     "3D-visningen kunne ikke vises i nettleseren din. Her er byggingen som bilder i stedet.",
+  lowPowerFallback: "Her viser vi byggingen som bilder, slik at siden går raskt på enheten din.",
   rail: {
     label: "Byggesteg",
     jumpTo: (title: string) => `Gå til steget ${title}`,

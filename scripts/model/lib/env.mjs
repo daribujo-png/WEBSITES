@@ -5,8 +5,13 @@
  */
 import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { SceneNode, V, col, makeNoise2D, rng } from "./builder.mjs";
+import { MeshoptSimplifier } from "meshoptimizer";
+import { SceneNode, V, col, cullBuried, cullOccluded, makeNoise2D, rng } from "./builder.mjs";
 import { outline } from "./house-spec.mjs";
+import { Q } from "./quality.mjs";
+import { shadowLightDirections } from "./cameras.mjs";
+
+const SHADOW_LIGHTS = shadowLightDirections();
 
 const noise = makeNoise2D(11);
 const noise2 = makeNoise2D(23);
@@ -14,7 +19,8 @@ const noise2 = makeNoise2D(23);
 export const HOUSE_CENTRE = { x: -0.1, z: 0.4 };
 export const PIT_OUT = 1.2; // pit edge offset from the frame face
 export const TERRAIN_SIZE = 120;
-export const TERRAIN_CELLS = 100;
+/** Grid cells per side (quality dependent: 100 for high, fewer for lite). */
+const terrainCells = () => Q().terrainCells;
 
 export const MAPLE_A = { x: 7.2, z: 10.6 };
 export const MAPLE_B = { x: -11.4, z: -6.2 };
@@ -67,10 +73,52 @@ function groundColor(x, z, h, slope) {
 
 export const LAWN = "#5f6353";
 
+/**
+ * Height of the terrain *mesh* at (x, z): the grid interpolation of
+ * terrainHeight, split along the same diagonal as buildTerrain's triangles.
+ */
+export function terrainMeshHeight(x, z) {
+  const N = terrainCells();
+  const S = TERRAIN_SIZE;
+  const cell = S / N;
+  const fj = (x + S / 2) / cell;
+  const fi = (z + S / 2) / cell;
+  const j = Math.min(N - 1, Math.max(0, Math.floor(fj)));
+  const i = Math.min(N - 1, Math.max(0, Math.floor(fi)));
+  const fx = fj - j;
+  const fz = fi - i;
+  const x0 = -S / 2 + j * cell;
+  const z0 = -S / 2 + i * cell;
+  const ha = terrainHeight(x0, z0);
+  const hb = terrainHeight(x0 + cell, z0);
+  const hc = terrainHeight(x0 + cell, z0 + cell);
+  const hd = terrainHeight(x0, z0 + cell);
+  return fz >= fx ? ha + fz * (hd - ha) + fx * (hc - hd) : ha + fx * (hb - ha) + fz * (hc - hb);
+}
+
+/**
+ * Drop the triangles in mb.indices[from…] that lie completely under the
+ * terrain mesh (by `margin` metres): buried rock is never visible. Unused
+ * vertices are compacted away when the GLB is written.
+ */
+function cullUnderground(mb, from, margin = 0.03 + (Q().terrainSimplify?.error ?? 0)) {
+  const P = mb.positions;
+  const below = (v) => P[v * 3 + 1] < terrainMeshHeight(P[v * 3], P[v * 3 + 2]) - margin;
+  const keep = mb.indices.slice(0, from);
+  for (let t = from; t < mb.indices.length; t += 3) {
+    const a = mb.indices[t];
+    const b = mb.indices[t + 1];
+    const c = mb.indices[t + 2];
+    if (below(a) && below(b) && below(c)) continue;
+    keep.push(a, b, c);
+  }
+  mb.indices = keep;
+}
+
 /** Rectangle (grid aligned) removed from the terrain grid and filled with an exact collar. */
 function holeRect() {
   const pit = outline(PIT_OUT + 0.05);
-  const cell = TERRAIN_SIZE / TERRAIN_CELLS;
+  const cell = TERRAIN_SIZE / terrainCells();
   const xs = pit.map((p) => p.x);
   const zs = pit.map((p) => p.z);
   const snap = (v, f) => f(v / cell) * cell;
@@ -84,7 +132,7 @@ function holeRect() {
 
 export function buildTerrain(node) {
   const mb = node.mb("terrain", "env_terrain_ground");
-  const N = TERRAIN_CELLS;
+  const N = terrainCells();
   const S = TERRAIN_SIZE;
   const cell = S / N;
   const hr = holeRect();
@@ -140,7 +188,40 @@ export function buildTerrain(node) {
   const pit = outline(PIT_OUT);
   const lawn = col(LAWN);
   collarSlab(collar, ring, pit, lawn);
+  const simp = Q().terrainSimplify;
+  if (simp) simplifyTerrain(mb, simp);
   return { holeRect: hr };
+}
+
+/**
+ * Lite: meshoptimizer simplification of the terrain grid, at most `error`
+ * metres off the full surface, keeping colour and normal changes. Borders (the
+ * outer edge, the pit hole, the collar) stay locked, so nothing cracks.
+ * Requires `await MeshoptSimplifier.ready` before the build (build-house.mjs).
+ */
+function simplifyTerrain(mb, { ratio, error }) {
+  const n = mb.vertexCount;
+  const attrs = new Float32Array(n * 6);
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < 3; k++) {
+      attrs[i * 6 + k] = mb.normals[i * 3 + k];
+      attrs[i * 6 + 3 + k] = mb.colors[i * 3 + k];
+    }
+  }
+  const target = Math.floor((mb.indices.length * ratio) / 3) * 3;
+  const [out] = MeshoptSimplifier.simplifyWithAttributes(
+    new Uint32Array(mb.indices),
+    new Float32Array(mb.positions),
+    3,
+    attrs,
+    6,
+    [0.2, 0.2, 0.2, 0.5, 0.5, 0.5],
+    null,
+    target,
+    error,
+    ["LockBorder", "ErrorAbsolute"],
+  );
+  mb.indices = Array.from(out);
 }
 
 /** Flat ring at y = 0 (top only), lawn coloured. */
@@ -169,6 +250,7 @@ function collarSlab(mb, outer, hole, color) {
 
 /** Displaced icosphere (smooth) appended to mb. */
 export function blob(mb, centre, radius, scale, detail, seed, colorFn, rough = 0.18) {
+  const start = mb.indices.length;
   const raw = new THREE.IcosahedronGeometry(radius, detail);
   raw.deleteAttribute("uv");
   raw.deleteAttribute("normal");
@@ -188,6 +270,22 @@ export function blob(mb, centre, radius, scale, detail, seed, colorFn, rough = 0
   const m = new THREE.Matrix4().makeTranslation(centre.x, centre.y, centre.z);
   mb.geometry(geo, m, null, { flat: false, colorFn });
   geo.dispose();
+  // closed, opaque: anything deep inside it is invisible (see cullBuried in builder.mjs)
+  addSolid(mb, centre, V(radius * scale.x, radius * scale.y, radius * scale.z), innerRadius(detail, 1 - rough * 1.5), start);
+}
+
+/**
+ * Radius (as a fraction of the nominal radius) of the region that is surely
+ * inside a displaced icosphere: the smallest vertex radius times the cosine
+ * of a face's angular circumradius for that subdivision level.
+ */
+function innerRadius(detail, minScale) {
+  const cosFace = [0.79, 0.95, 0.987][detail] ?? 0.99;
+  return minScale * cosFace * 0.97;
+}
+
+function addSolid(mb, c, r, inner, start) {
+  (mb.solids ??= []).push({ c: [c.x, c.y, c.z], inv: [1 / r.x, 1 / r.y, 1 / r.z], inner, start, end: mb.indices.length });
 }
 
 /** Indexed, welded icosphere templates (unit radius) for foliage clumps. */
@@ -231,6 +329,7 @@ export function canopy(mb, lobes, opts) {
     shell = [0.8, 1.0],
     flatten = 0.86,
     core = null,
+    coreDetail = 1,
     variance = 0.1,
     bottomDark = 0.5,
     lift = 0,
@@ -261,7 +360,7 @@ export function canopy(mb, lobes, opts) {
   // dark core so the crown never reads as hollow
   if (core) {
     lobes.forEach((L, i) =>
-      blob(mb, L.c, 1, V(L.r.x * core.k, L.r.y * core.k, L.r.z * core.k), 1, seed * 7 + i, (p, n) => {
+      blob(mb, L.c, 1, V(L.r.x * core.k, L.r.y * core.k, L.r.z * core.k), coreDetail, seed * 7 + i, (p, n) => {
         const c = col(core.tint);
         c.multiplyScalar(0.55 + 0.45 * smooth(-0.8, 0.8, n.y));
         return c;
@@ -288,6 +387,7 @@ export function canopy(mb, lobes, opts) {
     tint.multiplyScalar(1 + (r() - 0.5) * 2 * variance);
     const rot = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(r() * 6.28, r() * 6.28, r() * 6.28));
     const base = mb.vertexCount;
+    const start = mb.indices.length;
     const q = V();
     const nClump = V();
     for (let i = 0; i < nv; i++) {
@@ -310,6 +410,8 @@ export function canopy(mb, lobes, opts) {
       mb._push(w, n, c);
     }
     for (const ix of tpl.index) mb.indices.push(base + ix);
+    // displacement d = 1 + 0.22·fbm·2 ≥ 0.67
+    addSolid(mb, p, V(s, s * flatten, s), innerRadius(detail, 0.67), start);
   }
 }
 
@@ -336,6 +438,7 @@ function flatBlob(mb, centre, radius, scale, detail, seed, colorFn, rough = 0.18
 
 export function buildRocks(node) {
   const mb = node.mb("rock", "env_terrain_rock");
+  const { outcropDetail, boulderDetail } = Q().rocks;
   const r = rng(77);
   const granite = (p, n) => {
     const c = col("#7e807d");
@@ -360,7 +463,7 @@ export function buildRocks(node) {
     const y = terrainHeight(x, z) - 0.62 * sy;
     const geoCentre = V(0, 0, 0);
     const tmp = new (mb.constructor)("tmp", "rock");
-    flatBlob(tmp, geoCentre, 1, V(sx, sy * 0.8, sz), 2, 300 + i, null, 0.3);
+    flatBlob(tmp, geoCentre, 1, V(sx, sy * 0.8, sz), outcropDetail, 300 + i, null, 0.3);
     // rotate and place
     const m = new THREE.Matrix4().makeRotationY(rot).setPosition(x, y, z);
     for (let k = 0; k < tmp.positions.length; k += 3) {
@@ -369,7 +472,9 @@ export function buildRocks(node) {
       mb._push(p, n, granite(p, n));
     }
     const base = mb.vertexCount - tmp.positions.length / 3;
+    const from = mb.indices.length;
     tmp.indices.forEach((ix) => mb.indices.push(base + ix));
+    cullUnderground(mb, from);
   });
   // boulders
   for (let i = 0; i < 26; i++) {
@@ -380,7 +485,9 @@ export function buildRocks(node) {
     const s = 0.3 + r() * r() * 1.1;
     if (z > 5 && Math.abs(x) < 14) continue; // keep the garden lawn clear
     const y = terrainHeight(x, z) + s * 0.15;
-    flatBlob(mb, V(x, y, z), s, V(1.2 + r() * 0.5, 0.65 + r() * 0.3, 1), 1, 500 + i, granite, 0.25);
+    const from = mb.indices.length;
+    flatBlob(mb, V(x, y, z), s, V(1.2 + r() * 0.5, 0.65 + r() * 0.3, 1), boulderDetail, 500 + i, granite, 0.25);
+    cullUnderground(mb, from);
   }
 }
 
@@ -399,7 +506,7 @@ function trunk(mb, points, r0, r1, radial, colorFn) {
     const ra = r0 + (r1 - r0) * (acc / total);
     acc += len;
     const rb = r0 + (r1 - r0) * (acc / total);
-    const geo = new THREE.CylinderGeometry(rb, ra, len, radial, Math.max(1, Math.round(len / 0.6)), false);
+    const geo = new THREE.CylinderGeometry(rb, ra, len, radial, Math.max(1, Math.round(len / Q().trunk.segment)), false);
     const dir = b.clone().sub(a).normalize();
     const q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir);
     const m = new THREE.Matrix4().compose(a.clone().add(b).multiplyScalar(0.5), q, V(1, 1, 1));
@@ -429,7 +536,8 @@ export function buildBirch(name, x, z, seed) {
     if (p.y < 0.9) c.lerp(col("#3b3531"), (0.9 - p.y) / 0.9 * 0.85);
     return c;
   };
-  trunk(bark, pts, 0.16 + r() * 0.05, 0.05, 7, barkColor);
+  const [radTrunk, radBranch] = Q().trunk.birch;
+  trunk(bark, pts, 0.16 + r() * 0.05, 0.05, radTrunk, barkColor);
   // a few branches
   const nb = 4 + Math.floor(r() * 3);
   for (let k = 0; k < nb; k++) {
@@ -437,7 +545,7 @@ export function buildBirch(name, x, z, seed) {
     const base = pts[Math.floor(t * 5)].clone();
     const ang = r() * Math.PI * 2;
     const tip = base.clone().add(V(Math.cos(ang) * 1.3, 1.4 + r(), Math.sin(ang) * 1.3));
-    trunk(bark, [base, tip], 0.05, 0.02, 5, barkColor);
+    trunk(bark, [base, tip], 0.05, 0.02, radBranch, barkColor);
   }
   // crown: a tall, airy ovoid with two small side lobes. Small clumps and no
   // core, so the sky shows through like it does in a real birch.
@@ -456,8 +564,8 @@ export function buildBirch(name, x, z, seed) {
   });
   canopy(leaf, lobes, {
     seed: seed * 19,
-    count: 230,
-    size: [0.22, 0.4],
+    count: Q().birch.count,
+    size: Q().birch.size,
     tints: ["#6a6f58", "#70745d", "#666b55", "#767a62"],
     detail: 0,
     shell: [0.6, 1.0],
@@ -465,7 +573,55 @@ export function buildBirch(name, x, z, seed) {
     variance: 0.1,
     bottomDark: 0.42,
   });
+  hideInterior(leaf, bark);
   return node;
+}
+
+/** Drop crown and limb triangles nobody outside the tree can see (see builder.mjs). */
+function hideInterior(leaf, bark) {
+  if (!Q().cullHidden) return;
+  cullBuried(leaf);
+  cullOccluded([leaf, bark], { lights: SHADOW_LIGHTS });
+}
+
+/**
+ * The birches as one group. With `templates` = 0 every birch is its own node
+ * (`<name>_01…`), built from its own seed. Otherwise the group holds that many
+ * template trees (`<name>_a`, `_b`, …), each drawn once per instance with
+ * EXT_mesh_gpu_instancing: a template is built from the seed of one of the
+ * birches it stands in for (that birch is reproduced exactly), the others get
+ * the template turned about its trunk and scaled to their own height.
+ */
+export function buildBirchGrove(name, spots, { templates = 0, seedOf = (i) => 700 + i * 11 } = {}) {
+  const grove = new SceneNode(name, { kind: "birch", count: spots.length });
+  if (!templates) {
+    spots.forEach(([x, z], i) => grove.add(buildBirch(`${name}_${String(i + 1).padStart(2, "0")}`, x, z, seedOf(i))));
+    return grove;
+  }
+  const heightOf = (i) => 8 + rng(seedOf(i))() * 4; // first draw in buildBirch
+  // spread the templates over the list so neighbours differ
+  const sources = Array.from({ length: templates }, (_, t) => Math.floor((t * spots.length) / templates));
+  const tpls = sources.map((src, t) => {
+    const node = buildBirch(`${name}_${"abcdefgh"[t]}`, 0, 0, seedOf(src));
+    node.translation = null;
+    node.extras = { ...node.extras, template: true };
+    node.instances = [];
+    return grove.add(node);
+  });
+  const r = rng(4242);
+  spots.forEach(([x, z], i) => {
+    const t = sources.includes(i) ? sources.indexOf(i) : i % templates;
+    const exact = sources[t] === i;
+    const ry = exact ? 0 : r() * Math.PI * 2;
+    const s = exact ? 1 : heightOf(i) / heightOf(sources[t]);
+    const xz = exact ? 1 : s * (0.94 + r() * 0.12);
+    tpls[t].instances.push({
+      translation: [x, terrainHeight(x, z), z],
+      rotation: [0, Math.sin(ry / 2), 0, Math.cos(ry / 2)],
+      scale: [xz, s, xz],
+    });
+  });
+  return grove;
 }
 
 export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {}) {
@@ -482,8 +638,9 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
   };
   // trunk with root flare
   const forkY = 2.6 + r() * 0.5;
-  trunk(bark, [V(0, -0.2, 0), V(0, 0.5, 0)], 0.85, 0.55, 10, barkColor);
-  trunk(bark, [V(0, 0.4, 0), V(0.08, forkY * 0.6, -0.05), V(0.05, forkY, 0.04)], 0.55, 0.42, 10, barkColor);
+  const [radFlare, radTrunk, radLimb, radBranch] = Q().trunk.maple;
+  trunk(bark, [V(0, -0.2, 0), V(0, 0.5, 0)], 0.85, 0.55, radFlare, barkColor);
+  trunk(bark, [V(0, 0.4, 0), V(0.08, forkY * 0.6, -0.05), V(0.05, forkY, 0.04)], 0.55, 0.42, radTrunk, barkColor);
   // main limbs
   const limbs = 5 + Math.floor(r() * 2);
   const tips = [];
@@ -493,13 +650,13 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
     const up = height * (0.45 + r() * 0.15);
     const mid = V(Math.cos(ang) * out * 0.45, forkY + up * 0.45, Math.sin(ang) * out * 0.45);
     const tip = V(Math.cos(ang) * out, forkY + up * 0.85, Math.sin(ang) * out);
-    trunk(bark, [V(0.05, forkY - 0.2, 0.04), mid, tip], 0.3, 0.07, 8, barkColor);
+    trunk(bark, [V(0.05, forkY - 0.2, 0.04), mid, tip], 0.3, 0.07, radLimb, barkColor);
     tips.push(tip);
     // secondary branches
     for (let b = 0; b < 2; b++) {
       const a2 = ang + (r() - 0.5) * 1.4;
       const t2 = mid.clone().add(V(Math.cos(a2) * 1.8, 1.4 + r() * 1.2, Math.sin(a2) * 1.8));
-      trunk(bark, [mid, t2], 0.12, 0.04, 6, barkColor);
+      trunk(bark, [mid, t2], 0.12, 0.04, radBranch, barkColor);
       tips.push(t2);
     }
   }
@@ -522,12 +679,14 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
     return { c, r: V(rx, rx * (0.72 + r() * 0.15), rx) };
   });
   const tints = ["#4a5445", "#505a4a", "#475043", "#565f4d", "#4d5647"];
+  const { main, fringe, coreDetail } = Q().maple;
   canopy(leaf, lobes, {
     seed: seed * 31,
-    count: 430,
-    size: [0.55, 1.0],
+    count: main.count,
+    size: main.size,
     tints,
-    detail: 1,
+    detail: main.detail,
+    coreDetail,
     clumpNormal: 0.22,
     shell: [0.78, 0.98],
     flatten: 0.82,
@@ -536,14 +695,15 @@ export function buildMaple(name, x, z, seed, { height = 14, spread = 6.4 } = {})
   });
   canopy(leaf, lobes, {
     seed: seed * 37,
-    count: 320,
-    size: [0.24, 0.45],
+    count: fringe.count,
+    size: fringe.size,
     tints,
-    detail: 0,
+    detail: fringe.detail,
     shell: [0.95, 1.07],
     flatten: 0.8,
     variance: 0.1,
   });
+  hideInterior(leaf, bark);
   return node;
 }
 
@@ -557,7 +717,7 @@ export function buildHills(node) {
   ];
   for (const b of bands) {
     const nz = makeNoise2D(b.seed);
-    const segs = 180;
+    const segs = Q().hillSegments;
     const top = [];
     const bot = [];
     for (let i = 0; i <= segs; i++) {

@@ -5,7 +5,7 @@
  * barge boards go to the cladding layer.
  */
 import * as THREE from "three";
-import { col, rng } from "./builder.mjs";
+import { col, sharedRng } from "./builder.mjs";
 import {
   BEND,
   CLAD_OUT,
@@ -22,7 +22,7 @@ import {
   roofTop,
 } from "./house-spec.mjs";
 
-const r = rng(9);
+const r = sharedRng(9);
 const E = HW + EAVE_OVERHANG;
 
 /** Sloped slab over a wing-side region (u from mitre to uEnd, v from 0 to s·vEnd). */

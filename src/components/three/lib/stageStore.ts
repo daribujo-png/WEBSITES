@@ -33,6 +33,8 @@ export interface StageUi {
   ready: boolean;
   /** Canvas failed (WebGL error / context lost). */
   failed: boolean;
+  /** Frames stayed too slow even at the lowest quality: the stage shows its still renders. */
+  slow: boolean;
   /** Floor names for the plan cut (published by the canvas from house.meta.json). */
   floors: readonly string[];
 }
@@ -70,6 +72,7 @@ export function createStageStore(stepCount: number) {
     light: "bluehour",
     ready: false,
     failed: false,
+    slow: false,
     floors: [],
   };
   const uiListeners = new Set<() => void>();

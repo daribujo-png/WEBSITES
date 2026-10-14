@@ -1,37 +1,74 @@
 "use client";
 
 /**
- * One shared GLB load per URL (drei's useGLTF caches by URL across canvases).
- * Meshopt is decoded with three's own decoder from node_modules (bundled, no
- * CDN; its WASM is inlined), in Web Workers. Draco is off: drei would
- * otherwise point its decoder at gstatic.
+ * GLB loading shared by every canvas: one download (modelSource) and one parse
+ * per model, cached for the page's lifetime, so the hero and the build stage
+ * share the same house. Meshopt is decoded with three's decoder from
+ * node_modules (bundled, no CDN; its WASM is inlined) in two Web Workers.
+ * three's own GLTFLoader is used directly (drei's useGLTF would also bundle
+ * three-stdlib's loader and a Draco decoder this site never needs).
  */
 import "./threeConsole";
-import { useGLTF } from "@react-three/drei";
+import { use } from "react";
+import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { HOUSE_URLS } from "./meta";
+import { fetchHouse, fetchModel, releaseModel, type HouseVariant } from "./modelSource";
 
-type ExtendLoader = NonNullable<Parameters<typeof useGLTF>[3]>;
+export type { GLTF };
 
-let workersStarted = false;
+let loader: GLTFLoader | null = null;
 
-/** Decode the compressed buffers in two Web Workers, off the main thread. */
-function startDecoderWorkers() {
-  if (workersStarted || typeof Worker === "undefined") return;
-  const startWorkers = MeshoptDecoder.useWorkers; // not a React hook, despite the name
-  startWorkers(2);
-  workersStarted = true;
+function gltfLoader() {
+  if (!loader) {
+    if (typeof Worker !== "undefined") {
+      const startWorkers = MeshoptDecoder.useWorkers; // not a React hook, despite the name
+      startWorkers(2);
+    }
+    loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  }
+  return loader;
 }
 
-const withLocalMeshopt: ExtendLoader = (loader) => {
-  startDecoderWorkers();
-  // three-stdlib's GLTFLoader accepts the same decoder object as three's.
-  (loader as unknown as { setMeshoptDecoder: (d: unknown) => void }).setMeshoptDecoder(MeshoptDecoder);
-};
+const parsed = new Map<string, Promise<GLTF>>();
+const houses = new Map<HouseVariant, Promise<GLTF>>();
 
-export function useModel(url: string) {
-  return useGLTF(url, false, false, withLocalMeshopt);
+function parseOnce(url: string, data: Promise<ArrayBuffer> | ArrayBuffer): Promise<GLTF> {
+  let p = parsed.get(url);
+  if (!p) {
+    p = Promise.resolve(data)
+      .then((buf) => gltfLoader().parseAsync(buf, ""))
+      .then((gltf) => {
+        releaseModel(url); // the geometry keeps what it needs
+        return gltf;
+      });
+    parsed.set(url, p);
+    p.catch(() => parsed.delete(url));
+  }
+  return p;
 }
 
-export function preloadModel(url: string) {
-  useGLTF.preload(url, false, false, withLocalMeshopt);
+/** A model by URL, downloaded and parsed once. */
+export function loadModel(url: string): Promise<GLTF> {
+  return parsed.get(url) ?? parseOnce(url, fetchModel(url));
+}
+
+/** The reference house in a variant (lite falls back to the full model if it is missing). */
+export function loadHouse(variant: HouseVariant): Promise<GLTF> {
+  let p = houses.get(variant);
+  if (!p) {
+    p = fetchHouse(variant, HOUSE_URLS).then(({ url, data }) => parseOnce(url, data));
+    houses.set(variant, p);
+    p.catch(() => houses.delete(variant));
+  }
+  return p;
+}
+
+/** Suspends until the model is ready (errors reach the canvas error boundary). */
+export function useModel(url: string): GLTF {
+  return use(loadModel(url));
+}
+
+export function useHouse(variant: HouseVariant): GLTF {
+  return use(loadHouse(variant));
 }

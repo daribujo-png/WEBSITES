@@ -6,6 +6,7 @@
 import rawHouse from "../../../../public/models/house.meta.json";
 import rawPermits from "../../../../public/models/permits.meta.json";
 import type { BuildStepId, PermitTypeId } from "@/content/types";
+import { HOUSE_HIGH_URL, PERMITS_URL, type HouseVariant } from "./modelSource";
 
 export type Vec3 = [number, number, number];
 
@@ -99,6 +100,8 @@ export interface HouseMeta {
     steps: Record<BuildStepId, CameraPreset>;
   };
   lighting: Record<LightingName, LightingPreset>;
+  /** Model variants written by the MODEL scripts: a URL per variant (plus byte sizes). */
+  variants?: Partial<Record<HouseVariant, unknown>>;
 }
 
 export interface PermitsMeta {
@@ -109,5 +112,22 @@ export interface PermitsMeta {
 export const houseMeta = rawHouse as unknown as HouseMeta;
 export const permitsMeta = rawPermits as unknown as PermitsMeta;
 
-export const HOUSE_GLB = "/models/house.glb";
-export const PERMITS_GLB = "/models/permits.glb";
+export const HOUSE_GLB = HOUSE_HIGH_URL;
+export const PERMITS_GLB = PERMITS_URL;
+
+/** A variant entry is a URL, or an object with one (`url`/`path`/`file`) next to its byte size. */
+function variantUrl(v: unknown): string | null {
+  let url: unknown = v;
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    url = o.url ?? o.path ?? o.href ?? o.file;
+  }
+  if (typeof url !== "string" || !url) return null;
+  return /^(?:https?:)?\//.test(url) ? url : `/${url.replace(/^\.?\//, "")}`;
+}
+
+/** House URLs per variant from house.meta.json "variants"; without it both use house.glb. */
+export const HOUSE_URLS: Record<HouseVariant, string> = {
+  high: variantUrl(houseMeta.variants?.high) ?? HOUSE_GLB,
+  lite: variantUrl(houseMeta.variants?.lite) ?? HOUSE_GLB,
+};

@@ -20,6 +20,9 @@ import {
   roofTop,
 } from "./house-spec.mjs";
 import { canopy } from "./env.mjs";
+import { cullBuried, cullOccluded } from "./builder.mjs";
+import { shadowLightDirections } from "./cameras.mjs";
+import { Q } from "./quality.mjs";
 import { terrainHeight } from "./env.mjs";
 import { wbox } from "./interior.mjs";
 
@@ -33,7 +36,7 @@ export function buildInstallations(layer) {
   const el = layer.mb("el_line", "installasjoner_el");
   const vvs = layer.mb("vvs_line", "installasjoner_vvs");
   const R = 0.014;
-  const run = (mb, pts, r = R) => mb.tube(pts, r, 5, null);
+  const run = (mb, pts, r = R) => mb.tube(pts, r, Q().tubeRadial, null);
 
   /* ---- el ---- */
   // fuse box (sikringsskap) inside the north wall of wing A, by the entry
@@ -181,7 +184,8 @@ export function buildFinished(layer) {
   const dark = layer.mb("window_frame", "nokkelferdig_lamper");
   // niche downlight
   const nc = W(A, (NICHE.u0 + NICHE.u1) / 2, -HW + 0.3, 0);
-  const disc = new THREE.CylinderGeometry(0.11, 0.11, 0.02, 20);
+  const lamp = Q().lamp;
+  const disc = new THREE.CylinderGeometry(0.11, 0.11, 0.02, lamp.disc);
   glow.geometry(disc, new THREE.Matrix4().makeTranslation(nc.x, NICHE.y1 - 0.012, nc.z), null, { flat: false });
   // wall lamps by the terrace door and the entry
   for (const [w, u, s] of [
@@ -201,10 +205,10 @@ export function buildFinished(layer) {
     pB(2.9, 1.6, Y.ff1 + 1.9),
   ];
   for (const p of pendants) {
-    const shade = new THREE.CylinderGeometry(0.06, 0.16, 0.18, 18, 1, true);
+    const shade = new THREE.CylinderGeometry(0.06, 0.16, 0.18, lamp.shade, 1, true);
     dark.geometry(shade, new THREE.Matrix4().makeTranslation(p.x, p.y + 0.09, p.z), null, { flat: false });
     shade.dispose();
-    glow.geometry(new THREE.SphereGeometry(0.07, 12, 8), new THREE.Matrix4().makeTranslation(p.x, p.y + 0.02, p.z), null, { flat: false });
+    glow.geometry(new THREE.SphereGeometry(0.07, lamp.sphere[0], lamp.sphere[1]), new THREE.Matrix4().makeTranslation(p.x, p.y + 0.02, p.z), null, { flat: false });
     dark.tube([V(p.x, p.y + 0.18, p.z), V(p.x, Y.top1 - 0.02, p.z)], 0.004, 4, null, { caps: false });
   }
   const ceilingLights = [pA(1.7, -2.1, 0), pA(2.9, 1.0, 0), pA(2.9, -1.0, 0), pB(3.0, 1.0, 0), pB(3.4, -2.6, 0), pB(0.7, -2.0, 0)];
@@ -277,16 +281,29 @@ export function buildFinished(layer) {
     }
     canopy(shrub, lobes, {
       seed: 900 + i * 7,
-      count: 34 * n,
-      size: [0.08, 0.15],
+      count: Q().shrub.perLobe * n,
+      size: Q().shrub.size,
       tints: ["#4b5447", "#50584a", "#565d4c"],
       detail: 0,
+      coreDetail: Q().shrub.coreDetail,
       shell: [0.6, 0.95],
       flatten: 0.85,
       core: { k: 0.72, tint: "#31382f" },
       variance: 0.1,
     });
   });
+  // the clumps no one can see: buried in the core or a neighbour, under the lawn,
+  // or hidden from every side (the layer is drawn double-sided)
+  if (Q().cullHidden) {
+    cullBuried(shrub);
+    const keep = [];
+    for (let t = 0; t < shrub.indices.length; t += 3) {
+      const under = [0, 1, 2].every((k) => shrub.positions[shrub.indices[t + k] * 3 + 1] < -0.01);
+      if (!under) keep.push(shrub.indices[t], shrub.indices[t + 1], shrub.indices[t + 2]);
+    }
+    shrub.indices = keep;
+    cullOccluded([shrub], { doubleSided: true, cell: 0.15, lights: shadowLightDirections() });
+  }
   return {
     entry: W(A, (NICHE.u0 + NICHE.u1) / 2, -HW - 0.6, 1.6),
     terrace: W(B, 0.4, (TERRACE.v0 + TERRACE.v1) / 2, TERRACE.top + 0.1),

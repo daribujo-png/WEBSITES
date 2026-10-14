@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 /**
- * Builds public/models/house.glb + house.meta.json: our interpretation of
- * "House in Bergen" (Kvalbein Korsøen Arkitektur), assembled as named layer
- * groups in real Norwegian build order, plus Fana terrain, birches and the
- * two old maples. Run: npm run model:build
+ * Builds the reference house: our interpretation of "House in Bergen"
+ * (Kvalbein Korsøen Arkitektur), assembled as named layer groups in real
+ * Norwegian build order, plus Fana terrain, birches and the two old maples.
+ *
+ * Writes
+ *   public/models/house.glb        high quality (desktop), merged per layer + material
+ *   public/models/house-lite.glb   lite quality (phones, weak GPUs), same groups and coordinates
+ *   public/models/house.meta.json  shared by both variants (computed from the high build)
+ *   scripts/render/.cache/house.parts.glb  high quality, one node per part (render harness only)
+ *
+ * Run: npm run model:build
  */
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
-import { SceneNode, V } from "./lib/builder.mjs";
-import { writeGLB } from "./lib/gltf.mjs";
+import { SceneNode, V, resetSharedRngs } from "./lib/builder.mjs";
+import { describe, writeGLB } from "./lib/gltf.mjs";
+import { MeshoptSimplifier } from "meshoptimizer";
+import { Q, setQuality } from "./lib/quality.mjs";
 import {
   BEND,
   CLAD_OUT,
@@ -23,6 +32,7 @@ import {
   WINGS,
   Y,
   materialSpecs,
+  LITE_MATERIAL_CLASSES,
   outline,
   rafterTop,
   roofTop,
@@ -38,7 +48,7 @@ import { buildFinished, buildInstallations } from "./lib/services.mjs";
 import {
   MAPLE_A,
   MAPLE_B,
-  buildBirch,
+  buildBirchGrove,
   buildHills,
   buildMaple,
   buildRocks,
@@ -49,6 +59,9 @@ import { CAMERAS, LIGHTING } from "./lib/cameras.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const OUT_DIR = path.join(ROOT, "public/models");
+const PARTS_DIR = path.join(ROOT, "scripts/render/.cache");
+/** Public URLs of the two variants (written into house.meta.json). */
+const VARIANTS = { high: "/models/house.glb", lite: "/models/house-lite.glb" };
 
 const STEPS = [
   "tomt",
@@ -78,7 +91,23 @@ const EXPLODE = {
   nokkelferdig: [0, 0, 0],
 };
 
-async function main() {
+const birchSpots = [
+  [15.5, -1.5],
+  [17.8, 3.2],
+  [14.2, 7.8],
+  [-15.5, 3.5],
+  [-18.2, -1.8],
+  [-6.5, -15.5],
+  [3.8, -16.5],
+  [9.5, -13.5],
+  [-12.5, -14.0],
+  [21.0, -7.5],
+  [-22.5, 9.5],
+];
+
+/** Build the whole scene with the active quality profile. */
+function buildScene() {
+  resetSharedRngs();
   const house = new SceneNode("House", {
     name: "House in Bergen — vår tolkning",
     architect: "Kvalbein Korsøen Arkitektur",
@@ -96,20 +125,7 @@ async function main() {
   buildRocks(terrain);
   house.add(buildMaple("env_maple_a", MAPLE_A.x, MAPLE_A.z, 101, { height: 14.5, spread: 6.6 }));
   house.add(buildMaple("env_maple_b", MAPLE_B.x, MAPLE_B.z, 202, { height: 13.5, spread: 6.0 }));
-  const birchSpots = [
-    [15.5, -1.5],
-    [17.8, 3.2],
-    [14.2, 7.8],
-    [-15.5, 3.5],
-    [-18.2, -1.8],
-    [-6.5, -15.5],
-    [3.8, -16.5],
-    [9.5, -13.5],
-    [-12.5, -14.0],
-    [21.0, -7.5],
-    [-22.5, 9.5],
-  ];
-  birchSpots.forEach(([x, z], i) => house.add(buildBirch(`env_birch_${String(i + 1).padStart(2, "0")}`, x, z, 700 + i * 11)));
+  house.add(buildBirchGrove("env_birches", birchSpots, { templates: Q().birch.templates }));
   const hills = house.add(new SceneNode("env_hills", { kind: "backdrop" }));
   buildHills(hills);
 
@@ -136,6 +152,13 @@ async function main() {
   const inst = buildInstallations(layers.installasjoner);
   const intr = buildInterior(layers.interior);
   const fin = buildFinished(layers.nokkelferdig);
+  return { house, layers, terrain, ga, fu, inst, intr, fin };
+}
+
+async function main() {
+  await MeshoptSimplifier.ready; // terrain simplification (lite) runs inside the synchronous build
+  setQuality("high");
+  const { house, layers, terrain, ga, fu, inst, intr, fin } = buildScene();
 
   // --- hotspots (world positions; ids must match src/content/build.ts) ---
   const A = WINGS.A;
@@ -192,10 +215,6 @@ async function main() {
     ],
   };
   await checkHotspotIds(hotspots);
-
-  // --- write GLB ---
-  await fs.mkdir(OUT_DIR, { recursive: true });
-  const stats = await writeGLB([house], materialSpecs(), path.join(OUT_DIR, "house.glb"), { sceneName: "Scene" });
 
   // --- meta ---
   const bboxOf = (node) => {
@@ -261,11 +280,13 @@ async function main() {
         { node: "env_maple_a", position: v3(V(MAPLE_A.x, terrainHeight(MAPLE_A.x, MAPLE_A.z), MAPLE_A.z)) },
         { node: "env_maple_b", position: v3(V(MAPLE_B.x, terrainHeight(MAPLE_B.x, MAPLE_B.z), MAPLE_B.z)) },
       ],
-      birches: birchSpots.map((_, i) => `env_birch_${String(i + 1).padStart(2, "0")}`),
+      birches: ["env_birches"],
+      birchCount: birchSpots.length,
+      note: "The eleven birches are one group, env_birches: a few template trees (env_birches_a, _b, …) each drawn at several spots with GPU instancing (EXT_mesh_gpu_instancing → THREE.InstancedMesh). house.glb has 4 templates, house-lite.glb 2.",
       backdrop: "env_hills",
     },
     materials: {
-      glass: "material name 'glass' (alpha blend). Mesh nodes: vinduer_glass, interior_bad_glassvegg, interior_rekkverk_glass.",
+      glass: "material name 'glass' (alpha blend). Mesh nodes: vinduer_glass, interior_glass (house.glb, house-lite.glb).",
       el_line: "emissive, x-ray el runs (layer_installasjoner)",
       vvs_line: "emissive, x-ray VVS runs (layer_installasjoner)",
       lamp_glow: "warm emissive lamps (layer_nokkelferdig); dim/switch off in day mode",
@@ -303,11 +324,39 @@ async function main() {
     },
     camera: CAMERAS,
     lighting: LIGHTING,
-    stats,
+  };
+
+  // --- write GLBs (meta above is measured on the unculled high build) ---
+  await fs.mkdir(OUT_DIR, { recursive: true });
+  await fs.mkdir(PARTS_DIR, { recursive: true });
+  const specs = materialSpecs();
+  const parts = await writeGLB([house], specs, path.join(PARTS_DIR, "house.parts.glb"), { layout: "parts" });
+  const high = await writeGLB([house], specs, path.join(OUT_DIR, "house.glb"), { layout: "merged" });
+  setQuality("lite");
+  const liteScene = buildScene();
+  const lite = await writeGLB([liteScene.house], specs, path.join(OUT_DIR, "house-lite.glb"), {
+    layout: "merged",
+    materialClasses: LITE_MATERIAL_CLASSES,
+    flatWithoutNormals: { keep: ["cladding_wood"] },
+  });
+  setQuality("high");
+
+  meta.variants = VARIANTS;
+  meta.variantBytes = { high: high.bytes, lite: lite.bytes };
+  meta.stats = {
+    ...pick(high),
+    note: "bytes/meshes/vertices/triangles of house.glb; per-variant numbers in variants (meshes = draw calls with every group visible)",
+    variants: { high: pick(high), lite: pick(lite) },
   };
   await fs.writeFile(path.join(OUT_DIR, "house.meta.json"), JSON.stringify(meta, null, 2) + "\n");
-  console.log(`house.glb ${(stats.bytes / 1024).toFixed(0)} KB · meshes ${stats.meshes} · vertices ${stats.vertices} · triangles ${stats.triangles}`);
+  console.log(describe("house.glb", high));
+  console.log(describe("house-lite.glb", lite));
+  console.log(describe("house.parts.glb (render harness)", parts));
   void RAFTER_VD;
+}
+
+function pick(s) {
+  return { bytes: s.bytes, meshes: s.meshes, materials: s.materials, vertices: s.vertices, triangles: s.triangles, instancedTriangles: s.instancedTriangles };
 }
 
 function polyArea(pts) {

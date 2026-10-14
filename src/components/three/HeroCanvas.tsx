@@ -6,15 +6,19 @@
  * Live hero canvas (lazy chunk, desktop only): the finished reference house
  * at blue hour, framed exactly like the poster underneath it so the fade-in
  * is seamless. Renders on demand: a frame per drag/pointer/scroll change.
+ * Shaders are compiled (async, for the post stack's target) before the first
+ * frame, and the shadow map is drawn once: the scene never changes.
  */
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { HOUSE_GLB, houseMeta } from "./lib/meta";
-import { useModel } from "./lib/loader";
+import { houseMeta } from "./lib/meta";
+import { useHouse } from "./lib/loader";
 import { LightRig, createSkyMesh, resolvePreset, setSkyUniforms, skyEnvironment } from "./lib/lighting";
 import { coverView, damp, toSpherical } from "./lib/camera";
-import { setBloom, usePostprocessing } from "./lib/postprocessing";
+import { compilePostAsync, sceneTarget, setBloom, usePostprocessing } from "./lib/postprocessing";
+import { useRenderLoop } from "./lib/renderLoop";
+import { compileSceneAsync } from "./lib/warmup";
 import { createInputStore, type InputStore } from "./lib/inputStore";
 
 export interface HeroInputState {
@@ -46,12 +50,18 @@ export interface HeroCanvasProps {
 const NO_CAST = new Set(["glass", "hill", "lamp_glow", "plan_line", "string_line"]);
 const NO_RECEIVE = new Set(["hill", "lamp_glow"]);
 
+/**
+ * Layers fully hidden in the finished house from every hero camera (checked
+ * by pixel diff against the poster view): not drawn at all.
+ */
+const ENCLOSED = new Set(["layer_grunnarbeid"]);
+
 /** The finished house: every layer, no construction parts, lines hidden in the walls. */
 function prepareFinished(source: THREE.Object3D, lampLevel: number) {
   const root = source.clone(true);
   const owned: THREE.Material[] = [];
   root.traverse((o) => {
-    if (o.userData?.hideFrom) o.visible = false;
+    if (o.userData?.hideFrom || ENCLOSED.has(o.name)) o.visible = false;
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     const mat = mesh.material as THREE.MeshStandardMaterial;
@@ -78,7 +88,7 @@ function prepareFinished(source: THREE.Object3D, lampLevel: number) {
 }
 
 function HeroScene({ input, onReady, onError }: HeroCanvasProps) {
-  const gltf = useModel(HOUSE_GLB);
+  const gltf = useHouse("high");
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
@@ -106,6 +116,9 @@ function HeroScene({ input, onReady, onError }: HeroCanvasProps) {
   const env = useMemo(() => skyEnvironment(gl, lit.envSky), [gl, lit]);
   const fog = useMemo(() => new THREE.Fog(lit.fogColor, lit.fogNear, lit.fogFar), [lit]);
   const post = usePostprocessing(true);
+  /** Shaders are warm: frames may be drawn. */
+  const warm = useRef(false);
+  useRenderLoop(post, warm);
 
   const base = useMemo(() => {
     const c = houseMeta.camera.hero;
@@ -149,13 +162,18 @@ function HeroScene({ input, onReady, onError }: HeroCanvasProps) {
     };
     gl.domElement.addEventListener("webglcontextlost", onLost);
     (async () => {
+      // Compile for the target the scene really draws into (the post stack's buffer).
       try {
-        await gl.compileAsync(scene, camera);
+        await Promise.all([
+          compileSceneAsync(gl, scene, camera, sceneTarget(post)),
+          post ? compilePostAsync(gl, post, camera) : null,
+        ]);
       } catch {
         // optimisation only
       }
       if (cancelled) return;
       gl.shadowMap.needsUpdate = true;
+      warm.current = true;
       invalidate();
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -167,7 +185,7 @@ function HeroScene({ input, onReady, onError }: HeroCanvasProps) {
       cancelled = true;
       gl.domElement.removeEventListener("webglcontextlost", onLost);
     };
-  }, [gl, scene, camera, invalidate, onReady, onError]);
+  }, [gl, scene, camera, post, invalidate, onReady, onError]);
 
   useEffect(() => {
     setBloom(post, lit.bloomStrength, lit.bloomRadius, lit.bloomThreshold);

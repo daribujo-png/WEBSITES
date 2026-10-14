@@ -17,6 +17,8 @@ import { useModel } from "./lib/loader";
 import { LightRig, createSkyMesh, resolvePreset, setSkyUniforms, skyEnvironment } from "./lib/lighting";
 import { coverView, damp } from "./lib/camera";
 import type { InputStore } from "./lib/inputStore";
+import { useRenderLoop } from "./lib/renderLoop";
+import { gpuInfo } from "@/lib/gpu-tier";
 
 export interface PermitInputState {
   /** Hovered or focused: turn slowly. */
@@ -64,9 +66,12 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
   const invalidate = useThree((s) => s.invalidate);
 
   const lit = useMemo(() => resolvePreset(houseMeta.lighting.paper), []);
+  // Only the selected diagram is cloned (and gets edge lines); switching type swaps it in this same canvas.
   const model = useMemo(() => {
-    const root = gltf.scene.clone(true);
-    root.children.forEach((c) => (c.visible = c.name === `permit_${type}`));
+    const pivot = new THREE.Group();
+    const node = gltf.scene.getObjectByName(`permit_${type}`);
+    if (!node) return pivot;
+    const root = node.clone(true);
     root.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh) {
@@ -75,7 +80,6 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
       }
     });
     addEdges(root);
-    const pivot = new THREE.Group();
     pivot.add(root);
     return pivot;
   }, [gltf.scene, type]);
@@ -91,7 +95,11 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
   }, [lit]);
   const env = useMemo(() => skyEnvironment(gl, lit.envSky), [gl, lit]);
   const cam = permitsMeta.cameras[type];
+  const camTarget = useMemo(() => new THREE.Vector3(...cam.target), [cam]);
   const cur = useRef({ spin: 0, yaw: 0, cont: false });
+  /** Shaders are warm: frames may be drawn. */
+  const warm = useRef(false);
+  useRenderLoop(null, warm);
 
   useEffect(() => {
     scene.environment = env.texture;
@@ -105,6 +113,12 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
   }, [scene, gl, env, lit]);
 
   useEffect(() => input.subscribe(() => invalidate()), [input, invalidate]);
+
+  // A new diagram starts in its poster pose.
+  useEffect(() => {
+    Object.assign(cur.current, { spin: 0, yaw: 0, cont: false });
+    invalidate();
+  }, [model, invalidate]);
 
   useEffect(
     () => () =>
@@ -135,12 +149,19 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
     };
     gl.domElement.addEventListener("webglcontextlost", onLost);
     (async () => {
+      // All five diagrams' materials (as the scene would draw them), so switching tabs never compiles.
+      const all = gltf.scene.clone(true);
+      all.traverse((o) => {
+        o.castShadow = true;
+        o.receiveShadow = true;
+      });
       try {
-        await gl.compileAsync(scene, camera);
+        await Promise.all([gl.compileAsync(scene, camera), gl.compileAsync(all, camera, scene)]);
       } catch {
         // optimisation only
       }
       if (cancelled) return;
+      warm.current = true;
       invalidate();
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -152,7 +173,7 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
       cancelled = true;
       gl.domElement.removeEventListener("webglcontextlost", onLost);
     };
-  }, [gl, scene, camera, invalidate, onReady, onError]);
+  }, [gl, scene, camera, gltf.scene, invalidate, onReady, onError]);
 
   useFrame((_, delta) => {
     const c = cur.current;
@@ -168,7 +189,7 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
     camera.position.set(...cam.position);
     camera.near = 0.5;
     camera.far = 4000;
-    camera.lookAt(new THREE.Vector3(...cam.target));
+    camera.lookAt(camTarget);
     coverView(camera, size.width, size.height, cam, POSTER_ASPECT);
     const settling =
       inp.active ||
@@ -190,6 +211,8 @@ function PermitScene({ type, input, onReady, onError }: PermitCanvasProps) {
 }
 
 export default function PermitCanvas(props: PermitCanvasProps) {
+  // Lower pixel-ratio cap below the high tier (older integrated GPUs).
+  const maxDpr = gpuInfo().tier === "high" ? 1.75 : 1.25;
   const glProps = useMemo(
     () => ({
       antialias: true,
@@ -203,7 +226,7 @@ export default function PermitCanvas(props: PermitCanvasProps) {
   return (
     <Canvas
       frameloop="demand"
-      dpr={[1, 1.75]}
+      dpr={[1, maxDpr]}
       gl={glProps}
       shadows="percentage"
       camera={{ fov: 30, near: 0.5, far: 4000 }}

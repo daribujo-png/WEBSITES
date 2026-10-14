@@ -6,7 +6,9 @@
  * - Motion allowed + WebGL: a dark sticky stage; scrolling builds the
  *   reference house layer by layer in real Norwegian build order (BuildStage).
  * - prefers-reduced-motion, no WebGL, no JavaScript: a stepped gallery of
- *   renders with the same copy (BuildGallery).
+ *   renders with the same copy (BuildGallery). Devices too weak for the 3D
+ *   stage (software WebGL, Save-Data, 2G, very little memory; see
+ *   lib/gpu-tier) get the gallery too, with a short note saying why.
  *
  * The server HTML contains both; CSS shows the right one before hydration
  * (stage only with JS and without reduced motion), so the layout never
@@ -19,7 +21,7 @@ import { useReducedMotion } from "@/lib/hooks";
 import { gsapIfLoaded } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { BuildGallery } from "./BuildGallery";
-import { BuildStage } from "./BuildStage";
+import { BuildStage, type StageFallback } from "./BuildStage";
 
 const noop = () => () => {};
 function useHydrated() {
@@ -33,10 +35,12 @@ function useHydrated() {
 export function BuildSequence() {
   const hydrated = useHydrated();
   const reduced = useReducedMotion();
-  // WebGL is probed only when the stage comes near (creating a context during
-  // hydration costs main-thread time on phones). No WebGL → gallery.
-  const [noWebGL, setNoWebGL] = useState(false);
-  const onNoWebGL = useCallback(() => setNoWebGL(true), []);
+  // WebGL and the device tier are probed only when the stage comes near
+  // (creating a context during hydration costs main-thread time on phones).
+  // No WebGL, or a device too weak for 3D → gallery.
+  const [fallback, setFallback] = useState<StageFallback | null>(null);
+  const onFallback = useCallback((reason: StageFallback) => setFallback(reason), []);
+  const noWebGL = fallback !== null;
 
   // Before hydration CSS decides; afterwards the client knows.
   const stage = !noWebGL && (!hydrated || !reduced);
@@ -96,12 +100,20 @@ export function BuildSequence() {
       </a>
       {stage ? (
         <div className={cn(cssGate && "hidden js:motion-safe:block")}>
-          <BuildStage onNoWebGL={onNoWebGL} />
+          <BuildStage onFallback={onFallback} />
         </div>
       ) : null}
       {gallery ? (
         <div className={cn(cssGate && "js:motion-safe:hidden")}>
-          <BuildGallery note={noWebGL ? buildSequenceCopy.webglFallback : null} />
+          <BuildGallery
+            note={
+              fallback === "webgl"
+                ? buildSequenceCopy.webglFallback
+                : fallback === "lowpower"
+                  ? buildSequenceCopy.lowPowerFallback
+                  : null
+            }
+          />
         </div>
       ) : null}
       <div id="slik-bygger-vi-slutt" tabIndex={-1} className="outline-none" />

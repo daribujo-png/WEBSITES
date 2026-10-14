@@ -613,22 +613,14 @@
       }
     ],
     "birches": [
-      "env_birch_01",
-      "env_birch_02",
-      "env_birch_03",
-      "env_birch_04",
-      "env_birch_05",
-      "env_birch_06",
-      "env_birch_07",
-      "env_birch_08",
-      "env_birch_09",
-      "env_birch_10",
-      "env_birch_11"
+      "env_birches"
     ],
+    "birchCount": 11,
+    "note": "The eleven birches are one group, env_birches: a few template trees (env_birches_a, _b, …) each drawn at several spots with GPU instancing (EXT_mesh_gpu_instancing → THREE.InstancedMesh). house.glb has 4 templates, house-lite.glb 2.",
     "backdrop": "env_hills"
   },
   "materials": {
-    "glass": "material name 'glass' (alpha blend). Mesh nodes: vinduer_glass, interior_bad_glassvegg, interior_rekkverk_glass.",
+    "glass": "material name 'glass' (alpha blend). Mesh nodes: vinduer_glass, interior_glass (house.glb, house-lite.glb).",
     "el_line": "emissive, x-ray el runs (layer_installasjoner)",
     "vvs_line": "emissive, x-ray VVS runs (layer_installasjoner)",
     "lamp_glow": "warm emissive lamps (layer_nokkelferdig); dim/switch off in day mode",
@@ -1279,10 +1271,39 @@
       "bloom": null
     }
   },
+  "variants": {
+    "high": "/models/house.glb",
+    "lite": "/models/house-lite.glb"
+  },
+  "variantBytes": {
+    "high": 1189648,
+    "lite": 377416
+  },
   "stats": {
-    "bytes": 1664564,
-    "meshes": 94,
-    "vertices": 234603,
-    "triangles": 226860
+    "bytes": 1189648,
+    "meshes": 68,
+    "materials": 47,
+    "vertices": 138398,
+    "triangles": 149086,
+    "instancedTriangles": 34610,
+    "note": "bytes/meshes/vertices/triangles of house.glb; per-variant numbers in variants (meshes = draw calls with every group visible)",
+    "variants": {
+      "high": {
+        "bytes": 1189648,
+        "meshes": 68,
+        "materials": 47,
+        "vertices": 138398,
+        "triangles": 149086,
+        "instancedTriangles": 34610
+      },
+      "lite": {
+        "bytes": 377416,
+        "meshes": 46,
+        "materials": 20,
+        "vertices": 42627,
+        "triangles": 48762,
+        "instancedTriangles": 13530
+      }
+    }
   }
 }
