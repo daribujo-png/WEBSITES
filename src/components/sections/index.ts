@@ -1,11 +1,15 @@
 /** Page sections (SECTIONS agent). Server components unless noted. */
 export { Hero } from "./Hero";
-export { Intro } from "./Intro";
 export { Interlude } from "./Interlude";
-export { ServicesSection } from "./ServicesSection";
+export { LeadServices } from "./LeadServices";
+export { AllTradesSection } from "./AllTradesSection";
+export { HouseModelsSection, HouseModelIndex, ModelFacts, modelCredit, modelMissing, viewerImages } from "./HouseModels";
+export { HouseModelViewer, type ViewerImage } from "./HouseModelViewer";
+export { ModelGallery } from "./ModelGallery";
+export { RoofGlyph } from "./RoofGlyph";
 export { ProcessSection } from "./ProcessSection";
 export { PermitsSection } from "./PermitsSection";
-export { BeforeAfterSection, BeforeAfterPairFigure, pairAvailable } from "./BeforeAfterSection";
+export { BeforeAfterPairFigure, pairAvailable } from "./BeforeAfterSection";
 export { ReferencesSection, ReferenceMeta, ReferenceQuote } from "./ReferencesSection";
 export { AboutSection, ValuesList, TradesList } from "./AboutSection";
 export { ContactSection, ContactDetails } from "./ContactSection";

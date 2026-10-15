@@ -1,6 +1,6 @@
 # Bygg og Renovering Vest – design system
 
-**Direction: "Lys papir".** The site reads like an architect's monograph: light paper pages, dark ink, very large serif headlines, thin rules and a lot of air. Only two places are dark: the **hero stage** and the **"Slik bygger vi" build sequence**. These use fjord night and slate, in a blue-hour mood. The site is restrained, Nordic and material, and it is never colourful.
+**Direction: "Lys papir".** The site reads like an architect's monograph: light paper pages, dark ink, very large serif headlines, thin rules and a lot of air. The home page opens on a **light paper hero** ("Fra tegning til hus.") with a daylight 3D stage of the house model Adria and the supplier's photo as a mounted plate; the build steps live inside that hero. The **only dark band on the home page is the references band** ("Jobber vi har gjort", fjord night). The site is restrained, Nordic and material, and it is never colourful. The full creative direction for the hero and home page is in `docs/DIRECTION-adria.md`; where it and this file disagree, the direction wins.
 
 Tokens live in `src/app/globals.css` (Tailwind v4 `@theme`). Never write a raw hex value in a component. If a colour is missing, add a token and note it here.
 
@@ -12,12 +12,12 @@ Tokens live in `src/app/globals.css` (Tailwind v4 `@theme`). Never write a raw h
 
 | Token (Tailwind) | Role in brief | Hex | Use |
 |---|---|---|---|
-| `night` (`bg`) | fjord night | `#0E1416` | Hero and build stage backgrounds. Text colour on brass/snow buttons. |
+| `night` (`bg`) | fjord night | `#0E1416` | The references band on home (the only dark band), dialogs over images. Text colour on brass/snow buttons. |
 | `slate` (`surface`) | slate | `#1A2226` | Panels and controls on dark stages. |
 | `snow` | text | `#F2EFE9` | Text on dark (16.2:1 on night). |
 | `mist` (`muted`) | mist | `#9BA5A3` | Secondary text **on dark only** (7.4:1 on night, 6.4:1 on slate). |
 | `oak` (`wood`) | oak | `#B08B5E` | Wood in renders, large decorative type on light, text on dark (5.9:1). |
-| `brass` (`accent`) | brass | `#C9A86A` | Sparingly: focus ring on dark, one accent button per dark view, selection. |
+| `brass` (`accent`) | brass | `#C9A86A` | Sparingly: focus ring on dark, the one accent button on the references band, selection. Never on paper. |
 | `paper` | light section bg | `#EDE8DF` | Default page background. |
 
 ### Derived tokens (tints and shades, AA-checked)
@@ -133,12 +133,29 @@ Motion is slow and weighty. It glides and settles, and it never bounces, oversho
 - **Reduced motion** (`prefers-reduced-motion: reduce`):
   - Lenis is off, and every reveal shows immediately.
   - Transitions are near-instant.
-  - The build sequence becomes a stepped gallery of renders.
-  - The hero shows the poster only.
+  - The hero shows the static photo plate (not pinned, no timelapse); its build steps become a stepped gallery of stills, and the roof radios swap the supplier's photos.
+  - Pust, Drift, the magnet and the SVG draw-on are off; drawings are shown complete.
 - **No JS:** hidden pre-reveal states only apply under `html.js`, so nothing is ever stuck invisible.
 - **Cursor:** a thin trailing ring, only on fine pointers. It never hides the native cursor.
+
+### The "alive" motion system: six named behaviours
+
+Nothing else moves. All six are off under reduced motion (the content is simply there, at rest).
+
+| Name | What it does | Timing | Where | Code |
+|---|---|---|---|---|
+| **Pust** (breath) | A photo inside its frame settles from scale 1.06 to 1.00 and drifts ±4 % in Y while the frame crosses the viewport. | Scroll-linked (CSS `animation-timeline: view()`, compositor only, no JS) | Own photos in "Dette bygger vi", the reference plates, the interlude, Om oss. **Never** the hero's LCP photo. | `<Pust>` in `@/components/ui`, `MediaFigure pust` |
+| **Strek** (line) | Hairlines draw (`scaleX` 0 → 1), SVG strokes draw on (`stroke-dashoffset`, `pathLength="1"`), headings rise word by word. | Lines 900 ms ease-expo; words 700 ms; drawings 1.2–2.4 s, sine in-out, in drawing order | Section rules, the elevation drawing, the reference sketches, the hero caption rail | `<Hairline draw>`, `<LineDrawing>`, `<RevealText>` |
+| **Gardin** (curtain) | A paper section slides over the pinned hero stage, which scales to 0.96 and dims 15 %. | Scrubbed over 100 vh | The hero release only | Hero (three) |
+| **Lodd** (weight) | Magnetic CTAs (within 24 px, at most 6 px, fine pointers only); button fills wipe up from the bottom; underlines draw; segmented-control thumbs glide; reference sheets lift 6 px on hover/focus. | Return 450 ms ease-weight; thumb 450 ms ease-glide | Every interactive element | `MagneticButton`, `Segmented`, `link-draw` |
+| **Blikk** (gaze) | The 3D camera follows the pointer within ±3.5° yaw / ±1.2° pitch, critically damped; idles ±1° over 14 s. Off while a photo shows. | Continuous | Hero (finale, and the live twin if enabled) | Hero (three) |
+| **Vær** (weather) | Clouds drift, crowns and grass sway in the vertex shader. | Continuous, stops off screen | Wherever the 3D renders | Hero (three) |
+
+Also: **Drift** for the reference band only: loose sheets lag the scroll (0.92×) and photo plates lead it (1.06×), ±6 vh, desktop only (`<Drift speed="slow" | "fast">`). Never put `Pust`/`Drift` on the element that carries a `data-reveal` (both use `transform`): wrap.
+
+Never: bounce, elastic or overshoot; parallax on text; auto-rotating turntables; pulsing hotspots; scroll-hint chevrons; cursor trails beyond the ring.
 - **Magnetic buttons:** only on fine pointers without reduced motion. Everywhere else they are plain buttons.
-- **Hero LCP:** don't hide the LCP poster image behind an animation. Text reveals on the hero use `immediate`.
+- **Hero LCP:** don't hide the LCP photo plate behind an animation (no Pust on it). Text reveals on the hero use `immediate`.
 
 ---
 
@@ -153,7 +170,10 @@ Motion is slow and weighty. It glides and settles, and it never bounces, oversho
 - **Render chroma.** Renders on paper pages stay low-chroma: overcast day preset (grey sky `#C9CCC8`, moss lawn, grey-green foliage, exposure 0.76). Rule of thumb: no render with a mean Lab chroma above about 20 outside the dark stages. Blue-hour renders are cool night with warm interior light (oak/brass). No saturated skies or lime greens.
 - **Diagrams** (permit types): existing house in paper grey `#D9D3C7` with ink edges at 35 %, the new part in muted oak `#A88E6E` with brass edges, on a chalk `#F7F5F0` plinth.
 - Before/after sliders: the real før/etter photos on the home page and /referanser/; render pairs on service pages, always labelled "Illustrasjon fra vår 3D-modell, ikke foto fra et ferdig prosjekt".
-- The reference house is always credited: **"Arkitekttegnet referanse – slik ville vi bygget den"** and **"Arkitektur: Kvalbein Korsøen Arkitektur"**, with the note that the model is our interpretation and that the house was not built by Bygg og Renovering Vest (`referenceHouse` in `@/content`). The long note appears once (build intro); the hero and the pinned stage carry a short credit only. No Kvalbein Korsøen photos.
+- **The house in the 3D model is Adria from Boligpartner** (`adriaHouse` in `@/content/site`, `src/content/house-models.ts`). Our 3D model is our own interpretation. Every place that shows the house or its images carries the credit **"Husmodell Adria fra Boligpartner"** and the visible **"[MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]"** until the agreement is in place. The supplier's elevation drawings are never published.
+- **Supplier images** (`public/images/adria/`, manifest `src/content/adria-images.ts`, made by `scripts/images/adria.mjs`) are shown **as supplied**: resized and cropped only, never graded, retouched or cleaned of people. They are exempt from the own-photo grade and from the render-chroma rule because they are not ours to change. Every one carries "Bilde: Boligpartner" in its caption. `supplierImagesEnabled` in `house-models.ts` swaps them all for our own renders from the same camera (`adria-twin*`) if permission is refused. The OG image is always our own render.
+- **Plate sizes.** The hero plate is 16:9 in columns 5–12 (880 × 495 at 1440), height capped so the caption stays above the fold; phones get the square crop (`-sq-*`). Widths 640–1920 everywhere; 2560/3840 (from the 4K upscale) only in the full view on `/husmodeller/<slug>/`. The house-model viewer is 16:9 (8 columns on home, up to 1280 px on the model page).
+- **Own photos on home appear once each:** tilbygg pair and `nytt-tak` in "Dette bygger vi"; gang pair, `firemannsbolig` and `minigraver-skifer` as plates in the references band (captioned "Foto fra eget prosjekt.", never with a reference's name); `arbeid-over-bergen-bred` in the interlude; `arbeid-over-bergen` in Om oss. The all-trades index previews use renders of our model.
 - Missing client photos are a visible `[MANGLER: …]`. Where a whole slot would be empty (references without photos) the layout is text-led with a slim dashed frame, not a large empty box.
 - Alt text is always in Norwegian and describes what is shown. Use `alt=""` only for purely decorative images (e.g. hover previews that duplicate a link's text).
 - Text over images needs a solid night panel or a scrim made from `night/70` or darker. Check it at 390px, and in the stage's day mode.
@@ -164,11 +184,11 @@ Motion is slow and weighty. It glides and settles, and it never bounces, oversho
 
 | Primitive | Purpose |
 |---|---|
-| `Section`, `SectionHeader` | Toned band plus container; monograph heading with lede (no eyebrow, no number). Layouts `split` (default), `stack` and `center`, sizes `xl`/`l`/`m`: vary openers so no more than two neighbouring sections share one (home: Fra tegning til nøkkel is centred, Før og etter has no lede, Referanser is `m` + stacked). |
+| `Section`, `SectionHeader` | Toned band plus container; monograph heading with lede (no eyebrow, no number). Layouts `split` (default), `stack` and `center`, sizes `xl`/`l`/`m`: vary openers so no more than two neighbouring sections share one (home: hero one-line H1; Dette bygger vi stacked; references full-width on night; Husmodeller with the model name as the display line; process centred; all trades split; Om oss split). |
 | `Container` | `page`, `wide` or `full` frame. |
 | `RevealText`, `Reveal` | Word-by-word heading rise, and block reveals (server components). |
 | `Hairline` | 1px rule; can draw in on scroll. |
-| `MagneticButton`, `buttonClasses()` | CTA in the variants `solid`, `outline`, `ghost` and `accent` (brass, dark only, once per view). |
+| `MagneticButton`, `buttonClasses()` | CTA in the variants `solid`, `outline`, `ghost` and `accent` (brass, the night references band only, once per view). Fill wipes up on hover; magnet within 24 px, max 6 px. |
 | `SmartLink` | Picks next/link, `tel:`, `mailto:` or an external link with a new-tab notice. |
 | `BeforeAfter` | Accessible comparison slider (role="slider", keyboard, touch-friendly). |
 | `Picture` | AVIF + WebP `<picture>` for manifest assets. |
@@ -176,6 +196,9 @@ Motion is slow and weighty. It glides and settles, and it never bounces, oversho
 | `Icon.*` | Thin line icons (arrow, phone, mail, map pin, layers, plan, sun, moon, gable mark …). |
 | `JsonLd` | Structured data script. |
 | `Cursor` | Trailing ring (mounted once in the layout). |
+| `Pust`, `Drift` | Scroll-linked breath for photos in frames; loose-sheet drift (CSS scroll timelines, no JS). |
+| `LineDrawing` | Ink SVG that draws itself on in drawing order (Strek). Strokes use `currentColor`. |
+| `Segmented` | Native radio group drawn as a framed bar with a gliding ink thumb (Taktype, roof switcher). 44 px targets. |
 
 Focus is a 2px outline in `--tone-focus` (ink on light, brass on dark) with a 3px offset. Never remove it without a visible replacement. Touch targets are at least 44px for primary actions.
 
@@ -191,6 +214,14 @@ Focus is a 2px outline in `--tone-focus` (ink on light, brass on dark) with a 3p
 
 **Don't**
 - **No decorative numbering.** No "01 / 02 / 03" on services, process, build steps or nav. No "Steg 3 av 11" counters and no big index numerals.
+- No sprenging, grunnarbeid, VVS, elektro, maling or mur above "Alle fagene i eget firma" on the home page. The hero and "Dette bygger vi" sell nybygg, tilbygg og påbygg, and tak.
+- No phone/e-mail row in the hero (the header has both), no scrims, gradients or radial glows behind hero text.
+- No three-up claim rows, no identical card grids, no three identical reference columns. Vary section openers: no more than two neighbours share one.
+- No glass/blur panels over 3D; panels are solid chalk. No toy blob trees or visible blurry LQIP in the hero.
+- No scroll-hint chevrons, bouncing arrows, "scroll to explore" text or loading spinners. If the 3D is not ready, the photo simply stays.
+- No banned words: skreddersydd, kvalitet i alle ledd, drømmehjem, i høysetet, sømløs, helhetlig, unik, "vi brenner for", "løsninger" as filler, exclamation marks, em dashes in copy.
+- No supplier marketing (e.g. "VG testvinner"), prices or slogans; no supplier image that is graded, retouched or shown without "Bilde: Boligpartner".
+- No 3D twin left at rest where a real photo exists for that view and roof.
 - No eyebrow labels above headings. No mono or caps "spec" text. No pill tags.
 - No em-dash-heavy copy, no buzzword triplets, no clichés ("kvalitet i alle ledd").
 - No colourful accents, gradients, glows or shadows. Brass appears at most once per view.

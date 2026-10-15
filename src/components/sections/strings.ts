@@ -18,7 +18,7 @@ export const sectionStrings = {
   aboutLink: "Les mer om oss",
   /** Link from a service page's permit note to the byggesøknad section. */
   permitLink: "Slik ordner vi byggesøknaden",
-  /** Link from the hero caption to the reference-house explanation. */
+  /** Link from a credit line to the explanation of the house in the 3D model. */
   referenceHouseLink: "Om 3D-huset",
   /** Contact details list heading on the contact band. */
   contactDetailsLabel: "Kontaktinformasjon",
@@ -47,15 +47,12 @@ export const sectionStrings = {
   formTitle: "Skriv til oss",
   /** References page: section headings. */
   beforeAfterTitle: "Før og etter",
-  /** Om oss page: heading over the reference-house section. */
+  /** Om oss page: heading over the section on the house in the 3D model. */
   referenceHouseTitle: "Huset i 3D-modellen",
-  /** Om oss page: labels for the reference-house facts. */
+  /** Om oss page: labels for the facts about the house in the 3D model. */
   houseLabels: {
-    name: "Hus",
-    architect: "Arkitekt",
-    place: "Sted",
-    completed: "Ferdig",
-    area: "Areal",
+    model: "Husmodell",
+    supplier: "Leverandør",
   },
   /** Om oss page: link back to the build sequence. */
   buildLink: "Se huset bygges steg for steg",

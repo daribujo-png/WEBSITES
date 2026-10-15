@@ -170,6 +170,8 @@ export const houseModelsCopy = {
   imagesTitle: "Bilder",
   openImage: "Vis større",
   closeImage: "Lukk",
+  previousImage: "Forrige bilde",
+  nextImage: "Neste bilde",
   build3dTitle: "Se huset bygges, steg for steg",
   build3dBody: "På forsiden bygger vi huset i 3D, fra grunnmur til nøkkelferdig, og du kan bytte tak.",
   build3dLink: "Se huset bygges",

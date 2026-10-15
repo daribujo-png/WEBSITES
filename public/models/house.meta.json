@@ -1,56 +1,198 @@
 {
   "generator": "scripts/model/build-house.mjs",
+  "house": "adria",
   "units": "m",
   "up": "+y",
-  "orientation": "−z is north (road/entry side), +z is south (garden). The joint between the two wings is at the origin.",
+  "orientation": "Origin = centre of the main volume's outer cladding footprint at ground FFL. +x east (framed R1 gable), +z south (garden, images 1, 2, 4), −z north (entrance, image 3).",
   "model": {
-    "name": "House in Bergen — vår tolkning",
-    "architect": "Kvalbein Korsøen Arkitektur",
-    "footprint": "two wings, 8 m wide (frame), 4.6 m + 4.4 m long, bending 18° at a mitred joint; ≈ 75 m² gross per floor",
-    "floorsAboveGround": 2,
-    "roofPitchDeg": 40,
-    "ridgeHeight": 9.16
+    "name": "Adria",
+    "supplier": "Boligpartner",
+    "credit": "Husmodell Adria fra Boligpartner",
+    "url": "https://boligpartner.no/ferdighus/moderne/adria",
+    "facts": {
+      "braI": "ca. 159 m² BRA-i",
+      "soverom": 4,
+      "bad": 2,
+      "energimerking": "B",
+      "tomt": "flat tomt, passer godt på smale tomter",
+      "taktyper": [
+        "flatt tak",
+        "pulttak",
+        "saltak"
+      ]
+    },
+    "rights": "[MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]",
+    "note": "Our 3D interpretation from Boligpartner's published images and elevations; the elevation drawings are never published. Interior and garden are our illustration.",
+    "footprint": {
+      "length": 15.6,
+      "depth": 7.8,
+      "gross": 121.68,
+      "wallThickness": 0.35
+    },
+    "levels": {
+      "terrain": -0.35,
+      "drive": -0.3,
+      "plinthBottom": -0.35,
+      "claddingBottom": -0.05,
+      "deck": -0.05,
+      "slabTop": -0.1,
+      "ff0": 0,
+      "ceil0": 2.7,
+      "joistBottom": 2.75,
+      "joistTop": 2.98,
+      "ff1": 3.05,
+      "wallTop": 5.9,
+      "bandBottom": 2.42,
+      "bandTop": 3.2,
+      "balconyFloor": 3.14,
+      "railBottom": 3.22,
+      "railTop": 4.22
+    },
+    "roofs": {
+      "saltak": {
+        "pitchDeg": 32.5,
+        "ridge": 8.655,
+        "wallPlaneOuter": 6.17,
+        "eaveOverhang": 0.22,
+        "chimneyTop": 9.65
+      },
+      "flatt": {
+        "parapet": 7.35,
+        "membrane": 7.05,
+        "chimneyTop": 8.2,
+        "ceiling": 6.45
+      },
+      "pulttak": {
+        "pitchDeg": 10.886,
+        "low": 5.95,
+        "high": 7.45,
+        "chimneyTop": 7.6
+      }
+    },
+    "loggias": {
+      "R1": {
+        "x0": 5.83,
+        "x1": 7.8,
+        "col": 0.42,
+        "zN": -3.48,
+        "zS": 3.48,
+        "xCol": 7.38
+      },
+      "R2": {
+        "x0": -7.8,
+        "x1": -2.96,
+        "z0": 1.6,
+        "z1": 3.9,
+        "xCol": -7.41,
+        "zCol": 3.49
+      }
+    },
+    "chimney": {
+      "x": 5.3,
+      "z": -0.2,
+      "r": 0.1
+    }
+  },
+  "roofVariants": [
+    "saltak",
+    "flatt",
+    "pulttak"
+  ],
+  "defaultRoof": "saltak",
+  "suffixes": {
+    "roof": "__saltak | __flatt | __pulttak (test name.includes(`__${roof}`))",
+    "ceiling": "<name>__<roof>__ceiling (test name.endsWith('__ceiling'))",
+    "shared": "nodes without a suffix are shared by all roof forms",
+    "seInn": "Se inn: lift + hide the current roof's layer_tak group and its __ceiling nodes; layer_bindingsverk roof groups are hidden from 'interior' on (hideFrom)"
+  },
+  "roofNodes": {
+    "saltak": [
+      "bindingsverk_vegger__saltak",
+      "bindingsverk_tak__saltak",
+      "isolasjon_vindsperre__saltak",
+      "tak__saltak",
+      "vinduer__saltak",
+      "kledning_vegger__saltak",
+      "kledning_losjer__saltak",
+      "kledning_lister__saltak",
+      "kledning_panel__saltak",
+      "interior_vegger__saltak"
+    ],
+    "flatt": [
+      "bindingsverk_vegger__flatt",
+      "bindingsverk_tak__flatt",
+      "isolasjon_vindsperre__flatt",
+      "tak__flatt",
+      "vinduer__flatt",
+      "kledning_vegger__flatt",
+      "kledning_losjer__flatt",
+      "kledning_lister__flatt",
+      "kledning_panel__flatt",
+      "interior_vegger__flatt"
+    ],
+    "pulttak": [
+      "bindingsverk_vegger__pulttak",
+      "bindingsverk_tak__pulttak",
+      "isolasjon_vindsperre__pulttak",
+      "tak__pulttak",
+      "vinduer__pulttak",
+      "kledning_vegger__pulttak",
+      "kledning_losjer__pulttak",
+      "kledning_lister__pulttak",
+      "kledning_panel__pulttak",
+      "interior_vegger__pulttak"
+    ],
+    "ceiling": [
+      "interior_himling__saltak__ceiling",
+      "interior_himling__flatt__ceiling",
+      "interior_himling__pulttak__ceiling"
+    ]
+  },
+  "variants": {
+    "high": "/models/house.glb",
+    "lite": "/models/house-lite.glb"
   },
   "bbox": {
     "min": [
-      -5,
-      0.12,
-      -4.63
+      -7.92,
+      -0.05,
+      -4.8
     ],
     "max": [
-      5.996,
-      9.21,
-      5.887
+      8,
+      9.69,
+      4.29
     ],
-    "note": "the building above ground (frame, envelope, roof, cladding)"
+    "note": "the building above ground (frame, envelope, saltak roof, cladding)"
   },
   "sceneBbox": {
     "min": [
-      -60,
-      -3.246,
-      -60
+      -30,
+      -1.342,
+      -35
     ],
     "max": [
-      60,
-      15.021,
-      60
-    ]
+      45,
+      -0.271,
+      30
+    ],
+    "note": "the lawn"
   },
   "floors": [
     {
       "name": "1. etasje",
-      "y": 0.47,
-      "cutHeight": 1.77
+      "y": 0,
+      "cutHeight": 1.3
     },
     {
       "name": "2. etasje",
-      "y": 3.44,
-      "cutHeight": 4.69
+      "y": 3.05,
+      "cutHeight": 4.3
     }
   ],
   "cutHeights": [
-    1.77,
-    4.69
+    1.3,
+    4.3
   ],
   "steps": [
     "tomt",
@@ -65,296 +207,429 @@
     "interior",
     "nokkelferdig"
   ],
+  "heroSteps": {
+    "grunnmur": [
+      "tomt",
+      "grunnarbeid",
+      "fundament"
+    ],
+    "reisverk": [
+      "bindingsverk"
+    ],
+    "tett": [
+      "isolasjon",
+      "tak",
+      "vinduer"
+    ],
+    "kledning": [
+      "kledning",
+      "installasjoner",
+      "interior"
+    ],
+    "nokkelferdig": [
+      "nokkelferdig"
+    ]
+  },
   "layers": {
     "tomt": {
       "node": "layer_tomt",
       "order": 0,
+      "heroStep": "grunnmur",
       "center": [
-        -0.6,
-        0.27,
-        1.4
+        3,
+        -0.443,
+        6
       ],
       "bbox": {
         "min": [
-          -19.197,
-          -0.667,
-          -15.862
+          -16,
+          -1.293,
+          -14
         ],
         "max": [
-          17.997,
-          1.207,
-          18.662
+          22,
+          0.407,
+          26
         ]
       },
       "explode": [
         0,
         -0.1,
         0
-      ]
+      ],
+      "birth": [
+        2.3,
+        3.4
+      ],
+      "grow": "draw"
     },
     "grunnarbeid": {
       "node": "layer_grunnarbeid",
       "order": 1,
+      "heroStep": "grunnmur",
       "center": [
-        3.483,
-        0.244,
-        -1.052
+        -2.8,
+        -0.2,
+        -1.856
       ],
       "bbox": {
         "min": [
-          -5.8,
-          -1.369,
-          -8.78
+          -15.6,
+          -0.9,
+          -9.712
         ],
         "max": [
-          12.766,
-          1.857,
-          6.676
+          10,
+          0.5,
+          6
         ]
       },
       "explode": [
         0,
-        -0.9,
+        -0.6,
         0
-      ]
+      ],
+      "birth": [
+        3.45,
+        3.6
+      ],
+      "grow": "up"
     },
     "fundament": {
       "node": "layer_fundament",
       "order": 2,
+      "heroStep": "grunnmur",
       "center": [
-        0.574,
-        -0.3,
-        0.746
+        0,
+        -0.475,
+        0
       ],
       "bbox": {
         "min": [
-          -5.86,
-          -1.05,
-          -5.26
+          -10,
+          -0.9,
+          -6
         ],
         "max": [
-          7.008,
-          0.45,
-          6.752
+          10,
+          -0.05,
+          6
         ]
       },
       "explode": [
         0,
-        -0.55,
+        -0.45,
         0
-      ]
+      ],
+      "birth": [
+        3.6,
+        3.9
+      ],
+      "grow": "up"
     },
     "bindingsverk": {
       "node": "layer_bindingsverk",
       "order": 3,
+      "heroStep": "reisverk",
       "center": [
-        0.41,
-        4.613,
-        0.57
+        0,
+        4.31,
+        0
       ],
       "bbox": {
         "min": [
-          -4.6,
-          0.45,
-          -4.024
+          -7.8,
+          0,
+          -4.12
         ],
         "max": [
-          5.421,
-          8.776,
-          5.164
+          7.8,
+          8.619,
+          4.12
         ]
       },
       "explode": [
         0,
         0,
         0
-      ]
+      ],
+      "birth": [
+        3.75,
+        4.7
+      ],
+      "grow": "wipe-x"
     },
     "isolasjon": {
       "node": "layer_isolasjon",
       "order": 4,
+      "heroStep": "tett",
       "center": [
-        0.412,
-        4.623,
-        0.584
+        0,
+        4.287,
+        0
       ],
       "bbox": {
         "min": [
-          -4.612,
-          0.43,
-          -4.012
+          -7.8,
+          -0.05,
+          -3.9
         ],
         "max": [
-          5.436,
-          8.816,
-          5.179
+          7.8,
+          8.625,
+          3.9
         ]
       },
       "explode": [
-        -0.28,
-        0.08,
-        0.42
-      ]
+        0,
+        0.05,
+        0.35
+      ],
+      "birth": [
+        4.7,
+        5.15
+      ],
+      "grow": "wipe-x"
     },
     "tak": {
       "node": "layer_tak",
       "order": 5,
+      "heroStep": "tett",
       "center": [
-        0.498,
-        4.665,
-        0.628
+        0.04,
+        4.82,
+        0
       ],
       "bbox": {
         "min": [
-          -5,
-          0.12,
-          -4.63
+          -7.96,
+          -0.05,
+          -4.29
         ],
         "max": [
-          5.996,
-          9.21,
-          5.887
+          8,
+          9.69,
+          4.29
         ]
       },
       "explode": [
         0,
-        1.15,
+        1.4,
         0
-      ]
+      ],
+      "birth": [
+        4.85,
+        5.6
+      ],
+      "grow": "wipe-roof"
     },
     "vinduer": {
       "node": "layer_vinduer",
       "order": 6,
+      "heroStep": "tett",
       "center": [
-        0.033,
-        4,
-        0.521
+        -0.05,
+        4.092,
+        -0.495
       ],
       "bbox": {
         "min": [
-          -4.77,
-          0.43,
-          -4.17
+          -7.71,
+          0,
+          -4.8
         ],
         "max": [
-          4.836,
-          7.57,
-          5.211
+          7.61,
+          8.185,
+          3.81
         ]
       },
       "explode": [
-        -0.42,
+        0,
         0.1,
-        0.64
-      ]
+        0.6
+      ],
+      "birth": [
+        5.15,
+        5.6
+      ],
+      "grow": "scale"
     },
     "kledning": {
       "node": "layer_kledning",
       "order": 7,
+      "heroStep": "kledning",
       "center": [
-        0.478,
-        4.733,
-        0.628
+        -0.015,
+        4.287,
+        0
       ],
       "bbox": {
         "min": [
-          -4.98,
-          0.33,
-          -4.5
+          -7.83,
+          -0.05,
+          -4
         ],
         "max": [
-          5.937,
-          9.135,
-          5.757
+          7.8,
+          8.625,
+          4
         ]
       },
       "explode": [
-        -0.62,
+        0,
         0.15,
-        0.95
-      ]
+        0.9
+      ],
+      "birth": [
+        5.6,
+        6.5
+      ],
+      "grow": "wipe-x"
     },
     "installasjoner": {
       "node": "layer_installasjoner",
       "order": 8,
+      "heroStep": "kledning",
       "center": [
-        0.395,
-        3.237,
-        -1.898
+        -2.387,
+        1.073,
+        -4.125
       ],
       "bbox": {
         "min": [
-          -4.355,
-          -0.92,
-          -8.762
+          -5.4,
+          -0.28,
+          -4.35
         ],
         "max": [
-          5.146,
-          7.394,
-          4.966
+          0.625,
+          2.425,
+          -3.9
         ]
       },
       "explode": [
+        0,
         0.3,
-        0.45,
-        -0.45
-      ]
+        -0.5
+      ],
+      "birth": [
+        6.2,
+        6.5
+      ],
+      "grow": "scale"
     },
     "interior": {
       "node": "layer_interior",
       "order": 9,
+      "heroStep": "kledning",
       "center": [
-        0.385,
-        3.975,
-        0.556
+        -0.95,
+        3.8,
+        0
       ],
       "bbox": {
         "min": [
-          -4.402,
-          0.45,
-          -3.802
+          -7.8,
+          0,
+          -3.9
         ],
         "max": [
-          5.171,
-          7.5,
-          4.914
+          5.9,
+          7.6,
+          3.9
         ]
       },
       "explode": [
-        0.18,
+        0,
         -0.05,
-        -0.28
-      ]
+        -0.25
+      ],
+      "birth": [
+        6,
+        6.5
+      ],
+      "grow": "up"
     },
     "nokkelferdig": {
       "node": "layer_nokkelferdig",
       "order": 10,
+      "heroStep": "nokkelferdig",
       "center": [
-        0.075,
-        3.545,
-        -1.863
+        -3.002,
+        1.319,
+        9.427
       ],
       "bbox": {
         "min": [
-          -5.721,
-          -0.294,
-          -13.319
+          -36.249,
+          -1.3,
+          -12.147
         ],
         "max": [
-          5.87,
-          7.385,
-          9.592
+          30.246,
+          3.937,
+          31.001
         ]
       },
       "explode": [
         0,
         0,
         0
-      ]
+      ],
+      "birth": [
+        6.5,
+        7.5
+      ],
+      "grow": "scale"
     }
   },
+  "timeline": {
+    "note": "Layer births in seconds of the desktop timelapse (8.3 s). Phones: multiply by 6.4 / 8.3. Instanced plants carry a per-instance _BIRTH (exposed by GLTFLoader as the instanced attribute '_BIRTH'); rename to aBirth in the shader.",
+    "desktop": 8.3,
+    "phone": 6.4,
+    "phases": {
+      "tvilling": [
+        0,
+        0.7
+      ],
+      "tilPapir": [
+        0.7,
+        1.6
+      ],
+      "tilbake": [
+        1.4,
+        2.3
+      ],
+      "tegningen": [
+        2.3,
+        3.6
+      ],
+      "reisverket": [
+        3.6,
+        4.7
+      ],
+      "taket": [
+        4.7,
+        5.6
+      ],
+      "kledningen": [
+        5.6,
+        6.5
+      ],
+      "hagen": [
+        6.5,
+        7.5
+      ],
+      "virkeligheten": [
+        7.5,
+        8.3
+      ]
+    },
+    "shadowRenderAt": 7.3
+  },
   "transient": {
-    "note": "Child groups with userData.hideFrom are construction-only: hide them once the active step index ≥ index(hideFrom).",
+    "note": "Child groups with extras.hideFrom are construction-only or enclosed: hide them once the active step index ≥ index(hideFrom).",
     "tomt_situasjonsplan": {
       "hideFrom": "bindingsverk"
     },
@@ -364,8 +639,29 @@
     "tomt_mark": {
       "hideFrom": "grunnarbeid"
     },
-    "grunnarbeid_steinmasser": {
-      "hideFrom": "bindingsverk"
+    "grunnarbeid_grop": {
+      "hideFrom": "fundament"
+    },
+    "bindingsverk_vegger": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_vegger__saltak": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_vegger__flatt": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_vegger__pulttak": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_tak__saltak": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_tak__flatt": {
+      "hideFrom": "interior"
+    },
+    "bindingsverk_tak__pulttak": {
+      "hideFrom": "interior"
     }
   },
   "hotspots": {
@@ -373,469 +669,1230 @@
       {
         "id": "situasjonsplan",
         "position": [
-          -4.65,
-          0.06,
-          4.05
-        ]
+          -7.8,
+          -0.3,
+          5.5
+        ],
+        "anchor": "situasjonsplan"
       },
       {
         "id": "lonnetraer",
         "position": [
-          7.2,
-          3.2,
-          10.6
-        ]
+          -1,
+          3.6512422980876913,
+          -20
+        ],
+        "anchor": "bjork"
       }
     ],
     "grunnarbeid": [
       {
         "id": "byggegrop",
         "position": [
-          -0.158,
-          -0.85,
-          0.577
-        ]
+          0,
+          -0.8,
+          4.6
+        ],
+        "anchor": "byggegrop"
       },
       {
         "id": "sprengstein",
         "position": [
-          9.6,
-          1.2,
-          -6.4
-        ]
+          -13,
+          -0.1,
+          -8
+        ],
+        "anchor": "jordhaug"
       }
     ],
     "fundament": [
       {
         "id": "ringmur",
         "position": [
-          -4.65,
-          0.47,
-          4.05
-        ]
+          7.6,
+          -0.3,
+          3.6999999999999997
+        ],
+        "anchor": "ringmur"
       },
       {
         "id": "radonsperre",
         "position": [
-          -3.25,
-          0.27,
-          1.2
-        ]
+          2,
+          -0.2,
+          0
+        ],
+        "anchor": "radonsperre"
       }
     ],
     "bindingsverk": [
       {
         "id": "stendere",
         "position": [
-          1.22,
+          -3.5,
           1.6,
-          4.497
-        ]
+          -3.75
+        ],
+        "anchor": "stendere"
       },
       {
         "id": "bjelkelag",
         "position": [
-          -2.5,
-          3.275,
-          3.65
-        ]
+          -2,
+          2.9,
+          0
+        ],
+        "anchor": "bjelkelag"
       }
     ],
     "isolasjon": [
       {
         "id": "trefiber",
         "position": [
-          2.013,
-          4.1,
-          4.807
-        ]
+          -3.5,
+          1.6,
+          -3.75
+        ],
+        "anchor": "stendere"
       },
       {
         "id": "vindsperre",
         "position": [
-          -4.2,
-          1.5,
-          4.03
-        ]
+          -7.74,
+          1.6,
+          -1.8
+        ],
+        "anchor": "vindsperre"
       }
     ],
     "tak": [
       {
         "id": "takstoler",
         "position": [
-          -4.92,
-          7.578,
-          1.6
-        ]
+          -4,
+          7.337847547695736,
+          1.8
+        ],
+        "anchor": "takstoler"
       },
       {
         "id": "falsetak",
         "position": [
-          1.541,
-          7.206,
-          3.024
-        ]
+          -3,
+          7.380433495534237,
+          2
+        ],
+        "anchor": "takstein"
       }
     ],
     "vinduer": [
       {
         "id": "store-vinduer",
         "position": [
-          -2.4,
-          1.75,
-          4.05
-        ]
+          2.85,
+          4.4,
+          3.92
+        ],
+        "anchor": "store-vinduer"
       },
       {
         "id": "tetting-karm",
         "position": [
-          0.999,
-          1.6,
-          4.562
-        ]
+          2.85,
+          4.4,
+          3.92
+        ],
+        "anchor": "store-vinduer"
       }
     ],
     "kledning": [
       {
         "id": "staende-kledning",
         "position": [
-          5.083,
+          -4,
           2,
-          -1.082
-        ]
+          3.92
+        ],
+        "anchor": "kledning"
       },
       {
         "id": "luftespalte",
         "position": [
-          -4.7,
-          0.42,
-          -3
-        ]
+          -4,
+          2,
+          3.92
+        ],
+        "anchor": "kledning"
       },
       {
         "id": "overflate",
         "position": [
-          1.967,
-          3.7,
-          4.95
-        ]
+          -0.05,
+          4.2,
+          3.92
+        ],
+        "anchor": "panel-mork"
       }
     ],
     "installasjoner": [
       {
         "id": "el-anlegg",
         "position": [
-          -2.81,
-          1.6,
-          -3.602
-        ]
+          -0.05,
+          0.7,
+          -4.2
+        ],
+        "anchor": "teknisk-skap"
       },
       {
         "id": "vann-avlop",
         "position": [
-          3.627,
-          2.2,
-          -2.554
-        ]
+          -1.8,
+          3.8499999999999996,
+          -2.4
+        ],
+        "anchor": "bad"
       }
     ],
     "interior": [
       {
         "id": "bad",
         "position": [
-          4.038,
-          4.44,
-          -1.502
-        ]
+          -1.8,
+          3.8499999999999996,
+          -2.4
+        ],
+        "anchor": "bad"
       },
       {
         "id": "kjokken",
         "position": [
-          -2.7,
-          1.47,
-          0.8
-        ]
+          3.75,
+          1,
+          -0.4
+        ],
+        "anchor": "kjokken"
       },
       {
         "id": "trapp",
         "position": [
-          1.207,
-          2.255,
-          -1.369
-        ]
+          1.3,
+          1.6,
+          -0.4
+        ],
+        "anchor": "trapp"
       }
     ],
     "nokkelferdig": [
       {
         "id": "overlevering",
         "position": [
-          -1.7,
-          1.6,
-          -4.6
-        ]
+          -2,
+          1.2,
+          -3.9499999999999997
+        ],
+        "anchor": "inngang"
       },
       {
         "id": "terrasse",
         "position": [
-          -1.353,
-          0.52,
-          5.459
-        ]
+          10.5,
+          0.35000000000000003,
+          2
+        ],
+        "anchor": "terrasse"
       },
       {
         "id": "bla-time",
         "position": [
-          4.28,
-          4.8,
-          1.391
-        ]
+          7.819999999999999,
+          8.254574017149222,
+          0
+        ],
+        "anchor": "r1-ramme"
       }
     ]
   },
+  "anchors": {
+    "situasjonsplan": [
+      -7.8,
+      -0.3,
+      5.5
+    ],
+    "byggegrop": [
+      0,
+      -0.8,
+      4.6
+    ],
+    "jordhaug": [
+      -13,
+      -0.1,
+      -8
+    ],
+    "ringmur": [
+      7.6,
+      -0.3,
+      3.7
+    ],
+    "radonsperre": [
+      2,
+      -0.2,
+      0
+    ],
+    "stendere": [
+      -3.5,
+      1.6,
+      -3.75
+    ],
+    "bjelkelag": [
+      -2,
+      2.9,
+      0
+    ],
+    "vindsperre": [
+      -7.74,
+      1.6,
+      -1.8
+    ],
+    "takstoler": [
+      -4,
+      7.338,
+      1.8
+    ],
+    "takstein": [
+      -3,
+      7.38,
+      2
+    ],
+    "pipe": [
+      5.3,
+      9.25,
+      -0.2
+    ],
+    "store-vinduer": [
+      2.85,
+      4.4,
+      3.92
+    ],
+    "r1-ramme": [
+      7.82,
+      8.255,
+      0
+    ],
+    "balkong": [
+      6.8,
+      3.74,
+      2
+    ],
+    "losje-vest": [
+      -5.2,
+      4,
+      3.9
+    ],
+    "kledning": [
+      -4,
+      2,
+      3.92
+    ],
+    "panel-mork": [
+      -0.05,
+      4.2,
+      3.92
+    ],
+    "pergola": [
+      0.35,
+      2.8,
+      6.9
+    ],
+    "terrasse": [
+      10.5,
+      0.35,
+      2
+    ],
+    "plantekasse": [
+      3.4,
+      0.2,
+      7.9
+    ],
+    "inngang": [
+      -2,
+      1.2,
+      -3.95
+    ],
+    "baldakin": [
+      -2,
+      2.45,
+      -4.4
+    ],
+    "varmepumpe": [
+      -4.95,
+      0.8,
+      -4.2
+    ],
+    "teknisk-skap": [
+      -0.05,
+      0.7,
+      -4.2
+    ],
+    "bad": [
+      -1.8,
+      3.85,
+      -2.4
+    ],
+    "kjokken": [
+      3.75,
+      1,
+      -0.4
+    ],
+    "trapp": [
+      1.3,
+      1.6,
+      -0.4
+    ],
+    "allrom": [
+      2.8,
+      3.95,
+      2
+    ],
+    "hovedsoverom": [
+      -5.3,
+      3.75,
+      -1.1
+    ],
+    "bjork": [
+      -1,
+      3.651,
+      -20
+    ],
+    "utebod": [
+      -21.6,
+      2,
+      7.6
+    ]
+  },
   "environment": {
-    "terrain": "env_terrain",
-    "maples": [
-      {
-        "node": "env_maple_a",
-        "position": [
-          7.2,
-          0,
-          10.6
-        ]
-      },
-      {
-        "node": "env_maple_b",
-        "position": [
-          -11.4,
-          -0.006,
-          -6.2
-        ]
-      }
+    "groups": [
+      "env_lawn",
+      "env_terrain",
+      "env_terrace",
+      "env_hedge",
+      "env_trees",
+      "env_outbuilding",
+      "env_backdrop",
+      "env_sky"
     ],
-    "birches": [
-      "env_birches"
-    ],
-    "birchCount": 11,
-    "note": "The eleven birches are one group, env_birches: a few template trees (env_birches_a, _b, …) each drawn at several spots with GPU instancing (EXT_mesh_gpu_instancing → THREE.InstancedMesh). house.glb has 4 templates, house-lite.glb 2.",
-    "backdrop": "env_hills"
+    "trees": {
+      "birch": [
+        [
+          -1,
+          -20,
+          12.5
+        ],
+        [
+          5.5,
+          -18,
+          11.5
+        ],
+        [
+          -6.5,
+          -23,
+          13
+        ],
+        [
+          2.5,
+          -26,
+          14
+        ],
+        [
+          8.2,
+          25.8,
+          13.5
+        ],
+        [
+          -28,
+          14,
+          12
+        ]
+      ],
+      "broad": [
+        [
+          -9,
+          -42,
+          18
+        ],
+        [
+          -2.5,
+          -45,
+          19
+        ],
+        [
+          5.5,
+          -41,
+          17
+        ],
+        [
+          -15,
+          -38,
+          16
+        ],
+        [
+          -6,
+          -52,
+          20
+        ],
+        [
+          1.5,
+          -54,
+          19
+        ],
+        [
+          -12.5,
+          -50,
+          17
+        ],
+        [
+          -30,
+          -18,
+          15
+        ]
+      ],
+      "spruce": [
+        [
+          0.5,
+          -37,
+          16.5
+        ],
+        [
+          16,
+          -44,
+          18
+        ]
+      ]
+    },
+    "outbuilding": {
+      "x": -23.8,
+      "z": 8.4,
+      "yaw": 21,
+      "boxW": 4.5,
+      "boxD": 3.6,
+      "boxH": 5.2,
+      "canopyL": 7.6,
+      "canopyD": 3.4,
+      "canopyH": 3.5
+    },
+    "framingFoliage": "nokkelferdig_rammeblader (in layer_nokkelferdig/nokkelferdig_beplantning): only for the photo framing; dither out when the stage expands",
+    "note": "Trees, hedge and the outbuilding never move: their ground shadows are baked into env_lawn's vertex colours. Do not let env_trees, env_backdrop or env_outbuilding cast shadows."
   },
   "materials": {
-    "glass": "material name 'glass' (alpha blend). Mesh nodes: vinduer_glass, interior_glass (house.glb, house-lite.glb).",
-    "el_line": "emissive, x-ray el runs (layer_installasjoner)",
-    "vvs_line": "emissive, x-ray VVS runs (layer_installasjoner)",
-    "lamp_glow": "warm emissive lamps (layer_nokkelferdig); dim/switch off in day mode",
+    "note": "Material names the runtime treats specially: glass, glass_rail (alpha blend), leaf (alpha mask, double sided, map leaf_atlas), line_ink (LINES), lamp_glow (emissive), cladding_wood (vertex colours × factor), terrain (vertex colours).",
     "cladding_wood": {
-      "note": "vertex colours hold the raw spruce tone per board; material colour is a linear multiply factor",
-      "rawColorFactor": "#ffffff",
-      "stainedColorFactor": "#938688",
-      "rawTone": "#cfbd99",
-      "stainedTone": "#76624f"
+      "rawColorFactor": "#cdb48f",
+      "stainedColorFactor": "#a3805e",
+      "note": "material colour = stained factor (albedo); vertex colours carry per-board variation. Set rawColorFactor for untreated wood."
+    },
+    "clay": {
+      "color": "#eae5dc",
+      "ground": "#e3ddd1",
+      "note": "white study model colour and paper-deep ground (uReal = 0)"
     }
   },
-  "interiorLights": [
-    {
-      "room": "kjøkken",
-      "position": [
-        -2.7,
-        2.67,
-        1
-      ],
-      "color": "#ffc98a",
-      "intensity": 1
-    },
-    {
-      "room": "stue",
-      "position": [
-        2.325,
-        2.67,
-        2.228
-      ],
-      "color": "#ffc68a",
-      "intensity": 1
-    },
-    {
-      "room": "gang",
-      "position": [
-        -1.7,
-        2.77,
-        -2.2
-      ],
-      "color": "#ffcf96",
-      "intensity": 0.6
-    },
-    {
-      "room": "soverom",
-      "position": [
-        2.544,
-        5.34,
-        1.878
-      ],
-      "color": "#ffc07e",
-      "intensity": 0.7
-    },
-    {
-      "room": "soverom 2",
-      "position": [
-        -2.9,
-        5.34,
-        1.2
-      ],
-      "color": "#ffc07e",
-      "intensity": 0.5
-    },
-    {
-      "room": "inngang",
-      "position": [
-        -1.7,
-        2.4,
-        -3.8
-      ],
-      "color": "#ffcf96",
-      "intensity": 0.8
-    }
-  ],
-  "exteriorLights": [
-    {
-      "name": "vegglampe terrasse",
-      "position": [
-        -0.701,
-        2.1,
-        4.293
-      ],
-      "color": "#ffc98a",
-      "intensity": 1
-    },
-    {
-      "name": "vegglampe terrasse 2",
-      "position": [
-        1.096,
-        2.1,
-        4.878
-      ],
-      "color": "#ffc98a",
-      "intensity": 1
-    },
-    {
-      "name": "vegglampe inngang",
-      "position": [
-        -0.62,
-        2.1,
-        -4.3
-      ],
-      "color": "#ffc98a",
-      "intensity": 1
-    },
-    {
-      "name": "nisje",
-      "position": [
-        -1.7,
-        2.6,
-        -3.75
-      ],
-      "color": "#ffcf96",
-      "intensity": 0.8
-    }
-  ],
+  "interiorLights": [],
+  "exteriorLights": [],
   "footprint": {
-    "note": "plan polygons (x, z) — frame face and outer cladding face",
-    "frame": [
-      [
-        -4.6,
-        4
-      ],
-      [
-        -0.634,
-        4
-      ],
-      [
-        2.949,
-        5.164
-      ],
-      [
-        5.421,
-        -2.445
-      ],
-      [
-        0.634,
-        -4
-      ],
-      [
-        -4.6,
-        -4
-      ]
-    ],
+    "note": "plan polygons (x, z) at the outer cladding face",
     "cladding": [
       [
-        -4.7,
-        4.1
+        -7.8,
+        -3.9
       ],
       [
-        -0.649,
-        4.1
+        7.8,
+        -3.9
       ],
       [
-        3.013,
-        5.29
+        7.8,
+        3.9
       ],
       [
-        5.547,
-        -2.509
-      ],
-      [
-        0.649,
-        -4.1
-      ],
-      [
-        -4.7,
-        -4.1
+        -7.8,
+        3.9
       ]
     ],
-    "bendDeg": 18,
+    "heated": [
+      [
+        -7.8,
+        -3.9
+      ],
+      [
+        5.83,
+        -3.9
+      ],
+      [
+        5.83,
+        3.9
+      ],
+      [
+        -2.96,
+        3.9
+      ],
+      [
+        -2.96,
+        1.6
+      ],
+      [
+        -7.8,
+        1.6
+      ]
+    ],
+    "R1": {
+      "x0": 5.83,
+      "x1": 7.8,
+      "col": 0.42,
+      "zN": -3.48,
+      "zS": 3.48,
+      "xCol": 7.38
+    },
+    "R2": {
+      "x0": -7.8,
+      "x1": -2.96,
+      "z0": 1.6,
+      "z1": 3.9,
+      "xCol": -7.41,
+      "zCol": 3.49
+    },
+    "bendDeg": 0,
     "wings": {
       "A": {
-        "length": 4.6,
+        "length": 15.6,
         "axis": [
-          -1,
+          1,
           0
         ]
       },
       "B": {
-        "length": 4.4,
+        "length": 0,
         "axis": [
-          0.951,
-          0.309
+          1,
+          0
         ]
       }
     }
   },
   "camera": {
+    "photoMatch": {
+      "position": [
+        31.24,
+        0.87,
+        34.11
+      ],
+      "rotation": {
+        "order": "YXZ",
+        "x": 0,
+        "y": 43.28,
+        "z": 0,
+        "unit": "deg"
+      },
+      "target": [
+        -0.296,
+        0.87,
+        0.621
+      ],
+      "fov": 33.2857,
+      "aspect": 1.47262,
+      "focalPx": 2180.8,
+      "principalPoint": [
+        960,
+        651.9
+      ],
+      "viewOffset": {
+        "fullWidth": 1920,
+        "fullHeight": 1303.8,
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080
+      },
+      "note": "Boligpartner images 1 (saltak) and 2 (flatt tak), garden side, identical framing"
+    },
+    "photoMatchInnkjorsel": {
+      "position": [
+        40.83,
+        2.41,
+        -20.67
+      ],
+      "rotation": {
+        "order": "YXZ",
+        "x": 0,
+        "y": 118,
+        "z": 0,
+        "unit": "deg"
+      },
+      "target": [
+        0.214,
+        2.41,
+        0.926
+      ],
+      "fov": 24.4778,
+      "aspect": 1.67131,
+      "focalPx": 2648,
+      "principalPoint": [
+        960,
+        574.4
+      ],
+      "viewOffset": {
+        "fullWidth": 1920,
+        "fullHeight": 1148.8,
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080
+      },
+      "note": "Boligpartner image 3 (pulttak), entrance and driveway side"
+    },
+    "photoMatchSquare": {
+      "position": [
+        31.24,
+        0.87,
+        34.11
+      ],
+      "rotation": {
+        "order": "YXZ",
+        "x": 0,
+        "y": 43.28,
+        "z": 0,
+        "unit": "deg"
+      },
+      "target": [
+        -0.296,
+        0.87,
+        0.621
+      ],
+      "fov": 33.2857,
+      "aspect": 1.47262,
+      "focalPx": 2180.8,
+      "principalPoint": [
+        960,
+        651.9
+      ],
+      "viewOffset": {
+        "fullWidth": 1920,
+        "fullHeight": 1303.8,
+        "x": 470,
+        "y": 0,
+        "width": 1080,
+        "height": 1080
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080
+      },
+      "note": "square crop x 470–1550 of images 1/2 (phone plate)"
+    },
+    "intro": {
+      "position": [
+        31.24,
+        0.87,
+        34.11
+      ],
+      "rotation": {
+        "order": "YXZ",
+        "x": 0,
+        "y": 43.28,
+        "z": 0,
+        "unit": "deg"
+      },
+      "target": [
+        -0.296,
+        0.87,
+        0.621
+      ],
+      "fov": 33.2857,
+      "aspect": 1.47262,
+      "focalPx": 2180.8,
+      "principalPoint": [
+        960,
+        651.9
+      ],
+      "viewOffset": {
+        "fullWidth": 1920,
+        "fullHeight": 1303.8,
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080
+      },
+      "note": "intro plate + timelapse (Tvilling … Virkeligheten): photoMatch"
+    },
+    "finale": {
+      "position": [
+        31.24,
+        0.87,
+        34.11
+      ],
+      "rotation": {
+        "order": "YXZ",
+        "x": 0,
+        "y": 43.28,
+        "z": 0,
+        "unit": "deg"
+      },
+      "target": [
+        -0.296,
+        0.87,
+        0.621
+      ],
+      "fov": 33.2857,
+      "aspect": 1.47262,
+      "focalPx": 2180.8,
+      "principalPoint": [
+        960,
+        651.9
+      ],
+      "viewOffset": {
+        "fullWidth": 1920,
+        "fullHeight": 1303.8,
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080
+      },
+      "note": "finale rest pose, side Hagen"
+    },
+    "roofSwitch": {
+      "hagen": {
+        "position": [
+          31.24,
+          0.87,
+          34.11
+        ],
+        "rotation": {
+          "order": "YXZ",
+          "x": 0,
+          "y": 43.28,
+          "z": 0,
+          "unit": "deg"
+        },
+        "target": [
+          -0.296,
+          0.87,
+          0.621
+        ],
+        "fov": 33.2857,
+        "aspect": 1.47262,
+        "focalPx": 2180.8,
+        "principalPoint": [
+          960,
+          651.9
+        ],
+        "viewOffset": {
+          "fullWidth": 1920,
+          "fullHeight": 1303.8,
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "photo": {
+          "width": 1920,
+          "height": 1080
+        },
+        "note": "Boligpartner images 1 (saltak) and 2 (flatt tak), garden side, identical framing",
+        "photos": {
+          "saltak": "adria-saltak-hage",
+          "flatt": "adria-flatt-tak-hage"
+        }
+      },
+      "innkjorselen": {
+        "position": [
+          40.83,
+          2.41,
+          -20.67
+        ],
+        "rotation": {
+          "order": "YXZ",
+          "x": 0,
+          "y": 118,
+          "z": 0,
+          "unit": "deg"
+        },
+        "target": [
+          0.214,
+          2.41,
+          0.926
+        ],
+        "fov": 24.4778,
+        "aspect": 1.67131,
+        "focalPx": 2648,
+        "principalPoint": [
+          960,
+          574.4
+        ],
+        "viewOffset": {
+          "fullWidth": 1920,
+          "fullHeight": 1148.8,
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "photo": {
+          "width": 1920,
+          "height": 1080
+        },
+        "note": "Boligpartner image 3 (pulttak), entrance and driveway side",
+        "photos": {
+          "pulttak": "adria-pulttak-innkjorsel"
+        }
+      }
+    },
+    "orbit": {
+      "centre": [
+        0,
+        0,
+        0
+      ],
+      "from": {
+        "azimuthDeg": 47.5,
+        "radius": 46.3,
+        "eyeY": 0.87,
+        "focalPx": 2180.8,
+        "principalY": 651.9
+      },
+      "to": {
+        "azimuthDeg": -26.9,
+        "radius": 45.8,
+        "eyeY": 2.41,
+        "focalPx": 2648,
+        "principalY": 574.4
+      },
+      "note": "yaw follows the azimuth so the house stays framed; interpolate focal length and principal point"
+    },
+    "steps": {
+      "grunnmur": {
+        "desktop": {
+          "position": [
+            16,
+            22,
+            22
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "fov": 35
+        },
+        "mobile": {
+          "position": [
+            20,
+            30,
+            28
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "fov": 45
+        }
+      },
+      "reisverk": {
+        "desktop": {
+          "position": [
+            -18,
+            3.5,
+            -20
+          ],
+          "target": [
+            0,
+            3.5,
+            0
+          ],
+          "fov": 40
+        },
+        "mobile": {
+          "position": [
+            -24,
+            5,
+            -27
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ],
+          "fov": 50
+        }
+      },
+      "tett": {
+        "desktop": {
+          "position": [
+            22,
+            2,
+            8
+          ],
+          "target": [
+            6,
+            4.2,
+            0
+          ],
+          "fov": 40
+        },
+        "mobile": {
+          "position": [
+            27,
+            3,
+            12
+          ],
+          "target": [
+            5,
+            4.5,
+            0
+          ],
+          "fov": 50
+        }
+      },
+      "kledning": {
+        "position": [
+          4,
+          2.8,
+          15
+        ],
+        "target": [
+          0,
+          3.2,
+          3.9
+        ],
+        "fov": 40
+      },
+      "nokkelferdig": {
+        "position": [
+          31.24,
+          0.87,
+          34.11
+        ],
+        "rotation": {
+          "order": "YXZ",
+          "x": 0,
+          "y": 43.28,
+          "z": 0,
+          "unit": "deg"
+        },
+        "target": [
+          -0.296,
+          0.87,
+          0.621
+        ],
+        "fov": 33.2857,
+        "aspect": 1.47262,
+        "focalPx": 2180.8,
+        "principalPoint": [
+          960,
+          651.9
+        ],
+        "viewOffset": {
+          "fullWidth": 1920,
+          "fullHeight": 1303.8,
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "photo": {
+          "width": 1920,
+          "height": 1080
+        },
+        "note": "Boligpartner images 1 (saltak) and 2 (flatt tak), garden side, identical framing"
+      },
+      "tomt": {
+        "position": [
+          16,
+          22,
+          22
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "fov": 35
+      },
+      "grunnarbeid": {
+        "position": [
+          16,
+          14,
+          20
+        ],
+        "target": [
+          0,
+          -0.4,
+          0
+        ],
+        "fov": 36
+      },
+      "fundament": {
+        "position": [
+          15,
+          11,
+          19
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "fov": 34
+      },
+      "bindingsverk": {
+        "position": [
+          -18,
+          3.5,
+          -20
+        ],
+        "target": [
+          0,
+          3.5,
+          0
+        ],
+        "fov": 40
+      },
+      "isolasjon": {
+        "position": [
+          18,
+          6,
+          18
+        ],
+        "target": [
+          0,
+          3.4,
+          0
+        ],
+        "fov": 36
+      },
+      "tak": {
+        "position": [
+          20,
+          12,
+          18
+        ],
+        "target": [
+          0,
+          5.5,
+          0
+        ],
+        "fov": 36
+      },
+      "vinduer": {
+        "position": [
+          22,
+          2,
+          8
+        ],
+        "target": [
+          6,
+          4.2,
+          0
+        ],
+        "fov": 40
+      },
+      "installasjoner": {
+        "position": [
+          -14,
+          2.2,
+          -16
+        ],
+        "target": [
+          0,
+          2.2,
+          -3.9
+        ],
+        "fov": 36
+      },
+      "interior": {
+        "position": [
+          18,
+          16,
+          20
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ],
+        "fov": 34
+      }
+    },
+    "seInn": {
+      "desktop": {
+        "position": [
+          18,
+          16,
+          20
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ],
+        "fov": 34
+      },
+      "mobile": {
+        "position": [
+          22,
+          22,
+          26
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ],
+        "fov": 44
+      }
+    },
     "hero": {
       "position": [
-        -12.4,
+        24.5,
         1.6,
-        16.6
+        27.5
       ],
       "target": [
-        -0.6,
-        1.6,
-        -0.6
+        -0.4,
+        3,
+        0.4
       ],
-      "fov": 46,
+      "fov": 36,
       "shift": [
-        -0.12,
-        -0.1
+        0,
+        -0.06
       ]
     },
     "heroMobile": {
       "position": [
-        -14.5,
+        28,
         1.6,
-        21
+        31
       ],
       "target": [
-        -0.3,
-        1.6,
-        0
+        0.6,
+        3.2,
+        0.2
       ],
       "fov": 50,
       "shift": [
@@ -845,382 +1902,349 @@
     },
     "og": {
       "position": [
-        -12.4,
-        1.6,
-        16.6
+        27.5,
+        1.2,
+        30.5
       ],
       "target": [
-        -0.6,
-        1.6,
-        -0.6
+        -0.3,
+        3,
+        0.2
       ],
-      "fov": 36,
+      "fov": 31,
       "shift": [
-        -0.07,
-        -0.19
+        0,
+        -0.05
       ]
     },
     "stage": {
       "position": [
-        -17,
-        11,
-        21
+        22,
+        14,
+        26
       ],
       "target": [
         0,
-        2.8,
-        0.5
+        3,
+        0
       ],
-      "fov": 30
+      "fov": 32
     },
-    "steps": {
+    "legacySteps": {
       "tomt": {
         "position": [
-          -13,
-          12.5,
-          16
+          16,
+          22,
+          22
         ],
         "target": [
-          0.5,
           0,
-          1.4
+          0,
+          0
         ],
-        "fov": 32
+        "fov": 35
       },
       "grunnarbeid": {
         "position": [
-          -14,
-          9,
-          15
+          16,
+          14,
+          20
         ],
         "target": [
           0,
-          -0.6,
-          0.5
+          -0.4,
+          0
         ],
-        "fov": 30
+        "fov": 36
       },
       "fundament": {
         "position": [
-          -13,
-          7.5,
-          12.5
-        ],
-        "target": [
-          -1,
-          0,
-          0.5
-        ],
-        "fov": 30
-      },
-      "bindingsverk": {
-        "position": [
-          -15,
-          8,
-          16
-        ],
-        "target": [
-          0,
-          3,
-          0.5
-        ],
-        "fov": 30
-      },
-      "isolasjon": {
-        "position": [
-          -6,
-          6.5,
+          15,
+          11,
           19
         ],
         "target": [
-          0.5,
-          3.4,
-          1
+          0,
+          0,
+          0
         ],
-        "fov": 30
+        "fov": 34
+      },
+      "bindingsverk": {
+        "position": [
+          -18,
+          3.5,
+          -20
+        ],
+        "target": [
+          0,
+          3.5,
+          0
+        ],
+        "fov": 40
+      },
+      "isolasjon": {
+        "position": [
+          18,
+          6,
+          18
+        ],
+        "target": [
+          0,
+          3.4,
+          0
+        ],
+        "fov": 36
       },
       "tak": {
         "position": [
-          -16,
-          13,
-          15
+          20,
+          12,
+          18
         ],
         "target": [
           0,
-          5,
-          0.5
+          5.5,
+          0
         ],
-        "fov": 30
+        "fov": 36
       },
       "vinduer": {
         "position": [
-          -9,
-          4.5,
-          17.5
+          22,
+          2,
+          8
         ],
         "target": [
-          0,
-          2.8,
-          2
+          6,
+          4.2,
+          0
         ],
-        "fov": 30
+        "fov": 40
       },
       "kledning": {
         "position": [
-          -15,
-          4.5,
+          4,
+          2.8,
           15
         ],
         "target": [
           0,
-          3.4,
-          0.5
+          3.2,
+          3.9
         ],
-        "fov": 30
+        "fov": 40
       },
       "installasjoner": {
         "position": [
           -14,
-          9,
-          15
+          2.2,
+          -16
         ],
         "target": [
           0,
-          3.2,
-          0
+          2.2,
+          -3.9
         ],
-        "fov": 30
+        "fov": 36
       },
       "interior": {
         "position": [
-          -6.5,
-          7.5,
-          15.5
+          18,
+          16,
+          20
         ],
         "target": [
           0,
-          3.2,
+          4,
           0
         ],
-        "fov": 32
+        "fov": 34
       },
       "nokkelferdig": {
         "position": [
-          4.2,
-          2,
-          18.5
+          31.24,
+          0.87,
+          34.11
         ],
+        "rotation": {
+          "order": "YXZ",
+          "x": 0,
+          "y": 43.28,
+          "z": 0,
+          "unit": "deg"
+        },
         "target": [
-          0.2,
-          3.9,
-          1
+          -0.296,
+          0.87,
+          0.621
         ],
-        "fov": 34
+        "fov": 33.2857,
+        "aspect": 1.47262,
+        "focalPx": 2180.8,
+        "principalPoint": [
+          960,
+          651.9
+        ],
+        "viewOffset": {
+          "fullWidth": 1920,
+          "fullHeight": 1303.8,
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "photo": {
+          "width": 1920,
+          "height": 1080
+        },
+        "note": "Boligpartner images 1 (saltak) and 2 (flatt tak), garden side, identical framing"
       }
     }
   },
   "lighting": {
-    "bluehour": {
-      "note": "Blue hour in Fana: sun just below the western horizon, deep blue sky, warm windows.",
-      "toneMapping": "AgX",
-      "exposure": 1.35,
-      "background": "sky",
-      "sky": {
-        "top": "#0a1631",
-        "mid": "#1e3c68",
-        "horizon": "#6f8bad",
-        "below": "#1a2533",
-        "glow": "#e3a77a",
-        "glowStrength": 0.65,
-        "glowDir": [
-          0.25,
-          0,
-          -1
-        ],
-        "glowWidth": 5
-      },
-      "envIntensity": 1.25,
-      "fog": {
-        "color": "#33496a",
-        "near": 35,
-        "far": 320
-      },
-      "hemisphere": {
-        "sky": "#5a77a3",
-        "ground": "#1b2420",
-        "intensity": 0.9
-      },
-      "key": {
-        "color": "#a9c0e6",
-        "intensity": 0.5,
-        "position": [
-          -30,
-          40,
-          -14
-        ],
-        "castShadow": true
-      },
-      "fill": {
-        "color": "#d9a07a",
-        "intensity": 0.22,
-        "position": [
-          36,
-          6,
-          14
-        ],
-        "castShadow": false
-      },
-      "lamps": 0.55,
-      "exteriorLights": 2.2,
-      "interiorLights": 9,
-      "interiorColor": "#ffb469",
-      "bloom": {
-        "strength": 0.32,
-        "radius": 0.45,
-        "threshold": 0.9
-      }
-    },
-    "day": {
-      "note": "Overcast Nordic daylight: soft, grey, low contrast, low chroma (graded to sit on the paper pages).",
+    "sunHage": {
+      "note": "Summer daylight matched to Boligpartner images 1 and 2: sun from the south-west, about 46° high; garden face lit, east gable in soft shade.",
       "toneMapping": "Neutral",
-      "exposure": 0.76,
+      "exposure": 0.92,
       "background": "sky",
       "sky": {
-        "top": "#b3b9bb",
-        "mid": "#c9ccc8",
-        "horizon": "#d9dad5",
-        "below": "#c4c6c0",
-        "glow": "#ece8df",
-        "glowStrength": 0.18,
+        "top": "#7fa1d2",
+        "mid": "#a6c5eb",
+        "horizon": "#eef3f8",
+        "below": "#cfd8c8",
+        "glow": "#fff6e6",
+        "glowStrength": 0.25,
         "glowDir": [
-          -0.4,
-          0,
-          0.8
+          -0.5507440069535274,
+          0.7209739727391631,
+          0.4205681507645118
         ],
-        "glowWidth": 4
+        "glowWidth": 6,
+        "clouds": {
+          "coverage": 0.3,
+          "scale": 0.0048,
+          "focusAzimuthDeg": -150,
+          "focusWidthDeg": 22,
+          "focusBoost": 0.3,
+          "color": "#ffffff",
+          "shadow": "#b7c3d3",
+          "driftMps": 1.2,
+          "note": "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)"
+        },
+        "envTreeline": {
+          "color": "#2f3a25",
+          "height": 0.16,
+          "note": "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)"
+        }
       },
-      "envIntensity": 1.05,
+      "envIntensity": 0.45,
       "fog": {
-        "color": "#c9ccc8",
-        "near": 40,
-        "far": 380
+        "color": "#dce6ee",
+        "near": 160,
+        "far": 5200
       },
       "hemisphere": {
-        "sky": "#e2e4e2",
-        "ground": "#5f6358",
-        "intensity": 0.75
+        "sky": "#bbd3ee",
+        "ground": "#6c7040",
+        "intensity": 0.7
       },
       "key": {
-        "color": "#f6efe4",
-        "intensity": 2,
+        "color": "#fff4e2",
+        "intensity": 6,
         "position": [
-          -26,
-          40,
-          30
+          -33.045,
+          43.258,
+          25.234
         ],
         "castShadow": true
       },
       "fill": null,
-      "lamps": 0,
+      "lamps": 0.15,
       "exteriorLights": 0,
       "interiorLights": 0,
-      "bloom": null
+      "bloom": null,
+      "shadow": {
+        "mapSize": 2048,
+        "mapSizeLite": 1024,
+        "frustum": 14,
+        "bias": -0.0004,
+        "normalBias": 0.03,
+        "autoUpdate": false
+      }
     },
-    "stage": {
-      "note": "Dark build-sequence stage: the house in real materials on a monochrome slate site model; fog fades the site into #0E1416.",
-      "toneMapping": "AgX",
-      "exposure": 1.1,
-      "background": "#0e1416",
+    "sunInnkjorsel": {
+      "note": "Matched to image 3: sun from the east-south-east, about 35° high; R1 frame and east gable lit, north facade in shade.",
+      "toneMapping": "Neutral",
+      "exposure": 0.92,
+      "background": "sky",
       "sky": {
-        "top": "#0d1b2e",
-        "mid": "#2a4466",
-        "horizon": "#6d86a3",
-        "below": "#1b2532",
-        "glow": "#d6aa84",
-        "glowStrength": 0.55,
+        "top": "#7fa1d2",
+        "mid": "#a6c5eb",
+        "horizon": "#eef3f8",
+        "below": "#cfd8c8",
+        "glow": "#fff6e6",
+        "glowStrength": 0.25,
         "glowDir": [
-          0.7,
-          0,
-          0.6
+          0.779649236747446,
+          0.569743673007749,
+          0.2598830789158153
         ],
-        "glowWidth": 5
+        "glowWidth": 6,
+        "clouds": {
+          "coverage": 0.3,
+          "scale": 0.0048,
+          "focusAzimuthDeg": -150,
+          "focusWidthDeg": 22,
+          "focusBoost": 0.3,
+          "color": "#ffffff",
+          "shadow": "#b7c3d3",
+          "driftMps": 1.2,
+          "note": "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)"
+        },
+        "envTreeline": {
+          "color": "#2f3a25",
+          "height": 0.16,
+          "note": "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)"
+        }
       },
-      "envIntensity": 0.9,
+      "envIntensity": 0.45,
       "fog": {
-        "color": "#0e1416",
-        "near": 24,
-        "far": 62
+        "color": "#dce6ee",
+        "near": 160,
+        "far": 5200
       },
       "hemisphere": {
-        "sky": "#9fb2c8",
-        "ground": "#1a2226",
-        "intensity": 0.55
+        "sky": "#bbd3ee",
+        "ground": "#6c7040",
+        "intensity": 0.7
       },
       "key": {
-        "color": "#f1ece3",
-        "intensity": 2.2,
+        "color": "#fff4e2",
+        "intensity": 6,
         "position": [
-          -24,
-          34,
-          22
+          46.779,
+          34.185,
+          15.593
         ],
         "castShadow": true
       },
-      "fill": {
-        "color": "#c9a86a",
-        "intensity": 0.35,
-        "position": [
-          26,
-          10,
-          -20
-        ],
-        "castShadow": false
-      },
-      "lamps": 0,
+      "fill": null,
+      "lamps": 0.15,
       "exteriorLights": 0,
       "interiorLights": 0,
-      "bloom": {
-        "strength": 0.3,
-        "radius": 0.5,
-        "threshold": 0.88
-      },
-      "envMaterials": {
-        "terrain": {
-          "color": "#2b3438",
-          "roughness": 1
-        },
-        "rock": {
-          "color": "#3a4447",
-          "roughness": 0.95
-        },
-        "hill": {
-          "color": "#161e21",
-          "roughness": 1
-        },
-        "maple_leaf": {
-          "color": "#3b4743",
-          "roughness": 0.95,
-          "castShadow": false
-        },
-        "birch_leaf": {
-          "color": "#455250",
-          "roughness": 0.95,
-          "castShadow": false
-        },
-        "maple_bark": {
-          "color": "#2a3133",
-          "roughness": 0.95,
-          "castShadow": false
-        },
-        "birch_bark": {
-          "color": "#59625f",
-          "roughness": 0.9,
-          "castShadow": false
-        }
+      "bloom": null,
+      "shadow": {
+        "mapSize": 2048,
+        "mapSizeLite": 1024,
+        "frustum": 14,
+        "bias": -0.0004,
+        "normalBias": 0.03,
+        "autoUpdate": false
       }
     },
     "paper": {
-      "note": "Light diagrams on paper #EDE8DF (service cut-aways, permit diagrams).",
+      "note": "Light study model on paper #EDE8DF ('Til papir' in the timelapse, service diagrams, permit diagrams).",
       "toneMapping": "Neutral",
       "exposure": 0.9,
       "background": "#ede8df",
@@ -1268,42 +2292,282 @@
       "lamps": 0,
       "exteriorLights": 0,
       "interiorLights": 0,
-      "bloom": null
+      "bloom": null,
+      "clay": {
+        "color": "#eae5dc",
+        "ground": "#e3ddd1",
+        "note": "white study model colour and paper-deep ground (uReal = 0)"
+      }
+    },
+    "day": {
+      "note": "alias of sunHage (legacy name)",
+      "toneMapping": "Neutral",
+      "exposure": 0.92,
+      "background": "sky",
+      "sky": {
+        "top": "#7fa1d2",
+        "mid": "#a6c5eb",
+        "horizon": "#eef3f8",
+        "below": "#cfd8c8",
+        "glow": "#fff6e6",
+        "glowStrength": 0.25,
+        "glowDir": [
+          -0.5507440069535274,
+          0.7209739727391631,
+          0.4205681507645118
+        ],
+        "glowWidth": 6,
+        "clouds": {
+          "coverage": 0.3,
+          "scale": 0.0048,
+          "focusAzimuthDeg": -150,
+          "focusWidthDeg": 22,
+          "focusBoost": 0.3,
+          "color": "#ffffff",
+          "shadow": "#b7c3d3",
+          "driftMps": 1.2,
+          "note": "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)"
+        },
+        "envTreeline": {
+          "color": "#2f3a25",
+          "height": 0.16,
+          "note": "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)"
+        }
+      },
+      "envIntensity": 0.45,
+      "fog": {
+        "color": "#dce6ee",
+        "near": 160,
+        "far": 5200
+      },
+      "hemisphere": {
+        "sky": "#bbd3ee",
+        "ground": "#6c7040",
+        "intensity": 0.7
+      },
+      "key": {
+        "color": "#fff4e2",
+        "intensity": 6,
+        "position": [
+          -33.045,
+          43.258,
+          25.234
+        ],
+        "castShadow": true
+      },
+      "fill": null,
+      "lamps": 0.15,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": null,
+      "shadow": {
+        "mapSize": 2048,
+        "mapSizeLite": 1024,
+        "frustum": 14,
+        "bias": -0.0004,
+        "normalBias": 0.03,
+        "autoUpdate": false
+      }
+    },
+    "bluehour": {
+      "note": "legacy name; Adria has no blue hour, this is sunHage",
+      "toneMapping": "Neutral",
+      "exposure": 0.92,
+      "background": "sky",
+      "sky": {
+        "top": "#7fa1d2",
+        "mid": "#a6c5eb",
+        "horizon": "#eef3f8",
+        "below": "#cfd8c8",
+        "glow": "#fff6e6",
+        "glowStrength": 0.25,
+        "glowDir": [
+          -0.5507440069535274,
+          0.7209739727391631,
+          0.4205681507645118
+        ],
+        "glowWidth": 6,
+        "clouds": {
+          "coverage": 0.3,
+          "scale": 0.0048,
+          "focusAzimuthDeg": -150,
+          "focusWidthDeg": 22,
+          "focusBoost": 0.3,
+          "color": "#ffffff",
+          "shadow": "#b7c3d3",
+          "driftMps": 1.2,
+          "note": "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)"
+        },
+        "envTreeline": {
+          "color": "#2f3a25",
+          "height": 0.16,
+          "note": "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)"
+        }
+      },
+      "envIntensity": 0.45,
+      "fog": {
+        "color": "#dce6ee",
+        "near": 160,
+        "far": 5200
+      },
+      "hemisphere": {
+        "sky": "#bbd3ee",
+        "ground": "#6c7040",
+        "intensity": 0.7
+      },
+      "key": {
+        "color": "#fff4e2",
+        "intensity": 6,
+        "position": [
+          -33.045,
+          43.258,
+          25.234
+        ],
+        "castShadow": true
+      },
+      "fill": null,
+      "lamps": 0.15,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": null,
+      "shadow": {
+        "mapSize": 2048,
+        "mapSizeLite": 1024,
+        "frustum": 14,
+        "bias": -0.0004,
+        "normalBias": 0.03,
+        "autoUpdate": false
+      }
+    },
+    "stage": {
+      "note": "legacy name for the old dark build stage; now sunHage",
+      "toneMapping": "Neutral",
+      "exposure": 0.92,
+      "background": "sky",
+      "sky": {
+        "top": "#7fa1d2",
+        "mid": "#a6c5eb",
+        "horizon": "#eef3f8",
+        "below": "#cfd8c8",
+        "glow": "#fff6e6",
+        "glowStrength": 0.25,
+        "glowDir": [
+          -0.5507440069535274,
+          0.7209739727391631,
+          0.4205681507645118
+        ],
+        "glowWidth": 6,
+        "clouds": {
+          "coverage": 0.3,
+          "scale": 0.0048,
+          "focusAzimuthDeg": -150,
+          "focusWidthDeg": 22,
+          "focusBoost": 0.3,
+          "color": "#ffffff",
+          "shadow": "#b7c3d3",
+          "driftMps": 1.2,
+          "note": "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)"
+        },
+        "envTreeline": {
+          "color": "#2f3a25",
+          "height": 0.16,
+          "note": "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)"
+        }
+      },
+      "envIntensity": 0.45,
+      "fog": {
+        "color": "#dce6ee",
+        "near": 160,
+        "far": 5200
+      },
+      "hemisphere": {
+        "sky": "#bbd3ee",
+        "ground": "#6c7040",
+        "intensity": 0.7
+      },
+      "key": {
+        "color": "#fff4e2",
+        "intensity": 6,
+        "position": [
+          -33.045,
+          43.258,
+          25.234
+        ],
+        "castShadow": true
+      },
+      "fill": null,
+      "lamps": 0.15,
+      "exteriorLights": 0,
+      "interiorLights": 0,
+      "bloom": null,
+      "shadow": {
+        "mapSize": 2048,
+        "mapSizeLite": 1024,
+        "frustum": 14,
+        "bias": -0.0004,
+        "normalBias": 0.03,
+        "autoUpdate": false
+      }
     }
   },
-  "variants": {
-    "high": "/models/house.glb",
-    "lite": "/models/house-lite.glb"
+  "photos": {
+    "photoMatch": {
+      "saltak": "adria-saltak-hage",
+      "flatt": "adria-flatt-tak-hage"
+    },
+    "photoMatchInnkjorsel": {
+      "pulttak": "adria-pulttak-innkjorsel"
+    },
+    "note": "Boligpartner images (public/images/adria/<key>-<w>.{avif,webp}). Without permission (supplierImagesEnabled = false) use our renders adria-twin, adria-twin-flatt, adria-twin-pulttak-innkjorsel."
+  },
+  "bytes": {
+    "high": 1309624,
+    "lite": 546800
   },
   "variantBytes": {
-    "high": 1189648,
-    "lite": 377416
+    "high": 1309624,
+    "lite": 546800
+  },
+  "textures": {
+    "leaf_atlas": {
+      "high": 183542,
+      "lite": 78676,
+      "size": {
+        "high": 1024,
+        "lite": 512
+      }
+    },
+    "lawn_detail": {
+      "high": 48372,
+      "lite": 7488,
+      "size": {
+        "high": 512,
+        "lite": 256
+      },
+      "uv": "world XZ × 0.4 (2.5 m tile)"
+    }
   },
   "stats": {
-    "bytes": 1189648,
-    "meshes": 68,
-    "materials": 47,
-    "vertices": 138398,
-    "triangles": 149086,
-    "instancedTriangles": 34610,
-    "note": "bytes/meshes/vertices/triangles of house.glb; per-variant numbers in variants (meshes = draw calls with every group visible)",
-    "variants": {
-      "high": {
-        "bytes": 1189648,
-        "meshes": 68,
-        "materials": 47,
-        "vertices": 138398,
-        "triangles": 149086,
-        "instancedTriangles": 34610
-      },
-      "lite": {
-        "bytes": 377416,
-        "meshes": 46,
-        "materials": 20,
-        "vertices": 42627,
-        "triangles": 48762,
-        "instancedTriangles": 13530
-      }
+    "note": "File totals (every node, all three roofs). Per-state draw calls / triangles / programs are measured by scripts/model/verify-models.mjs and written to stats.states.",
+    "high": {
+      "bytes": 1309624,
+      "meshes": 138,
+      "materials": 43,
+      "vertices": 139711,
+      "triangles": 86194,
+      "instancedTriangles": 19178,
+      "lines": 557,
+      "textures": 2
+    },
+    "lite": {
+      "bytes": 546800,
+      "meshes": 106,
+      "materials": 10,
+      "vertices": 56623,
+      "triangles": 32476,
+      "instancedTriangles": 5294,
+      "lines": 379,
+      "textures": 2
     }
   }
 }

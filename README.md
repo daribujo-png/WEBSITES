@@ -113,6 +113,17 @@ The full list with reasons is `excludedImages` in `src/content/photos.ts`.
 
 `contentNotes` in `src/content/site.ts` lists oddities in the imported text and how the copy handles them, for example the BVN wet-room approval, another company name («Mesterfag Gruppen», «Bergen Operating Group») in some texts, and job-ad wording in one reference.
 
+## House models (`/husmodeller/`)
+
+"Husmodeller vi bygger" is data-driven: the home section (`#husmodeller`), `/husmodeller/` and `/husmodeller/<slug>/` all build from `houseModels` in `src/content/house-models.ts`. It launched with Adria from Boligpartner. With one model the home section shows that model (Taktype radios swap the supplier's images); with two or more it becomes an index.
+
+To add a model:
+
+1. Put the supplier's images (as supplied, never edited) in `content-import/<model>/orig/` and, if you have them, 4K upscales in `content-import/<model>/4k/`.
+2. Make the web derivatives with a script like `scripts/images/adria.mjs` (AVIF + WebP at 640–1920, 2560/3840 only from a 4K source, never upscaled), which also writes a typed manifest in `src/content/`.
+3. Add an entry to `houseModels`: slug, name, supplier and URL, credit ("Husmodell <navn> fra <leverandør>"), the `missing` key for the rights agreement (add it to `missingFacts` in `site.ts`), a short summary, facts copied from the supplier's own page (no marketing claims, no prices), roof types, images with Norwegian alt text and captions ending "Bilde: <leverandør>.", and `has3d: false` unless the 3D build shows it.
+4. `npm run build`: the new page is prerendered and added to the sitemap. Never invent a model; add only what the supplier publishes.
+
 ## Missing facts ([MANGLER])
 
 Every missing fact appears on the site as a visible `[MANGLER: …]` placeholder. The source of truth is `missingFacts` in `src/content/site.ts`:
@@ -133,13 +144,14 @@ Every missing fact appears on the site as a visible `[MANGLER: …]` placeholder
 | Navn på skjematjeneste og databehandleravtale | Personvern |
 | Godkjenning av personvernerklæringen | Personvern: sist oppdatert |
 | Skjematjeneste (`NEXT_PUBLIC_FORM_ENDPOINT`) | Kontakt: under the form |
-| Kundens eget hus (tegninger, bilder eller 3D-modell) | Hero and Slik bygger vi use the reference house until it exists |
+| Kundens egne nybygg (bilder) | Hero and the build steps show the house model Adria until the client's own new builds can be shown |
+| Bekreft avtale med Boligpartner om bruk av husmodell og bilder | Home: hero and Husmodeller; `/husmodeller/` and `/husmodeller/adria/` (every supplier image); Om oss; footer |
 
 ## Permissions still needed (in writing)
 
 - **byggrv.no content:** written permission to reuse the text and images from byggrv.no, if we are not the client's own agency.
 - **Stock / third-party images** above: a licence or permission, if the client wants any of them back on the site.
-- **Kvalbein Korsøen Arkitektur:** no photos or drawings of theirs are used; the 3D house is our own interpretation, credited on the site as "Arkitektur: Kvalbein Korsøen Arkitektur" and marked as not built by Bygg RV. Ask the architects for written consent anyway before launch.
+- **Husmodellen Adria (Boligpartner):** written permission to publish the four images (`public/images/adria/`), the facts and a 3D interpretation of the house, on the home page and under `/husmodeller/`. The elevation drawings (`content-import/adria/tegninger/`) are used only as modelling reference and are never published. Until then every supplier image carries "Bilde: Boligpartner" and the visible `[MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]`. If permission is refused, set `supplierImagesEnabled = false` in `src/content/house-models.ts`: every supplier image is then replaced by our own render from the same camera (`adria-twin`, `adria-twin-flatt`, `adria-twin-pulttak-innkjorsel`).
 
 ## Quality gates (last run)
 

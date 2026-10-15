@@ -23,7 +23,7 @@ export function generalContractorJsonLd(): JsonLdObject {
     image: absoluteUrl(OG_IMAGE.url),
     logo: absoluteUrl("/icon.svg"),
     description:
-      "Byggefirma i Bergen og omegn med alle fag under ett tak: totalentreprise, tømrer, elektro, VVS, maling, mur og betong og sprenging. Én prosjektleder per kunde og nøkkelferdig levering til avtalt tid og pris.",
+      "Byggefirma i Bergen og omegn. Vi bygger nye hus, tilbygg, påbygg og tak, med alle fagene i eget firma, én prosjektleder per kunde og nøkkelferdig levering til avtalt tid og pris.",
     telephone: company.phoneE164,
     email: company.email,
     address: {
@@ -39,6 +39,10 @@ export function generalContractorJsonLd(): JsonLdObject {
       { "@type": "AdministrativeArea", name: company.areaServed },
     ],
     knowsAbout: [
+      "Nybygg",
+      "Tilbygg",
+      "Påbygg",
+      "Takarbeid",
       "Totalentreprise",
       "Tømrerarbeid",
       "Elektro",
@@ -88,6 +92,21 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): JsonL
       name: item.name,
       item: absoluteUrl(item.path),
     })),
+  };
+}
+
+/** A plain WebPage (e.g. a house model page), part of the site and about the company's work. */
+export function webPageJsonLd({ name, description, path, image }: { name: string; description: string; path: string; image?: string }): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    description,
+    url: absoluteUrl(path),
+    inLanguage: "nb-NO",
+    isPartOf: { "@type": "WebSite", name: company.legalName, url: absoluteUrl("/") },
+    publisher: { "@id": ORG_ID },
+    ...(image ? { primaryImageOfPage: { "@type": "ImageObject", url: absoluteUrl(image) } } : {}),
   };
 }
 

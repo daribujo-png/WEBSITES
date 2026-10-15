@@ -1,34 +1,126 @@
 /**
- * Camera and lighting presets. One source of truth: the render harness
- * (scripts/render/page/render.js) reads them from house.meta.json, and the
- * live 3D on the site reads the same file, so posters and canvas match.
+ * Camera and lighting presets for the Adria model. Single source of truth:
+ * written into public/models/house.meta.json, read by the render harness and
+ * by the live hero, so stills and canvas match.
  *
- * Cameras: world metres, `fov` is vertical in degrees.
- * Lighting: colours are sRGB hex; light intensities follow three.js
- * physically based units (r155+): directional/hemisphere in lux-like
- * units, point lights in candela with `decay: 2`.
+ * Cameras: world metres, `fov` vertical in degrees. Photo-matched cameras
+ * (photoMatch, photoMatchInnkjorsel) use lens shift: a virtual full frame
+ * centred on the optical axis, of which the photo is the top part:
+ *
+ *   camera.fov = fov; camera.aspect = aspect;
+ *   camera.setViewOffset(vo.fullWidth, vo.fullHeight, vo.x, vo.y, vo.width, vo.height)
+ *
+ * (units are photo pixels; scale them freely, e.g. to a plate rect). The
+ * rotation is a pure yaw (pitch 0, roll 0): the photos are two-point
+ * perspective, verticals stay vertical. `target` = position + forward · 46 m.
+ *
+ * Lighting: colours sRGB hex; three.js physical units (r155+).
  */
+
+const deg = Math.PI / 180;
+const r3 = (v) => v.map((x) => Math.round(x * 1000) / 1000);
+
+/**
+ * Pinhole camera from the photo fit (1920 × 1080 frame): position, yaw (rotation.y),
+ * focal length in px, principal point (cx, cy).
+ */
+function photoCamera({ position, yaw, f, cx = 960, cy, note }) {
+  const fullH = 2 * cy;
+  const fwd = [-Math.sin(yaw * deg), 0, -Math.cos(yaw * deg)];
+  const target = r3([position[0] + fwd[0] * 46, position[1], position[2] + fwd[2] * 46]);
+  return {
+    position,
+    rotation: { order: "YXZ", x: 0, y: Math.round(yaw * 1e4) / 1e4, z: 0, unit: "deg" },
+    target,
+    fov: Math.round(((2 * Math.atan(cy / f)) / deg) * 1e4) / 1e4,
+    aspect: Math.round((1920 / fullH) * 1e5) / 1e5,
+    focalPx: f,
+    principalPoint: [cx, cy],
+    viewOffset: { fullWidth: 1920, fullHeight: Math.round(fullH * 10) / 10, x: 0, y: 0, width: 1920, height: 1080 },
+    photo: { width: 1920, height: 1080 },
+    note,
+  };
+}
+
+/**
+ * The photo fits (docs/DIRECTION-adria.md §1.14), refined against overlays of
+ * our own renders (scripts/model/README: camera match).
+ */
+export const PHOTO_MATCH = photoCamera({
+  position: [31.24, 0.87, 34.11],
+  yaw: 43.28,
+  f: 2180.8,
+  cy: 651.9,
+  note: "Boligpartner images 1 (saltak) and 2 (flatt tak), garden side, identical framing",
+});
+export const PHOTO_MATCH_INNKJORSEL = photoCamera({
+  position: [40.83, 2.41, -20.67],
+  yaw: 118.0,
+  f: 2648,
+  cy: 574.4,
+  note: "Boligpartner image 3 (pulttak), entrance and driveway side",
+});
+
+/** Square phone crop of images 1/2 (x 470–1550, full height) on the same camera. */
+export const PHOTO_MATCH_SQUARE = {
+  ...PHOTO_MATCH,
+  viewOffset: { ...PHOTO_MATCH.viewOffset, x: 470, width: 1080, height: 1080 },
+  note: "square crop x 470–1550 of images 1/2 (phone plate)",
+};
+
+/** Simple look-at preset. */
+const look = (position, target, fov) => ({ position, target, fov });
+
+/** Hero build steps (direction §2.5): desktop + phone. */
+const STEPS5 = {
+  grunnmur: { desktop: look([16, 22, 22], [0, 0, 0], 35), mobile: look([20, 30, 28], [0, 0, 0], 45) },
+  reisverk: { desktop: look([-18, 3.5, -20], [0, 3.5, 0], 40), mobile: look([-24, 5, -27], [0, 4, 0], 50) },
+  tett: { desktop: look([22, 2.0, 8], [6, 4.2, 0], 40), mobile: look([27, 3, 12], [5, 4.5, 0], 50) },
+  kledning: {
+    desktop: { ...look([-6, 2.5, 14], [-4, 3, 3.9], 38), dolly: { from: [-6, 2.5, 14], to: [4, 3, 13], targetAhead: 2, targetY: 3, targetZ: 3.9 } },
+    mobile: look([-4, 3, 20], [2, 3, 0], 48),
+  },
+  nokkelferdig: { desktop: { photoMatch: true, ...PHOTO_MATCH }, mobile: { photoMatch: true, ...PHOTO_MATCH } },
+};
+
 export const CAMERAS = {
-  // Exterior eye-level views look horizontally (straight verticals, like a shift
-  // lens) and frame the house with `shift`: [x, y] as a fraction of the image,
-  // applied with camera.setViewOffset(w, h, shift[0] * w, shift[1] * h, w, h).
-  // Negative x moves the house to the right, negative y moves it down.
-  hero: { position: [-12.4, 1.6, 16.6], target: [-0.6, 1.6, -0.6], fov: 46, shift: [-0.12, -0.1] },
-  heroMobile: { position: [-14.5, 1.6, 21.0], target: [-0.3, 1.6, 0.0], fov: 50, shift: [0.0, 0.0] },
-  og: { position: [-12.4, 1.6, 16.6], target: [-0.6, 1.6, -0.6], fov: 36, shift: [-0.07, -0.19] },
-  stage: { position: [-17, 11, 21], target: [0, 2.8, 0.5], fov: 30 },
-  steps: {
-    tomt: { position: [-13, 12.5, 16], target: [0.5, 0, 1.4], fov: 32 },
-    grunnarbeid: { position: [-14, 9, 15], target: [0, -0.6, 0.5], fov: 30 },
-    fundament: { position: [-13, 7.5, 12.5], target: [-1, 0, 0.5], fov: 30 },
-    bindingsverk: { position: [-15, 8, 16], target: [0, 3, 0.5], fov: 30 },
-    isolasjon: { position: [-6, 6.5, 19], target: [0.5, 3.4, 1.0], fov: 30 },
-    tak: { position: [-16, 13, 15], target: [0, 5, 0.5], fov: 30 },
-    vinduer: { position: [-9, 4.5, 17.5], target: [0, 2.8, 2], fov: 30 },
-    kledning: { position: [-15, 4.5, 15], target: [0, 3.4, 0.5], fov: 30 },
-    installasjoner: { position: [-14, 9, 15], target: [0, 3.2, 0], fov: 30 },
-    interior: { position: [-6.5, 7.5, 15.5], target: [0, 3.2, 0], fov: 32 },
-    nokkelferdig: { position: [4.2, 2.0, 18.5], target: [0.2, 3.9, 1.0], fov: 34 },
+  // ---- photo-matched ----
+  photoMatch: PHOTO_MATCH,
+  photoMatchInnkjorsel: PHOTO_MATCH_INNKJORSEL,
+  photoMatchSquare: PHOTO_MATCH_SQUARE,
+  // ---- hero timeline ----
+  intro: { ...PHOTO_MATCH, note: "intro plate + timelapse (Tvilling … Virkeligheten): photoMatch" },
+  finale: { ...PHOTO_MATCH, note: "finale rest pose, side Hagen" },
+  roofSwitch: {
+    hagen: { ...PHOTO_MATCH, photos: { saltak: "adria-saltak-hage", flatt: "adria-flatt-tak-hage" } },
+    innkjorselen: { ...PHOTO_MATCH_INNKJORSEL, photos: { pulttak: "adria-pulttak-innkjorsel" } },
+  },
+  /** Finale orbit between the two photo cameras (azimuth from +x towards +z around the house centre). */
+  orbit: {
+    centre: [0, 0, 0],
+    from: { azimuthDeg: 47.5, radius: 46.3, eyeY: 0.87, focalPx: 2180.8, principalY: 651.9 },
+    to: { azimuthDeg: -26.9, radius: 45.8, eyeY: 2.41, focalPx: 2648, principalY: 574.4 },
+    note: "yaw follows the azimuth so the house stays framed; interpolate focal length and principal point",
+  },
+  steps: STEPS5,
+  seInn: { desktop: look([18, 16, 20], [0, 4, 0], 34), mobile: look([22, 22, 26], [0, 4, 0], 44) },
+  // ---- legacy keys (pre-Adria runtime), mapped onto Adria views ----
+  hero: { ...look([24.5, 1.6, 27.5], [-0.4, 3.0, 0.4], 36), shift: [0, -0.06] },
+  heroMobile: { ...look([28, 1.6, 31], [0.6, 3.2, 0.2], 50), shift: [0, 0] },
+  og: { ...look([27.5, 1.2, 30.5], [-0.3, 3.0, 0.2], 31), shift: [0, -0.05] },
+  stage: look([22, 14, 26], [0, 3, 0], 32),
+  legacySteps: {
+    tomt: look([16, 22, 22], [0, 0, 0], 35),
+    grunnarbeid: look([16, 14, 20], [0, -0.4, 0], 36),
+    fundament: look([15, 11, 19], [0, 0, 0], 34),
+    bindingsverk: look([-18, 3.5, -20], [0, 3.5, 0], 40),
+    isolasjon: look([18, 6, 18], [0, 3.4, 0], 36),
+    tak: look([20, 12, 18], [0, 5.5, 0], 36),
+    vinduer: look([22, 2.0, 8], [6, 4.2, 0], 40),
+    kledning: look([4, 2.8, 15], [0, 3.2, 3.9], 40),
+    installasjoner: look([-14, 2.2, -16], [0, 2.2, -3.9], 36),
+    interior: look([18, 16, 20], [0, 4, 0], 34),
+    nokkelferdig: { ...PHOTO_MATCH },
   },
 };
 
@@ -43,123 +135,70 @@ export const PERMIT_CAMERAS = {
   garasje: PERMIT_LOW,
 };
 
-/**
- * Lighting presets.
- *  toneMapping     "ACESFilmic" | "AgX" | "Neutral"
- *  background      "sky" (draw the sky dome) or a hex colour
- *  sky             gradient dome {top, mid, horizon, below, glow, glowStrength, glowDir, glowWidth};
- *                  also baked into the environment map (PMREM) at envIntensity
- *  fog             {color, near, far} linear fog, or null
- *  hemisphere      {sky, ground, intensity} or null
- *  key / fill      directional lights {color, intensity, position (offset from target), castShadow}
- *  lamps           multiplier for the `lamp_glow` emissive (0 switches the lamps off)
- *  exteriorLights  candela per unit of meta.exteriorLights[].intensity (0 = off)
- *  interiorLights  candela per unit of meta.interiorLights[].intensity (0 = off)
- *  bloom           {strength, radius, threshold} or null
- *  envMaterials    optional: replace environment materials (env_* nodes) with flat
- *                  colours, e.g. the monochrome site model on the dark stage
- */
+/* --------------------------------------------------------------------------------------------- */
+/* Lighting                                                                                       */
+/* --------------------------------------------------------------------------------------------- */
+
+const norm = (v) => {
+  const l = Math.hypot(...v);
+  return v.map((x) => x / l);
+};
+/** Unit vectors towards the sun (direction §1.12). */
+export const SUN_HAGE = norm([-0.55, 0.72, 0.42]);
+export const SUN_INNKJORSEL = norm([0.78, 0.57, 0.26]);
+const sunPos = (d, dist = 60) => r3(d.map((x) => x * dist));
+
+/** Day sky (shader dome + PMREM): gradient + fbm cumulus. */
+const DAY_SKY = {
+  top: "#7fa1d2",
+  mid: "#a6c5eb",
+  horizon: "#eef3f8",
+  below: "#cfd8c8",
+  glow: "#fff6e6",
+  glowStrength: 0.25,
+  glowDir: SUN_HAGE,
+  glowWidth: 6,
+  clouds: {
+    coverage: 0.3,
+    scale: 0.0048,
+    focusAzimuthDeg: -150,
+    focusWidthDeg: 22,
+    focusBoost: 0.3,
+    color: "#ffffff",
+    shadow: "#b7c3d3",
+    driftMps: 1.2,
+    note: "fbm cumulus, white with soft blue-grey bases, roughly where image 1 has them (upper left, a band over the hill)",
+  },
+  envTreeline: { color: "#2f3a25", height: 0.16, note: "dark green band at the env horizon: the reflected treeline in the glass (PMREM only, not the visible sky)" },
+};
+
+const dayPreset = (sun, note) => ({
+  note,
+  toneMapping: "Neutral",
+  exposure: 0.92,
+  background: "sky",
+  sky: { ...DAY_SKY, glowDir: sun },
+  envIntensity: 0.45,
+  fog: { color: "#dce6ee", near: 160, far: 5200 },
+  hemisphere: { sky: "#bbd3ee", ground: "#6c7040", intensity: 0.7 },
+  key: { color: "#fff4e2", intensity: 6.0, position: sunPos(sun), castShadow: true },
+  fill: null,
+  lamps: 0.15,
+  exteriorLights: 0,
+  interiorLights: 0,
+  bloom: null,
+  shadow: { mapSize: 2048, mapSizeLite: 1024, frustum: 14, bias: -0.0004, normalBias: 0.03, autoUpdate: false },
+});
+
 export const LIGHTING = {
-  bluehour: {
-    note: "Blue hour in Fana: sun just below the western horizon, deep blue sky, warm windows.",
-    toneMapping: "AgX",
-    exposure: 1.35,
-    background: "sky",
-    sky: {
-      top: "#0a1631",
-      mid: "#1e3c68",
-      horizon: "#6f8bad",
-      below: "#1a2533",
-      glow: "#e3a77a",
-      glowStrength: 0.65,
-      glowDir: [0.25, 0, -1],
-      glowWidth: 5,
-    },
-    envIntensity: 1.25,
-    fog: { color: "#33496a", near: 35, far: 320 },
-    hemisphere: { sky: "#5a77a3", ground: "#1b2420", intensity: 0.9 },
-    key: { color: "#a9c0e6", intensity: 0.5, position: [-30, 40, -14], castShadow: true },
-    fill: { color: "#d9a07a", intensity: 0.22, position: [36, 6, 14], castShadow: false },
-    lamps: 0.55,
-    exteriorLights: 2.2,
-    interiorLights: 9,
-    interiorColor: "#ffb469",
-    bloom: { strength: 0.32, radius: 0.45, threshold: 0.9 },
-  },
-  day: {
-    note: "Overcast Nordic daylight: soft, grey, low contrast, low chroma (graded to sit on the paper pages).",
-    toneMapping: "Neutral",
-    exposure: 0.76,
-    background: "sky",
-    sky: {
-      top: "#b3b9bb",
-      mid: "#c9ccc8",
-      horizon: "#d9dad5",
-      below: "#c4c6c0",
-      glow: "#ece8df",
-      glowStrength: 0.18,
-      glowDir: [-0.4, 0, 0.8],
-      glowWidth: 4,
-    },
-    envIntensity: 1.05,
-    fog: { color: "#c9ccc8", near: 40, far: 380 },
-    hemisphere: { sky: "#e2e4e2", ground: "#5f6358", intensity: 0.75 },
-    key: { color: "#f6efe4", intensity: 2.0, position: [-26, 40, 30], castShadow: true },
-    fill: null,
-    lamps: 0,
-    exteriorLights: 0,
-    interiorLights: 0,
-    bloom: null,
-  },
-  stage: {
-    note: "Dark build-sequence stage: the house in real materials on a monochrome slate site model; fog fades the site into #0E1416.",
-    toneMapping: "AgX",
-    exposure: 1.1,
-    background: "#0e1416",
-    sky: {
-      top: "#0d1b2e",
-      mid: "#2a4466",
-      horizon: "#6d86a3",
-      below: "#1b2532",
-      glow: "#d6aa84",
-      glowStrength: 0.55,
-      glowDir: [0.7, 0, 0.6],
-      glowWidth: 5,
-    },
-    envIntensity: 0.9,
-    fog: { color: "#0e1416", near: 24, far: 62 },
-    hemisphere: { sky: "#9fb2c8", ground: "#1a2226", intensity: 0.55 },
-    key: { color: "#f1ece3", intensity: 2.2, position: [-24, 34, 22], castShadow: true },
-    fill: { color: "#c9a86a", intensity: 0.35, position: [26, 10, -20], castShadow: false },
-    lamps: 0,
-    exteriorLights: 0,
-    interiorLights: 0,
-    bloom: { strength: 0.3, radius: 0.5, threshold: 0.88 },
-    envMaterials: {
-      terrain: { color: "#2b3438", roughness: 1 },
-      rock: { color: "#3a4447", roughness: 0.95 },
-      hill: { color: "#161e21", roughness: 1 },
-      maple_leaf: { color: "#3b4743", roughness: 0.95, castShadow: false },
-      birch_leaf: { color: "#455250", roughness: 0.95, castShadow: false },
-      maple_bark: { color: "#2a3133", roughness: 0.95, castShadow: false },
-      birch_bark: { color: "#59625f", roughness: 0.9, castShadow: false },
-    },
-  },
+  sunHage: dayPreset(SUN_HAGE, "Summer daylight matched to Boligpartner images 1 and 2: sun from the south-west, about 46° high; garden face lit, east gable in soft shade."),
+  sunInnkjorsel: dayPreset(SUN_INNKJORSEL, "Matched to image 3: sun from the east-south-east, about 35° high; R1 frame and east gable lit, north facade in shade."),
   paper: {
-    note: "Light diagrams on paper #EDE8DF (service cut-aways, permit diagrams).",
+    note: "Light study model on paper #EDE8DF ('Til papir' in the timelapse, service diagrams, permit diagrams).",
     toneMapping: "Neutral",
     exposure: 0.9,
     background: "#ede8df",
-    sky: {
-      top: "#e9e4da",
-      mid: "#efebe3",
-      horizon: "#f2efe9",
-      below: "#ede8df",
-      glow: "#ffffff",
-      glowStrength: 0.1,
-      glowDir: [0, 0, 1],
-      glowWidth: 3,
-    },
+    sky: { top: "#e9e4da", mid: "#efebe3", horizon: "#f2efe9", below: "#ede8df", glow: "#ffffff", glowStrength: 0.1, glowDir: [0, 0, 1], glowWidth: 3 },
     envIntensity: 0.6,
     fog: null,
     hemisphere: { sky: "#f4f1ea", ground: "#b9b1a3", intensity: 0.6 },
@@ -169,50 +208,10 @@ export const LIGHTING = {
     exteriorLights: 0,
     interiorLights: 0,
     bloom: null,
+    clay: { color: "#eae5dc", ground: "#e3ddd1", note: "white study model colour and paper-deep ground (uReal = 0)" },
   },
 };
-
-/**
- * Directions (unit vectors towards the light) the shadow-casting key light can
- * take: every preset's key, and the in-betweens the live canvas passes through
- * when it blends two presets (it interpolates the key *position* linearly),
- * each widened by a small cone. The model builder keeps every triangle that
- * can end up in a shadow map along these directions (see cullOccluded).
- */
-export function shadowLightDirections({ steps = 8, cone = 0.035 } = {}) {
-  const keys = Object.values(LIGHTING)
-    .map((p) => p.key)
-    .filter((k) => k && k.castShadow)
-    .map((k) => k.position);
-  const norm = (v) => {
-    const l = Math.hypot(v[0], v[1], v[2]);
-    return [v[0] / l, v[1] / l, v[2] / l];
-  };
-  const out = [];
-  const add = (v) => {
-    const d = norm(v);
-    out.push(d);
-    // a ring of four around it
-    const a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
-    const u = norm([d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]]);
-    const w = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
-    for (const [s, t] of [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ]) {
-      out.push(norm([d[0] + cone * (s * u[0] + t * w[0]), d[1] + cone * (s * u[1] + t * w[1]), d[2] + cone * (s * u[2] + t * w[2])]));
-    }
-  };
-  for (let i = 0; i < keys.length; i++) {
-    add(keys[i]);
-    for (let j = i + 1; j < keys.length; j++) {
-      for (let k = 1; k < steps; k++) {
-        const t = k / steps;
-        add([0, 1, 2].map((a) => keys[i][a] + (keys[j][a] - keys[i][a]) * t));
-      }
-    }
-  }
-  return out;
-}
+// legacy preset names used by the pre-Adria runtime: all daylight now (no blue hour)
+LIGHTING.day = { ...LIGHTING.sunHage, note: "alias of sunHage (legacy name)" };
+LIGHTING.bluehour = { ...LIGHTING.sunHage, note: "legacy name; Adria has no blue hour, this is sunHage" };
+LIGHTING.stage = { ...LIGHTING.sunHage, note: "legacy name for the old dark build stage; now sunHage" };

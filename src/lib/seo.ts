@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { company } from "@/content/site";
 import { pages, type PageKey } from "@/content/pages";
 import { services } from "@/content/services";
+import { houseModels } from "@/content/house-models";
 import type { Service } from "@/content/types";
 
 export const SITE_URL = company.url;
@@ -16,10 +17,10 @@ export const OG_IMAGE = {
   url: "/renders/og-image.jpg",
   width: 1200,
   height: 630,
-  alt: "3D-gjengivelse av et arkitekttegnet trehus i blå time, med lys i vinduene.",
+  alt: "Gjengivelse fra vår 3D-modell av husmodellen Adria: toetasjes hus med stående trekledning og saltak, sett fra hagen.",
 };
 /** Date stamped into the sitemap. Update when content changes materially. */
-export const CONTENT_UPDATED = "2026-10-13";
+export const CONTENT_UPDATED = "2026-10-15";
 
 /** Absolute URL for a site path ("/om-oss/" → "https://byggrv.no/om-oss/"). */
 export function absoluteUrl(path = "/"): string {
@@ -91,6 +92,7 @@ export function serviceMetadata(service: Service): Metadata {
 }
 
 export const servicePath = (slug: string) => `/tjenester/${slug}/`;
+export const houseModelPath = (slug: string) => `/husmodeller/${slug}/`;
 
 /** Every indexable route, with trailing slashes (used by sitemap.ts). */
 export function allRoutes(): string[] {
@@ -98,6 +100,8 @@ export function allRoutes(): string[] {
     pages.home.path,
     pages.tjenester.path,
     ...services.map((s) => servicePath(s.slug)),
+    pages.husmodeller.path,
+    ...houseModels.map((m) => houseModelPath(m.slug)),
     pages.referanser.path,
     pages.omOss.path,
     pages.kontakt.path,

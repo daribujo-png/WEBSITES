@@ -12,6 +12,8 @@ interface CtaBandProps {
   body?: string;
   /** Preselect this project type in the contact form. */
   projectType?: string;
+  /** Start of the message in the contact form (with projectType). */
+  message?: string;
   label?: string;
   tone?: Tone;
   id?: string;
@@ -21,6 +23,7 @@ export function CtaBand({
   title = sectionStrings.ctaBandTitle,
   body = sectionStrings.ctaBandBody,
   projectType,
+  message,
   label = cta.primary,
   tone = "chalk",
   id = "cta-tittel",
@@ -36,7 +39,7 @@ export function CtaBand({
         </div>
         <div className="col-span-full flex flex-col items-start gap-3 lg:col-span-4 lg:col-start-9">
           {projectType ? (
-            <PrefillLink value={projectType} variant="solid" className="text-left whitespace-normal!">
+            <PrefillLink value={projectType} message={message} variant="solid" className="text-left whitespace-normal!">
               {label}
             </PrefillLink>
           ) : (

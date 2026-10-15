@@ -7,17 +7,23 @@ import type { PageMeta } from "./types";
 
 export const pages = {
   home: {
-    title: "Bygg og Renovering Vest | Byggefirma i Bergen og omegn",
+    title: "Nybygg, tilbygg og tak i Bergen | Bygg og Renovering Vest",
     absoluteTitle: true,
     description:
-      "Ny bolig, tilbygg, renovering, bad og tak i Bergen og omegn. Alle fag i eget firma, én prosjektleder og nøkkelferdig levering til avtalt tid og pris.",
+      "Vi bygger nye hus, tilbygg, påbygg og tak i Bergen og omegn. Byggesøknaden ordner vi, og én prosjektleder følger jobben til avtalt tid og pris.",
     path: "/",
   },
   tjenester: {
     title: "Tjenester i Bergen og omegn",
     description:
-      "Ny bolig, påbygg og tilbygg, ombygging, rehabilitering, tak, dører og vinduer, bad, VVS og maling. Alle fag og én prosjektleder.",
+      "Nybygg, påbygg og tilbygg og takarbeid, og ombygging, oppussing, rehabilitering, dører og vinduer, bad, VVS og maling. Alle fag og én prosjektleder.",
     path: "/tjenester/",
+  },
+  husmodeller: {
+    title: "Husmodeller vi bygger",
+    description:
+      "Ferdig tegnede husmodeller vi bygger i Bergen og omegn, med fakta og bilder fra leverandøren. Vi bygger også etter dine egne tegninger.",
+    path: "/husmodeller/",
   },
   referanser: {
     title: "Referanser",

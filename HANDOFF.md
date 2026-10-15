@@ -39,12 +39,16 @@ Next.js 16 (App Router, static export) + TypeScript + Tailwind v4 + React Three 
 
 ## Decisions made with the client (do not undo)
 
-- **Style "Lys papir":** mostly light paper (#EDE8DF) and near-white. Only the hero stage and the "Slik bygger vi" 3D sequence are dark (fjord night #0E1416, blue hour). Restrained, like an architect's monograph, and **not colourful**. Colours come only from the tokens in `docs/byggrv-prompt.md` and `DESIGN.md`.
+- **Style "Lys papir":** mostly light paper (#EDE8DF) and near-white. The hero is now light (paper, daylight 3D stage); the only dark band on the home page is the references band (fjord night #0E1416). Restrained, like an architect's monograph, and **not colourful**. Colours come only from the tokens in `docs/byggrv-prompt.md` and `DESIGN.md`.
 - **No decorative numbering** (no 01, 02, 03 or "Steg x av 11"). The client finds it "too much AI". Show order with step names, progress rails and hairlines.
 - **No AI-template tells:** no label above every heading, no mono caps spec text, no em-dash-heavy copy.
 - **Facts only from the client's site** (`content-import/byggrv/`) and `docs/byggrv-prompt.md`. Never invent numbers, reviews, awards, certifications or guarantee terms. Missing facts get a visible `[MANGLER: …]`.
 - **Photos:** use the client's own photos, with the real før/etter pairs in the sliders. Images that look like stock or third-party work (shutterstock or freepik-style names, isometric clip-art, other companies' names) are **not used** and are listed in the README for a licence check.
-- **Reference house:** our interpretation of "House in Bergen" by Kvalbein Korsøen Arkitektur, credited, labelled "Arkitekttegnet referanse – slik ville vi bygget den", and marked as not built by Bygg RV. No Kvalbein Korsøen photos.
+- **The house in the hero (replaces the old reference house):** Adria, a catalogue house from Boligpartner. Our 3D model is our interpretation; Boligpartner's four images are shown as supplied with a visible credit ("Bilde: Boligpartner") and `[MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]`; the drawings are never published. Written permission is still needed (see README). No Kvalbein Korsøen credit remains.
+- **Hero: "BEGGE DELER".** A short self-building timelapse when the page opens, then the visitor scrolls through the build steps inside the pinned hero. The old separate "Slik bygger vi" section is merged into the hero (`#slik-bygger-vi` sits on its build part).
+- **Three roof types,** as Boligpartner draws Adria: saltak, flatt tak and pulttak. The hero finale and the Husmodeller section let the visitor switch between them.
+- **Positioning:** nybygg, tilbygg og påbygg, and tak lead the home page. Sprenging, grunnarbeid, VVS, elektro, maling and mur are only named from "Alle fagene i eget firma" down and on `/tjenester/`.
+- **Husmodeller:** a data-driven showcase (`src/content/house-models.ts`, `/husmodeller/`, `/husmodeller/<slug>/`), launched with Adria. More models only from the supplier's own pages, never invented.
 - **Copy:** Norwegian bokmål, "du" / "vi", calm and concrete.
 
 ## Deploy

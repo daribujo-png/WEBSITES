@@ -120,7 +120,9 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col gap-3 border-t border-line pt-6 t-caption text-fg-muted md:flex-row md:justify-between md:gap-10">
           <p>{footer.copyright(YEAR)}</p>
-          <p className="max-w-prose md:text-right">{footer.modelCredit}</p>
+          <p className="max-w-prose md:text-right">
+            <TextWithMissing text={footer.modelCredit} />
+          </p>
         </div>
       </div>
     </footer>

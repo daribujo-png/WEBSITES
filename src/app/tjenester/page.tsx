@@ -41,7 +41,7 @@ export default function TjenesterPage() {
         </ul>
       </Section>
 
-      <ProcessSection ctaHref="/kontakt/" />
+      <ProcessSection ctaHref="/kontakt/" tone="chalk" />
 
       <CtaBand title={servicesCopy.otherTitle} body={servicesCopy.otherBody} projectType="annet" tone="paper" />
     </>

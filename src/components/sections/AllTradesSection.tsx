@@ -1,38 +1,38 @@
 /**
- * Tjenester on the home page: a quiet index, one row per service (no
- * numbering). Each row is a single link to the service page: the title on the
- * left, the one-line lede and an arrow on the right, hairlines between rows.
- * On desktop a 4:3 image follows the row under the pointer or focus. The full
- * presentation of each service lives on /tjenester/ and the service pages.
- *
- * Own photos that the before/after sliders already show further down the
- * page are not reused here, so every photo appears once on the home page.
+ * "Alle fagene i eget firma" (#alle-fag): the calm all-trades mention and an
+ * index of all ten services, premium work first. This is the only place on
+ * the home page where sprenging, grunnarbeid, VVS, elektro, maling and mur
+ * are named. Each row is one link to the service page (title, one-line lede,
+ * arrow; hairlines between rows, no numbering). On desktop a 4:3 render of
+ * our model follows the row under the pointer or focus. Own photos are not
+ * used here: on the home page each own photo appears once, elsewhere.
  */
 import Link from "next/link";
-import { sectionIds, servicesCopy, company, ui } from "@/content/site";
+import { allTradesCopy, sectionIds, servicesCopy, company, ui } from "@/content/site";
 import { services } from "@/content/services";
 import type { Service } from "@/content/types";
 import { servicePath } from "@/lib/seo";
-import { Section, SectionHeader, MagneticButton, Picture, Icon } from "@/components/ui";
+import { Section, MagneticButton, Picture, Icon, RevealText } from "@/components/ui";
 import { resolveMedia, type MediaRef } from "./Media";
-import { sectionStrings } from "./strings";
 import { ServiceIndexHover } from "./ServiceIndexHover";
 
-/** Photos shown by the before/after section on the home page. */
-const BEFORE_AFTER_PHOTOS = /^(gang|tilbygg)-/;
-
+/** A render of our model for each service (own photos are used once elsewhere on home). */
 function previewMedia(service: Service): MediaRef {
-  const photo = service.photoKeys.find((k) => !BEFORE_AFTER_PHOTOS.test(k));
-  return photo ? { kind: "photo", key: photo } : { kind: "render", key: `${service.renderKey}-a` };
+  return { kind: "render", key: `${service.renderKey}-a` };
 }
 
-export function ServicesSection() {
+export function AllTradesSection() {
   return (
-    <Section id={sectionIds.services} tone="paper" labelledBy="tjenester-title">
-      <SectionHeader id="tjenester-title" title={servicesCopy.title} lede={servicesCopy.lede} />
+    <Section id={sectionIds.allTrades} tone="paper-deep" labelledBy="alle-fag-title">
+      <div className="grid-page gap-y-8 lg:items-end">
+        <RevealText as="h2" id="alle-fag-title" text={allTradesCopy.title} className="t-display-l col-span-full lg:col-span-7" />
+        <p data-reveal="up" className="t-lead col-span-full max-w-[34rem] md:col-span-6 lg:col-span-5 lg:col-start-8 lg:pb-3">
+          {allTradesCopy.body}
+        </p>
+      </div>
 
-      <ServiceIndexHover className="grid-page mt-12 items-start lg:mt-16">
-        <ol aria-label={sectionStrings.servicesListLabel} className="col-span-full border-b border-line lg:col-span-8">
+      <ServiceIndexHover className="grid-page mt-14 items-start lg:mt-20">
+        <ol aria-label={allTradesCopy.listLabel} className="col-span-full border-b border-line lg:col-span-8">
           {services.map((service) => (
             <li key={service.slug} data-row={service.slug} className="border-t border-line">
               <Link
@@ -79,7 +79,7 @@ export function ServicesSection() {
         </p>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <MagneticButton href="/tjenester/" variant="ghost" icon="arrow" className="px-0!">
-            {servicesCopy.allLink}
+            {allTradesCopy.allLink}
           </MagneticButton>
           <MagneticButton href={company.phoneHref} variant="ghost" icon="phone" aria-label={ui.callLabel} className="px-0!">
             {company.phone}

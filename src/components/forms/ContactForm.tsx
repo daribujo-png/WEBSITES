@@ -30,7 +30,14 @@ import {
 import { MagneticButton, Missing } from "@/components/ui";
 import { Alert, Check, ChevronRight } from "@/components/ui/Icons";
 import { cn } from "@/lib/utils";
-import { CONTACT_FORM_ID, PREFILL_EVENT, PREFILL_PARAM, type PrefillDetail } from "./prefill";
+import {
+  CONTACT_FORM_ID,
+  PREFILL_EVENT,
+  PREFILL_MESSAGE_MAX,
+  PREFILL_MESSAGE_PARAM,
+  PREFILL_PARAM,
+  type PrefillDetail,
+} from "./prefill";
 
 type Status = "idle" | "submitting" | "sent" | "mailto" | "error";
 
@@ -98,14 +105,24 @@ export function ContactForm({ className, headingLevel = "h3" }: { className?: st
   const Heading = headingLevel;
 
   // Preselect the project type from ?prosjekt=<slug> and from <PrefillLink>.
+  // An optional ?melding=… starts the message, but never overwrites what someone wrote.
   useEffect(() => {
-    const fromQuery = new URLSearchParams(window.location.search).get(PREFILL_PARAM);
+    const fillMessage = (text: string | null | undefined) => {
+      const field = formRef.current?.elements.namedItem("melding");
+      if (!text || !(field instanceof HTMLTextAreaElement) || field.value.trim() !== "") return;
+      field.value = text.slice(0, PREFILL_MESSAGE_MAX);
+    };
+    const query = new URLSearchParams(window.location.search);
+    const fromQuery = query.get(PREFILL_PARAM);
     if (isProjectType(fromQuery) && selectRef.current) selectRef.current.value = fromQuery;
+    fillMessage(query.get(PREFILL_MESSAGE_PARAM));
 
     const onPrefill = (e: Event) => {
-      const value = (e as CustomEvent<PrefillDetail>).detail?.prosjekttype ?? null;
+      const detail = (e as CustomEvent<PrefillDetail>).detail;
+      const value = detail?.prosjekttype ?? null;
       const select = selectRef.current;
       if (!select || !isProjectType(value)) return;
+      fillMessage(detail?.melding);
       select.value = value;
       setErrors((prev) => ({ ...prev, prosjekttype: undefined }));
       select.focus({ preventScroll: true });

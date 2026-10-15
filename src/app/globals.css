@@ -1,8 +1,9 @@
 /*
  * Bygg og Renovering Vest – global styles and design tokens.
- * "Lys papir": light paper pages with dark text. Only the hero stage and the
- * "Slik bygger vi" build sequence are dark (fjord night / slate).
- * Every colour used anywhere on the site is a token below. See DESIGN.md.
+ * "Lys papir": light paper pages with dark text. The hero is paper with a
+ * daylight 3D stage; the only dark band on the home page is the references
+ * band (fjord night). Every colour used anywhere on the site is a token
+ * below. See DESIGN.md.
  */
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
@@ -560,6 +561,87 @@
   }
 }
 
+/* The "alive" motion system (DESIGN.md §4): scroll-linked behaviours ---------------
+   Pust and Drift run on CSS scroll-driven animations (compositor only, no JS,
+   cheap on phones). Browsers without animation-timeline simply show the
+   element at rest. Both are off for reduced motion. */
+
+/* Pust (breath): a photo inside its frame settles from 1.06 to 1.00 and drifts
+   ±4 % in Y while its frame crosses the viewport. The layer is 110 % of the
+   frame's height (see <Pust>), so the frame is always covered. */
+@keyframes pust {
+  from {
+    transform: translate3d(0, -4%, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(0, 4%, 0) scale(1);
+  }
+}
+
+/* Drift: loose sheets on a light table. Sheets lag the scroll a little
+   (0.92×), plates lead it (1.06×), ±6 vh. Desktop only. */
+@keyframes drift-slow {
+  from {
+    transform: translate3d(0, -6vh, 0);
+  }
+  to {
+    transform: translate3d(0, 6vh, 0);
+  }
+}
+@keyframes drift-fast {
+  from {
+    transform: translate3d(0, 6vh, 0);
+  }
+  to {
+    transform: translate3d(0, -6vh, 0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pust {
+      animation: pust linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+      will-change: transform;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+    .drift-slow,
+    .drift-fast {
+      animation: drift-slow linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .drift-fast {
+      animation-name: drift-fast;
+    }
+  }
+}
+
+/* Strek (line) for SVG drawings: every stroke has pathLength="1" and
+   data-stroke, and draws on when its drawing is revealed. --o (0..1) is its
+   place in the drawing order; --stroke-span is the time over which the
+   starts are spread, --stroke-dur how long one stroke takes. */
+@layer components {
+  [data-reveal="stroke"] [data-stroke] {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--stroke-dur, 900ms) cubic-bezier(0.37, 0, 0.63, 1);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--o, 0) * var(--stroke-span, 1500ms));
+  }
+  .js [data-reveal="stroke"]:not([data-revealed]) [data-stroke] {
+    stroke-dashoffset: 1;
+  }
+  [data-reveal="stroke"] [data-stroke-fade] {
+    transition: opacity var(--dur-slow) var(--ease-weight);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--o, 0) * var(--stroke-span, 1500ms) + 300ms);
+  }
+  .js [data-reveal="stroke"]:not([data-revealed]) [data-stroke-fade] {
+    opacity: 0;
+  }
+}
+
 /* Reduced motion: no transforms, no smooth scrolling, near-instant transitions. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -576,6 +658,9 @@
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+  }
+  .js [data-reveal="stroke"] [data-stroke] {
+    stroke-dashoffset: 0 !important;
   }
 }
 

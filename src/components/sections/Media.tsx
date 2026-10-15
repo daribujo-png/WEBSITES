@@ -8,7 +8,7 @@
 import type { CSSProperties } from "react";
 import { getPhoto, ui, type PhotoKey, type Service } from "@/content";
 import type { RenderAsset } from "@/lib/images";
-import { Picture, MissingImage } from "@/components/ui";
+import { Picture, MissingImage, Pust } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { getRenderAsset } from "./RenderImage";
 import { Parallax } from "./Parallax";
@@ -65,8 +65,10 @@ interface MediaFigureProps {
   imgClassName?: string;
   /** Extra attributes for the cursor ring, e.g. data-cursor-label. */
   cursorLabel?: string;
-  /** Slow scroll drift of the image inside its frame (off for reduced motion). */
+  /** Slow scroll drift of the image inside its frame (GSAP, fine pointers only; off for reduced motion). */
   parallax?: boolean;
+  /** Pust: the photo breathes inside its frame while it crosses the viewport (CSS only; off for reduced motion). */
+  pust?: boolean;
   style?: CSSProperties;
 }
 
@@ -84,6 +86,7 @@ export function MediaFigure({
   imgClassName,
   cursorLabel,
   parallax,
+  pust,
   style,
 }: MediaFigureProps) {
   const resolved = resolveMedia(media);
@@ -103,7 +106,11 @@ export function MediaFigure({
         style={{ aspectRatio: aspect }}
       >
         {reveal && !priority ? <Curtain /> : null}
-        {parallax ? (
+        {pust && !priority ? (
+          <Pust>
+            <Picture asset={resolved.asset} sizes={sizes} alt={alt} fill imgClassName={imgClassName} />
+          </Pust>
+        ) : parallax ? (
           <Parallax amount={6} className="absolute inset-x-0 -inset-y-[9%]">
             <Picture asset={resolved.asset} sizes={sizes} alt={alt} priority={priority} fill imgClassName={imgClassName} />
           </Parallax>

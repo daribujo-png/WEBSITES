@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
-import { company, servicesCopy, tradeById, ui } from "@/content/site";
+import { company, sectionIds, servicesCopy, tradeById, ui } from "@/content/site";
 import { getService, legacyRedirects, services } from "@/content/services";
 import { renderBeforeAfterPairs } from "@/content/references";
 import type { ServiceSlug } from "@/content/types";
@@ -22,6 +22,7 @@ import {
   legacyMetadata,
   MediaFigure,
   PageHero,
+  PermitsSection,
   ServiceCard,
   hasOwnPhotos,
   pairAvailable,
@@ -56,6 +57,9 @@ function legacyLabel(to: string) {
   const target = services.find((s) => servicePath(s.slug) === to);
   return target ? target.title : servicesCopy.indexTitle;
 }
+
+/** The byggesøknad section (permit types with the 3D diagram) lives on this service page. */
+const PERMITS_SLUG: ServiceSlug = "pabygg-og-tilbygg";
 
 /** Render illustrations that fit a service without own photos. */
 const ILLUSTRATION_FOR: Partial<Record<ServiceSlug, string>> = {
@@ -169,7 +173,14 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
             {service.permitRelevant ? (
               <p className="t-body mt-8 max-w-prose border-l border-fg-accent pl-5">
                 {servicesCopy.permitNote}{" "}
-                <Link href="/#byggesoknad" className={underlined}>
+                <Link
+                  href={
+                    service.slug === PERMITS_SLUG
+                      ? `#${sectionIds.permits}`
+                      : `${servicePath(PERMITS_SLUG)}#${sectionIds.permits}`
+                  }
+                  className={underlined}
+                >
                   {sectionStrings.permitLink}
                 </Link>
               </p>
@@ -212,6 +223,9 @@ export default async function ServicePage({ params }: PageProps<"/tjenester/[slu
           </aside>
         </div>
       </Section>
+
+      {/* Byggesøknad: the five building types we apply for, with one shared 3D diagram. */}
+      {service.slug === PERMITS_SLUG ? <PermitsSection /> : null}
 
       {/* More images (photos beyond the first two, then renders) */}
       {gallery.length > 0 ? (

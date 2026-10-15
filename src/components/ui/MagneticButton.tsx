@@ -1,10 +1,13 @@
 "use client";
 
 /**
- * Primary call-to-action. On a fine pointer (mouse/trackpad) and without
- * reduced motion, the button leans gently toward the cursor and its label
- * follows a little further. Everywhere else it is a plain, fully accessible
- * link or button. Colours are tone-aware (ink on paper, snow on night).
+ * Primary call-to-action (Lodd, DESIGN.md §4). On a fine pointer
+ * (mouse/trackpad) and without reduced motion, the button leans toward the
+ * cursor once it is within 24 px (at most 6 px) and its label follows a
+ * little further; it settles back in 450 ms. On hover and keyboard focus the
+ * fill wipes up from the bottom. Everywhere else it is a plain, fully
+ * accessible link or button. Colours are tone-aware (ink on paper, snow on
+ * night).
  *
  *   <MagneticButton href="/kontakt/">Book en uforpliktende samtale</MagneticButton>
  *   <MagneticButton href="tel:+4794016610" variant="outline" icon="phone">94 01 66 10</MagneticButton>
@@ -37,16 +40,24 @@ const sizes: Record<ButtonSize, string> = {
   lg: "min-h-14 px-8 t-body",
 };
 
+/** The hover fill: a layer behind the label that wipes up from the bottom edge. */
+const wipe =
+  "isolate overflow-hidden before:pointer-events-none before:absolute before:inset-0 before:-z-[1] before:origin-bottom before:scale-y-0 before:transition-transform before:duration-(--dur-base) before:ease-expo hover:before:scale-y-100 focus-visible:before:scale-y-100 disabled:before:hidden aria-disabled:before:hidden";
+
 const variants: Record<ButtonVariant, string> = {
-  /** Ink on paper / snow on night; hover warms to oak-deep / brass. */
-  solid: "bg-fg text-tone hover:bg-fg-accent",
-  /** Hairline frame; fills on hover. */
-  outline: "border border-line-strong text-fg hover:border-fg hover:bg-fg hover:text-tone",
+  /** Ink on paper / snow on night; hover wipes to oak-deep / brass. */
+  solid: cn("bg-fg text-tone before:bg-fg-accent", wipe),
+  /** Hairline frame; the ink fill wipes up on hover. */
+  outline: cn("border border-line-strong text-fg before:bg-fg hover:border-fg hover:text-tone focus-visible:text-tone", wipe),
   /** Text button with the animated underline. */
   ghost: "min-h-11 px-0 text-fg",
-  /** Brass fill. Dark stages only, at most once per view. */
-  accent: "bg-brass text-night hover:bg-snow",
+  /** Brass fill. The night references band only, at most once per view. */
+  accent: cn("bg-brass text-night before:bg-snow", wipe),
 };
+
+/** Magnetism: reach (px from the button's edge) and largest offset (px). */
+const MAGNET_RANGE = 24;
+const MAGNET_MAX = 6;
 
 /** Class string for links/buttons that should look like buttons without the magnet. */
 export function buttonClasses({
@@ -54,7 +65,9 @@ export function buttonClasses({
   size = "md",
   className,
 }: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {}) {
-  return cn(base, sizes[size], variants[variant], className);
+  // A ghost button is a text link: it keeps the size's height but no side padding.
+  const sizeClass = variant === "ghost" ? sizes[size].replace(/\bpx-\d+\b/, "") : sizes[size];
+  return cn(base, sizeClass, variants[variant], className);
 }
 
 function IconFor({ name }: { name: IconName }) {
@@ -130,38 +143,62 @@ export function MagneticButton(props: MagneticButtonProps) {
     let ty = 0;
     let x = 0;
     let y = 0;
+    let px = -1e5;
+    let py = -1e5;
+    let inView = false;
+    let measure = false;
+
+    const clampMax = (v: number) => Math.max(-MAGNET_MAX, Math.min(MAGNET_MAX, v));
 
     const loop = () => {
-      x += (tx - x) * 0.18;
-      y += (ty - y) * 0.18;
+      raf = 0;
+      if (measure) {
+        measure = false;
+        // The rect includes the current offset; take it out to get the resting box.
+        const r = el.getBoundingClientRect();
+        const cx = r.left - x + r.width / 2;
+        const cy = r.top - y + r.height / 2;
+        const dx = px - cx;
+        const dy = py - cy;
+        const outX = Math.max(Math.abs(dx) - r.width / 2, 0);
+        const outY = Math.max(Math.abs(dy) - r.height / 2, 0);
+        const near = Math.hypot(outX, outY) <= MAGNET_RANGE;
+        tx = near ? clampMax(dx * strength) : 0;
+        ty = near ? clampMax(dy * strength) : 0;
+      }
+      x += (tx - x) * 0.16;
+      y += (ty - y) * 0.16;
       el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
       label.style.transform = `translate3d(${(x * 0.45).toFixed(2)}px, ${(y * 0.45).toFixed(2)}px, 0)`;
-      if (Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05) {
-        raf = requestAnimationFrame(loop);
-      } else {
-        raf = 0;
-      }
+      if (Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05) raf = requestAnimationFrame(loop);
     };
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(loop);
     };
     const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      tx = (e.clientX - (r.left + r.width / 2)) * strength;
-      ty = (e.clientY - (r.top + r.height / 2)) * strength;
+      if (!inView || e.pointerType !== "mouse") return;
+      px = e.clientX;
+      py = e.clientY;
+      measure = true;
       kick();
     };
-    const onLeave = () => {
-      tx = 0;
-      ty = 0;
+    const onLeaveWindow = () => {
+      px = py = -1e5;
+      measure = true;
       kick();
     };
 
-    el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerleave", onLeave);
+    const io = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (!inView) onLeaveWindow();
+    });
+    io.observe(el);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onLeaveWindow);
     return () => {
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerleave", onLeave);
+      io.disconnect();
+      window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("pointerleave", onLeaveWindow);
       cancelAnimationFrame(raf);
       el.style.transform = "";
       label.style.transform = "";

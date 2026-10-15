@@ -4,15 +4,16 @@
  * totalrenovering → oppussing-og-renovering, rorlegger-vvs → vvs,
  * tomrer → pabygg-og-tilbygg / ombygging / rehabilitering (+ trades).
  * Never the old shared "Har du tomt, men ikke hus?" paragraph.
- * Order = display order.
+ * Display order is set by SERVICE_ORDER below: the premium work first
+ * (nybygg, påbygg og tilbygg, tak), then the rest (DIRECTION-adria.md §3).
  */
 import type { Service, ServiceSlug } from "./types";
 
-export const services: Service[] = [
+const allServices: Service[] = [
   {
     slug: "ny-bolig",
-    title: "Ny bolig",
-    shortTitle: "Ny bolig",
+    title: "Nybygg",
+    shortTitle: "Nybygg",
     lede: "Vi bygger huset etter dine ønsker og spesifikasjoner, og leverer det nøkkelferdig til avtalt tid og pris.",
     body: [
       "Vi har lang erfaring med å sette opp hus og andre bygg. Alle fagene er i eget firma. Vi sprenger og graver, støper grunnmuren, reiser bindingsverket og tetter huset med tak, vinduer og kledning.",
@@ -30,7 +31,7 @@ export const services: Service[] = [
     ],
     trades: ["prosjektledelse", "sprenging", "mur-betong", "tomrer", "elektro", "vvs", "maler"],
     permitRelevant: true,
-    cta: "Snakk med oss om ny bolig",
+    cta: "Snakk med oss om nybygg",
     metaTitle: "Bygge nytt hus i Bergen",
     metaDescription:
       "Vi bygger ny bolig etter dine spesifikasjoner, fra byggesøknad og sprenging til nøkkelferdig hus. Alle fag i eget firma og én prosjektleder.",
@@ -289,7 +290,7 @@ export const services: Service[] = [
     body: [
       "Rørleggerne våre installerer og reparerer sanitæranlegg, varmeanlegg og andre røranlegg, fra nye vann- og avløpsledninger til kraner, oppvaskmaskin og vaskemaskin. De er en del av samme firma som snekkerne og elektrikerne, så rørføringene planlegges før veggene lukkes.",
       "God ventilasjon gir et sunnere inneklima med mindre fukt og mugg. Vi installerer ventilasjonsanlegg og tar service og vedlikehold.",
-      "Vil du bruke mindre energi, ser vi på varmeanlegget og foreslår energieffektive løsninger. Vi gir råd om valg av varmepumpe og installerer den. Arbeidet dokumenterer vi.",
+      "Vil du bruke mindre energi, ser vi på varmeanlegget og foreslår tiltak som sparer energi. Vi gir råd om valg av varmepumpe og installerer den. Arbeidet dokumenterer vi.",
     ],
     includes: [
       "Vann- og avløpsledninger",
@@ -348,6 +349,26 @@ export const services: Service[] = [
     legacyPaths: ["/tjenester/maling/"],
   },
 ];
+
+/** Premium work first: nybygg, påbygg og tilbygg and tak lead every list of services. */
+const SERVICE_ORDER: ServiceSlug[] = [
+  "ny-bolig",
+  "pabygg-og-tilbygg",
+  "takarbeid",
+  "ombygging",
+  "oppussing-og-renovering",
+  "rehabilitering-og-renovering",
+  "dorer-og-vinduer",
+  "oppussing-av-bad",
+  "vvs",
+  "maling",
+];
+
+export const services: Service[] = SERVICE_ORDER.map((slug) => {
+  const service = allServices.find((s) => s.slug === slug);
+  if (!service) throw new Error(`Unknown service in SERVICE_ORDER: ${slug}`);
+  return service;
+});
 
 export const serviceSlugs: ServiceSlug[] = services.map((s) => s.slug);
 

@@ -304,8 +304,8 @@ export const values: Value[] = [
   },
   {
     id: "fleksibel",
-    title: "Fleksible løsninger",
-    body: "Vi tilpasser løsningen til dine behov, enten du trenger hele jobben eller bare en del av den.",
+    title: "Tilpasset jobben",
+    body: "Vi tilpasser arbeidet til det du trenger, enten det er hele jobben eller bare en del av den.",
   },
   {
     id: "pris",
@@ -452,7 +452,7 @@ export const missingFacts: MissingFact[] = [
     key: "clientPhotos",
     label: "egne prosjektbilder",
     where: [
-      "Tjenester uten egne bilder: ny bolig, bytte dører og vinduer, VVS og maling (viser 3D-gjengivelser)",
+      "Tjenester uten egne bilder: nybygg, bytte dører og vinduer, VVS og maling (viser 3D-gjengivelser)",
       "Referanser: rekkehus, Vestheim og Kjerrgarden",
     ],
   },

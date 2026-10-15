@@ -9,11 +9,13 @@
 import type { MouseEvent } from "react";
 import { MagneticButton, type ButtonSize, type ButtonVariant } from "@/components/ui";
 import { scrollToTarget } from "@/components/providers";
-import { CONTACT_FORM_ID, PREFILL_EVENT, PREFILL_PARAM, type PrefillDetail } from "./prefill";
+import { CONTACT_FORM_ID, PREFILL_EVENT, PREFILL_MESSAGE_PARAM, PREFILL_PARAM, type PrefillDetail } from "./prefill";
 
 interface PrefillLinkProps {
   /** Value from projectTypeOptions (a service slug or "annet"). */
   value: string;
+  /** Optional start of the message (fills the message field only when it is empty). */
+  message?: string;
   children: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -21,17 +23,19 @@ interface PrefillLinkProps {
   className?: string;
 }
 
-export function prefillHref(value: string) {
-  return `/kontakt/?${PREFILL_PARAM}=${encodeURIComponent(value)}`;
+export function prefillHref(value: string, message?: string) {
+  const q = new URLSearchParams({ [PREFILL_PARAM]: value });
+  if (message) q.set(PREFILL_MESSAGE_PARAM, message);
+  return `/kontakt/?${q.toString()}`;
 }
 
-export function PrefillLink({ value, children, variant = "outline", size = "md", icon = "arrow", className }: PrefillLinkProps) {
+export function PrefillLink({ value, message, children, variant = "outline", size = "md", icon = "arrow", className }: PrefillLinkProps) {
   const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const form = document.getElementById(CONTACT_FORM_ID);
     if (!form) return;
     e.preventDefault();
-    window.dispatchEvent(new CustomEvent<PrefillDetail>(PREFILL_EVENT, { detail: { prosjekttype: value } }));
+    window.dispatchEvent(new CustomEvent<PrefillDetail>(PREFILL_EVENT, { detail: { prosjekttype: value, melding: message } }));
     // After the click has finished bubbling: Lenis resets any running scroll
     // animation when an internal link is clicked (stopInertiaOnNavigate).
     // Scroll to the form itself (on phones it sits well below the section
@@ -43,7 +47,7 @@ export function PrefillLink({ value, children, variant = "outline", size = "md",
   };
 
   return (
-    <MagneticButton href={prefillHref(value)} variant={variant} size={size} icon={icon} className={className} onClick={onClick}>
+    <MagneticButton href={prefillHref(value, message)} variant={variant} size={size} icon={icon} className={className} onClick={onClick}>
       {children}
     </MagneticButton>
   );

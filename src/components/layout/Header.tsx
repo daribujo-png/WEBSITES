@@ -3,9 +3,10 @@
 /**
  * Site header. Fixed, var(--header-h) tall.
  *
- * - Tone follows the band underneath: over a dark stage (any element with
- *   data-header="dark", i.e. the hero and "Slik bygger vi") it switches to
- *   snow-on-night; everywhere else it is ink on paper with a hairline.
+ * - Tone follows the band underneath: over a dark band (any element with
+ *   data-header="dark", or a tall night/slate band such as the references on
+ *   the home page) it switches to snow-on-night; everywhere else, the light
+ *   paper hero included, it is ink on paper with a hairline once scrolled.
  * - Desktop (lg+): main nav plus phone and e-mail, always one click away.
  * - Below lg: a "Meny" button opens a full-screen dialog. Phone/e-mail live in
  *   <MobileActionBar> at the bottom of the screen.
@@ -27,8 +28,8 @@ function isCurrent(pathname: string, href: string) {
 }
 
 function useHeaderTone(pathname: string) {
-  // The home page opens on the dark hero, so start dark there (no flash).
-  const [state, setState] = useState(() => ({ dark: pathname === "/", scrolled: false }));
+  // Every page, home included, opens on paper: start light (no flash).
+  const [state, setState] = useState(() => ({ dark: false, scrolled: false }));
 
   useEffect(() => {
     let raf = 0;
@@ -143,7 +144,9 @@ export function Header() {
     }
   };
 
-  const transparent = dark && !scrolled;
+  // At the very top the header sits on the page (no fill, no hairline); once
+  // the page scrolls it takes the tone's background and a bottom hairline.
+  const transparent = !scrolled;
 
   return (
     <>
@@ -166,13 +169,16 @@ export function Header() {
             <ul className="flex items-center gap-7 t-small xl:gap-9">
               {nav.map((item) => {
                 const current = isCurrent(pathname, item.href);
+                // 1024–1279 px: the bar is too narrow for every item; "Slik bygger vi"
+                // stays in the mobile menu and in the hero itself (the hero links to it).
+                const optional = item.href.includes("#slik-bygger-vi");
                 return (
-                  <li key={item.href}>
+                  <li key={item.href} className={optional ? "hidden xl:list-item" : undefined}>
                     <Link
                       href={item.href}
                       aria-current={current ? "page" : undefined}
                       className={cn(
-                        "inline-flex min-h-11 items-center",
+                        "inline-flex min-h-11 items-center whitespace-nowrap",
                         current ? "underline decoration-1 underline-offset-[0.35em]" : underlineOnHover,
                       )}
                     >

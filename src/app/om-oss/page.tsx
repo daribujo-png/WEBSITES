@@ -1,17 +1,26 @@
 /**
  * /om-oss/: who we are, values, trades, the facts we still need from the
- * client ([MANGLER]) and the honest note about the 3D reference house.
+ * client ([MANGLER]) and the honest note about the house in the 3D model
+ * (our interpretation of Adria from Boligpartner).
  */
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
 import { pageMetadata } from "@/lib/seo";
-import { about, referenceHouse } from "@/content/site";
-import { Section, RevealText, TextWithMissing, MagneticButton } from "@/components/ui";
+import { about, adriaHouse } from "@/content/site";
+import { getHouseModel } from "@/content/house-models";
+import { Section, RevealText, TextWithMissing, MagneticButton, SmartLink } from "@/components/ui";
 import { CtaBand, MediaFigure, PageHero, TradesList, ValuesList } from "@/components/sections";
+import { getRenderAsset } from "@/components/sections/RenderImage";
 import { sectionStrings } from "@/components/sections/strings";
+import { underlined } from "@/components/sections/styles";
 
 export const metadata = pageMetadata("omOss");
 
+/** Our own render of the finished Adria (never a supplier image here: this section is about the model). */
+const TWIN_KEYS = ["adria-twin", "step-nokkelferdig"];
+
 export default function OmOssPage() {
+  const twinKey = TWIN_KEYS.find((k) => getRenderAsset(k) !== null);
+  const adria = getHouseModel("adria");
   return (
     <>
       <PageHero title={about.headline} lede={about.lede} crumbs={[{ name: about.title, path: "/om-oss/" }]} />
@@ -79,41 +88,53 @@ export default function OmOssPage() {
         </div>
       </Section>
 
-      {/* The reference house behind the 3D model: credit + honest note. */}
-      <Section id="referansehuset" tone="chalk" labelledBy="referansehuset-tittel">
+      {/* The house in the 3D model: our interpretation of Adria from Boligpartner. */}
+      <Section id="huset-i-3d" tone="chalk" labelledBy="huset-i-3d-tittel">
+        {/* Old links to /om-oss/#referansehuset land here. */}
+        <span id="referansehuset" aria-hidden="true" />
         <div className="grid-page gap-y-12">
           <div className="col-span-full lg:col-span-7">
-            <RevealText as="h2" id="referansehuset-tittel" text={referenceHouse.title} className="t-display-m" />
+            <RevealText as="h2" id="huset-i-3d-tittel" text={adriaHouse.title} className="t-display-m" />
           </div>
-          <MediaFigure
-            media={{ kind: "render", key: "hero-day" }}
-            missingLabel="3D-gjengivelse av referansehuset"
-            sizes="(min-width: 64rem) 55vw, calc(100vw - 2rem)"
-            aspect="16 / 10"
-            className="col-span-full lg:col-span-7"
-          />
-          <div className="col-span-full lg:col-span-4 lg:col-start-9">
+          {twinKey ? (
+            <MediaFigure
+              media={{ kind: "render", key: twinKey }}
+              sizes="(min-width: 64rem) 55vw, calc(100vw - 2rem)"
+              aspect="16 / 9"
+              className="col-span-full lg:col-span-7"
+            />
+          ) : null}
+          <div className={twinKey ? "col-span-full lg:col-span-4 lg:col-start-9" : "col-span-full lg:col-span-6"}>
             <dl className="t-small grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-t border-line pt-5">
-              <dt className="text-fg-muted">{sectionStrings.houseLabels.name}</dt>
-              <dd>{referenceHouse.name}</dd>
-              <dt className="text-fg-muted">{sectionStrings.houseLabels.architect}</dt>
-              <dd>{referenceHouse.architect}</dd>
-              <dt className="text-fg-muted">{sectionStrings.houseLabels.place}</dt>
-              <dd>{referenceHouse.place}</dd>
-              <dt className="text-fg-muted">{sectionStrings.houseLabels.completed}</dt>
-              <dd>{referenceHouse.completed}</dd>
-              <dt className="text-fg-muted">{sectionStrings.houseLabels.area}</dt>
-              <dd>{referenceHouse.area}</dd>
+              <dt className="text-fg-muted">{sectionStrings.houseLabels.model}</dt>
+              <dd>{adriaHouse.name}</dd>
+              <dt className="text-fg-muted">{sectionStrings.houseLabels.supplier}</dt>
+              <dd>
+                <SmartLink href={adriaHouse.supplierUrl} className={underlined}>
+                  {adriaHouse.supplier}
+                </SmartLink>
+              </dd>
+              {adria
+                ? adria.facts
+                    .filter((f) => f.label === "Bruksareal" || f.label === "Taktyper")
+                    .map((f) => (
+                      <Fragment key={f.label}>
+                        <dt className="text-fg-muted">{f.label}</dt>
+                        <dd>{f.value}</dd>
+                      </Fragment>
+                    ))
+                : null}
             </dl>
-            <p className="t-body mt-8">{referenceHouse.description}</p>
-            <p className="t-body mt-5 border-l border-fg-accent pl-5">{referenceHouse.note}</p>
-            <p className="t-small mt-5 text-fg-muted">
-              {referenceHouse.modelNote} {referenceHouse.rendersNote}
+            <p className="t-body mt-8">
+              {adriaHouse.body} <TextWithMissing text={adriaHouse.missing} />
             </p>
-            <p className="t-caption mt-5 text-fg-muted">{referenceHouse.credit}</p>
-            <div className="mt-8">
+            <p className="t-small mt-5 text-fg-muted">{adriaHouse.modelNote}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
               <MagneticButton href="/#slik-bygger-vi" variant="outline" icon="arrow">
                 {sectionStrings.buildLink}
+              </MagneticButton>
+              <MagneticButton href={adriaHouse.href} variant="ghost" icon="arrow" className="px-0!">
+                {adriaHouse.linkLabel}
               </MagneticButton>
             </div>
           </div>

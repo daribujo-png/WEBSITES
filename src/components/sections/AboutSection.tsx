@@ -1,11 +1,12 @@
 /**
- * Om oss on the home page: who we are, three short paragraphs, a link to
- * /om-oss/ and the trades as one sentence. Values and the full trades list
- * (ValuesList, TradesList) live on /om-oss/ only.
+ * Om oss on the home page: who we are, our own photo over Bergen (Pust),
+ * three short paragraphs, a link to /om-oss/ and the trades as one sentence.
+ * Values and the full trades list (ValuesList, TradesList) live on /om-oss/ only.
  */
 import type { CSSProperties } from "react";
 import { about, sectionIds, trades, values } from "@/content/site";
-import { Section, MagneticButton, RevealText, Hairline } from "@/components/ui";
+import { getPhoto } from "@/content/photos";
+import { Section, MagneticButton, RevealText, Hairline, Picture, Pust } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { lowerFirst, sectionStrings } from "./strings";
 
@@ -52,6 +53,7 @@ function tradeSentence(): string {
 }
 
 export function AboutSection() {
+  const photo = getPhoto(about.photoKey);
   return (
     <Section id={sectionIds.about} tone="chalk" labelledBy="om-oss-title">
       <div className="grid-page gap-y-10 lg:items-end">
@@ -64,22 +66,35 @@ export function AboutSection() {
           </p>
         </div>
       </div>
-      <div className="grid-page mt-12 gap-y-8 lg:mt-16">
-        {about.body.map((p, i) => (
-          <p
-            key={i}
-            data-reveal="up"
-            style={{ "--reveal-delay": `${i * 110}ms` } as CSSProperties}
-            className="t-body col-span-full max-w-prose text-fg-muted md:col-span-4 lg:col-span-4"
-          >
-            {p}
-          </p>
-        ))}
-      </div>
-      <div className="mt-10">
-        <MagneticButton href="/om-oss/" variant="outline" icon="arrow">
-          {sectionStrings.aboutLink}
-        </MagneticButton>
+
+      <div className="grid-page mt-14 gap-y-12 lg:mt-20 lg:items-start">
+        {photo ? (
+          <figure className="col-span-full md:col-span-6 lg:col-span-6">
+            <div className="relative overflow-hidden bg-paper-deep" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
+              <Pust>
+                <Picture asset={photo} sizes="(min-width: 90rem) 40rem, (min-width: 64rem) 46vw, calc(100vw - 2rem)" fill />
+              </Pust>
+            </div>
+            <figcaption className="t-caption mt-3 text-fg-muted">{photo.caption}</figcaption>
+          </figure>
+        ) : null}
+        <div className="col-span-full flex flex-col gap-6 md:col-span-6 lg:col-span-5 lg:col-start-8">
+          {about.body.map((p, i) => (
+            <p
+              key={i}
+              data-reveal="up"
+              style={{ "--reveal-delay": `${i * 110}ms` } as CSSProperties}
+              className="t-body max-w-prose text-fg-muted"
+            >
+              {p}
+            </p>
+          ))}
+          <div className="mt-2">
+            <MagneticButton href="/om-oss/" variant="outline" icon="arrow">
+              {sectionStrings.aboutLink}
+            </MagneticButton>
+          </div>
+        </div>
       </div>
 
       <p data-reveal="up" className="t-lead mt-16 max-w-[52rem] border-t border-line pt-8 lg:mt-24">

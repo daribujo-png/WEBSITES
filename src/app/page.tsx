@@ -1,21 +1,22 @@
 /**
- * Home: the whole story in the order of the brief.
- * Hero → Alt under ett tak → Slik bygger vi (3D) → Tjenester → (photo) → Fra tegning
- * til nøkkel → Byggesøknad → Før og etter → Referanser → Om oss → Kontakt.
+ * Home, in the order of DIRECTION-adria.md §3:
+ * Hero (with the build steps, #slik-bygger-vi) → Dette bygger vi → Jobber vi
+ * har gjort (the only night band) → Husmodeller vi bygger → Fra første samtale
+ * til overlevering → Alle fagene i eget firma → photo interlude → Om oss →
+ * Kontakt. Nybygg, tilbygg/påbygg and tak lead; sprenging, VVS and the other
+ * trades are only named from "Alle fagene i eget firma" down.
  */
 import { pageMetadata } from "@/lib/seo";
-import { BuildSequence } from "@/components/three";
 import {
   AboutSection,
-  BeforeAfterSection,
+  AllTradesSection,
   ContactSection,
   Hero,
+  HouseModelsSection,
   Interlude,
-  Intro,
-  PermitsSection,
+  LeadServices,
   ProcessSection,
   ReferencesSection,
-  ServicesSection,
 } from "@/components/sections";
 
 export const metadata = pageMetadata("home");
@@ -24,14 +25,12 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Intro />
-      <BuildSequence />
-      <ServicesSection />
-      <Interlude />
-      <ProcessSection />
-      <PermitsSection />
-      <BeforeAfterSection />
+      <LeadServices />
       <ReferencesSection />
+      <HouseModelsSection />
+      <ProcessSection />
+      <AllTradesSection />
+      <Interlude />
       <AboutSection />
       <ContactSection />
     </>

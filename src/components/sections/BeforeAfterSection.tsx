@@ -1,15 +1,15 @@
 /**
- * Før og etter: comparison sliders. On the home page these are the real
- * before/after photos from our own projects. Render pairs (illustrations from
- * the 3D model) are used on service pages and always carry the
- * illustration note.
+ * Før og etter: one comparison slider per pair. Photo pairs are the real
+ * before/after photos from our own projects (/referanser/; on the home page
+ * the tilbygg pair sits in "Dette bygger vi" and the gang pair among the
+ * reference sheets). Render pairs (illustrations from the 3D model) are used
+ * on service pages and always carry the illustration note.
  */
-import { beforeAfterCopy, sectionIds } from "@/content/site";
-import { beforeAfterPairs } from "@/content/references";
+import { beforeAfterCopy } from "@/content/site";
 import { getPhoto } from "@/content/photos";
 import type { BeforeAfterPair } from "@/content/types";
 import type { RenderAsset } from "@/lib/images";
-import { BeforeAfter, Picture, Section, SectionHeader } from "@/components/ui";
+import { BeforeAfter, Picture } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { getRenderAsset } from "./RenderImage";
 
@@ -65,26 +65,5 @@ export function BeforeAfterPairFigure({ pair, sizes = "(min-width: 64rem) 45vw, 
         }
       />
     </div>
-  );
-}
-
-export function BeforeAfterSection() {
-  const pairs = beforeAfterPairs.filter(pairAvailable);
-  if (pairs.length === 0) return null;
-  return (
-    <Section id={sectionIds.beforeAfter} tone="chalk" labelledBy="for-etter-title">
-      <SectionHeader id="for-etter-title" title={beforeAfterCopy.title} />
-      <div className="grid-page mt-16 gap-y-16 lg:mt-24">
-        {pairs.map((pair, i) => (
-          <div
-            key={pair.id}
-            data-reveal="up"
-            className={cn("col-span-full md:col-span-4 lg:col-span-6", i % 2 === 1 && "lg:mt-24")}
-          >
-            <BeforeAfterPairFigure pair={pair} />
-          </div>
-        ))}
-      </div>
-    </Section>
   );
 }

@@ -1,16 +1,18 @@
 /**
  * Byggesøknad: we write and send the application. Five building types, each
- * with a small interactive 3D diagram (grey = the house you have, oak = new).
+ * with a small interactive 3D diagram (grey = the house you have, oak = new);
+ * one diagram (one WebGL context) is shared across the tabs. Lives on
+ * /tjenester/pabygg-og-tilbygg/ (#byggesoknad), no longer on the home page.
  */
 import { permitsCopy, sectionIds } from "@/content/site";
 import { permitTypes } from "@/content/permits";
-import { Section, SectionHeader, SmartLink, Icon } from "@/components/ui";
+import { Section, SectionHeader, SmartLink, Icon, type Tone } from "@/components/ui";
 import { PermitTabs } from "./PermitTabs";
 import { sectionStrings } from "./strings";
 
-export function PermitsSection() {
+export function PermitsSection({ tone = "chalk" }: { tone?: Tone }) {
   return (
-    <Section id={sectionIds.permits} tone="paper" labelledBy="byggesoknad-title">
+    <Section id={sectionIds.permits} tone={tone} labelledBy="byggesoknad-title">
       <SectionHeader id="byggesoknad-title" title={permitsCopy.title} lede={permitsCopy.lede} />
 
       <PermitTabs
