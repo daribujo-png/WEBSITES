@@ -262,3 +262,53 @@ export interface MissingFact {
   /** Where on the site the placeholder appears. */
   where: string[];
 }
+
+/* House models we build (src/content/house-models.ts) ------------------------------------------ */
+
+/** The supplier's three roof forms. Matches the model's node suffixes (__saltak, __flatt, __pulttak). */
+export type RoofType = "saltak" | "flatt" | "pulttak";
+
+export interface HouseModelImage {
+  /** Key in the generated image manifest, e.g. "adria-saltak-hage" → public/images/adria/<key>-<w>.{avif,webp}. */
+  key: string;
+  roof: RoofType;
+  view: "hage" | "innkjorsel" | "hage-naer";
+  /** Size of the largest regular derivative. */
+  width: number;
+  height: number;
+  /** Regular widths (2560/3840 only exist for the detail page's full view). */
+  widths: number[];
+  alt: string;
+  caption: string;
+  /**
+   * Our own render from the same camera (src/content/renders.ts), used instead
+   * of the supplier image when supplierImagesEnabled is false.
+   */
+  twinRenderKey?: string;
+}
+
+export interface HouseModelFact {
+  label: string;
+  value: string;
+  /** External source link (opens in a new tab). */
+  href?: string;
+}
+
+export interface HouseModel {
+  slug: string;
+  name: string;
+  supplier: { name: string; url: string };
+  /** "Husmodell Adria fra Boligpartner" */
+  credit: string;
+  /** Key into missingFacts; rendered as a visible [MANGLER: …] next to every image. */
+  missing: string;
+  summary: string;
+  facts: HouseModelFact[];
+  roofTypes: RoofType[];
+  defaultRoof: RoofType;
+  images: HouseModelImage[];
+  /** True when the home page has the 3D build of this model (/#slik-bygger-vi). */
+  has3d: boolean;
+  metaTitle: string;
+  metaDescription: string;
+}

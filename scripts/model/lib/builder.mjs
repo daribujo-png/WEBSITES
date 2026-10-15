@@ -106,15 +106,21 @@ export class MeshBuilder {
     this.positions = [];
     this.normals = [];
     this.colors = [];
+    this.uvs = [];
     this.indices = [];
     this.useColor = false;
+    this.useUV = false;
+    /** "triangles" (default) or "lines" (glTF mode LINES, see seg()). */
+    this.mode = "triangles";
+    /** Custom per-vertex scalar attributes, e.g. { _ORDER: [] } (glTF names start with "_"). */
+    this.extra = {};
   }
 
   get vertexCount() {
     return this.positions.length / 3;
   }
 
-  _push(p, n, c) {
+  _push(p, n, c, uv) {
     this.positions.push(p.x, p.y, p.z);
     this.normals.push(n.x, n.y, n.z);
     if (c) {
@@ -123,7 +129,45 @@ export class MeshBuilder {
     } else {
       this.colors.push(1, 1, 1);
     }
+    if (uv) {
+      this.useUV = true;
+      this.uvs.push(uv[0], uv[1]);
+    } else {
+      this.uvs.push(0, 0);
+    }
     return this.vertexCount - 1;
+  }
+
+  /** Quad with explicit UVs ([u, v] per corner) and an optional shared normal (e.g. for leaf cards). */
+  quadUV(p0, p1, p2, p3, uvs, color, normal) {
+    const n = normal ? _n.copy(normal) : _n.copy(_a.subVectors(p2, p0)).cross(_b.subVectors(p3, p1)).normalize();
+    const nn = n.clone();
+    const i0 = this._push(p0, nn, color, uvs[0]);
+    const i1 = this._push(p1, nn, color, uvs[1]);
+    const i2 = this._push(p2, nn, color, uvs[2]);
+    const i3 = this._push(p3, nn, color, uvs[3]);
+    this.indices.push(i0, i1, i2, i0, i2, i3);
+  }
+
+  /** Vertex with its own normal, colour and UV (for smooth/foliage geometry); returns its index. */
+  vert(p, n, color, uv) {
+    return this._push(p, n, color, uv);
+  }
+
+  /**
+   * Line segment (mode "lines"). `attrs` are custom scalar attributes per end,
+   * e.g. { _ORDER: [0.1, 0.12] }.
+   */
+  seg(a, b, color, attrs = {}) {
+    this.mode = "lines";
+    const up = V(0, 1, 0);
+    const i0 = this._push(a, up, color);
+    const i1 = this._push(b, up, color);
+    for (const [k, [va, vb]] of Object.entries(attrs)) {
+      if (!this.extra[k]) this.extra[k] = new Array(i0).fill(0);
+      this.extra[k].push(va, vb);
+    }
+    this.indices.push(i0, i1);
   }
 
   /** Flat triangle. Normal from winding unless `normal` given. */

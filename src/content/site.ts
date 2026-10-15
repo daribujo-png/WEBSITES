@@ -49,7 +49,8 @@ export const company = {
     privacyOwner: "kontaktperson for personvern",
     privacyApproval: "godkjenning av personvernerklæringen",
     formEndpoint: "skjematjeneste",
-    clientHouse: "kundens eget hus: tegninger, bilder eller 3D-modell",
+    clientHouse: "kundens egne nybygg (bilder)",
+    boligpartnerRights: "bekreft avtale med Boligpartner om bruk av husmodell og bilder",
   },
 } as const;
 
@@ -58,6 +59,7 @@ export const company = {
 export const nav: NavItem[] = [
   { label: "Slik bygger vi", href: "/#slik-bygger-vi" },
   { label: "Tjenester", href: "/tjenester/" },
+  { label: "Husmodeller", href: "/husmodeller/" },
   { label: "Referanser", href: "/referanser/" },
   { label: "Om oss", href: "/om-oss/" },
   { label: "Kontakt", href: "/kontakt/" },
@@ -66,15 +68,18 @@ export const nav: NavItem[] = [
 /** Section anchors on the home page (in page order). */
 export const sectionIds = {
   hero: "topp",
-  intro: "alt-under-ett-tak",
+  /** The build part of the hero (steps). Old links to /#slik-bygger-vi land here. */
   build: "slik-bygger-vi",
-  services: "tjenester",
-  process: "fra-tegning-til-nokkel",
-  permits: "byggesoknad",
-  beforeAfter: "for-og-etter",
+  leadServices: "dette-bygger-vi",
   references: "referanser",
+  houseModels: "husmodeller",
+  /** Kept from the old "Fra tegning til nøkkel" section so old links still work. */
+  process: "fra-tegning-til-nokkel",
+  allTrades: "alle-fag",
   about: "om-oss",
   contact: "kontakt",
+  /** On /tjenester/pabygg-og-tilbygg/ (moved from the home page). */
+  permits: "byggesoknad",
 } as const;
 
 export const cta = {
@@ -113,49 +118,67 @@ export const ui = {
 
 /* Home: hero ----------------------------------------------------------------------- */
 
+/**
+ * Hero copy (DIRECTION-adria.md §6). The HERO components may keep their own
+ * copy in build.ts; these keys stay for compatibility.
+ */
 export const hero = {
-  headline: "Vi bygger hele huset.",
-  sub: "Fra sprenging og grunnmur til elektro, rør og siste strøk maling. Alle fagene er i eget firma, og én prosjektleder holder i jobben til avtalt tid og pris.",
+  headline: "Fra tegning til hus.",
+  sub: "Vi bygger nye hus, tilbygg, påbygg og tak i Bergen og omegn. Byggesøknaden ordner vi, og én prosjektleder følger jobben til avtalt tid og pris.",
   cta: { label: cta.primary, href: cta.primaryHrefHome },
   secondary: { label: "Se hvordan vi bygger", href: "#slik-bygger-vi" },
   area: "Bergen og omegn",
+  credit:
+    "Husmodell Adria fra Boligpartner. Bilde: Boligpartner. [MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]",
+  creditLink: { label: "Om Adria", href: "/husmodeller/adria/" },
   posterAlt:
-    "3D-gjengivelse av et arkitekttegnet trehus i blå time, med lys i vinduene, to store lønnetrær, bjørk og fjell i Fana.",
+    "Husmodellen Adria med saltak, sett fra hagen: toetasjes hus med stående trekledning, sort tak, overbygd balkong og terrasse, plen og solsenger i forgrunnen.",
   dragHint: "Dra for å se huset fra en annen side",
 } as const;
 
-/* Home: full-bleed photo between Tjenester and "Fra tegning til nøkkel" ----------------------- */
+/* Home: full-bleed photo between "Alle fagene i eget firma" and "Om oss" ----------------------- */
 
 export const interlude = {
   photoKey: "arbeid-over-bergen-bred" satisfies PhotoKey,
   caption: "På jobb over Bergen.",
 } as const;
 
-/* Home: intro ("Alt under ett tak") -------------------------------------------------------- */
+/* Home: "Dette bygger vi" (the three lead services) ---------------------------------------- */
 
-export const intro = {
-  title: "Alt under ett tak",
-  lede: "Vi er erfarne håndverkere fra flere firmaer som er slått sammen til ett. Derfor har vi alle fagene et byggeprosjekt trenger i samme bedrift.",
-  /** Supporting photo (own project: a fourplex we worked on). */
-  photoKey: "firemannsbolig" satisfies PhotoKey,
-  body: [
-    "Tømrerarbeid, elektro, VVS, maling, mur og betong og sprenging gjør vi selv. Vi tar hele jobben som totalentreprise, eller den delen du trenger.",
-    "Du får én prosjektleder. Prosjektlederen samordner fagene, holder tidsplanen og er den du snakker med fra første samtale til overlevering.",
-  ],
-  points: [
-    {
-      title: "Én prosjektleder",
-      body: "Én person samordner alle fagene og holder tidsplanen for deg.",
-    },
-    {
-      title: "Byggesøknaden ordner vi",
-      body: "Også når du skal bygge til, rive eller grave ut kjeller.",
-    },
-    {
-      title: "Avtalt tid og pris",
-      body: "Vi leverer nøkkelferdig og bygger etter dine spesifikasjoner.",
-    },
-  ],
+export const leadServicesCopy = {
+  title: "Dette bygger vi",
+  lede: "Nye hus, tilbygg og påbygg, og tak. Vi tar hele jobben, fra søknad til ferdig bygg, med én prosjektleder.",
+  nybygg: {
+    title: "Nybygg",
+    body: "Har du tomt, men ikke hus? Vi har lang erfaring med å sette opp hus, og leverer nøkkelferdig til avtalt tid og pris, etter dine spesifikasjoner.",
+    link: { label: "Les om nybygg", href: "/tjenester/ny-bolig/" },
+    modelsLink: { label: "Se husmodellene", href: "/husmodeller/" },
+    drawingCaption: "Fasadetegning fra vår 3D-modell av husmodellen Adria.",
+    drawingLabel: "Fasadetegning av husmodellen Adria sett fra hagen: to etasjer med saltak, store vindusfelt, overbygd balkong og pergola.",
+  },
+  tilbygg: {
+    title: "Tilbygg og påbygg",
+    body: "Et tilbygg gir huset større grunnflate. Et påbygg gir deg en ny etasje på huset du har. Byggesøknaden skriver og sender vi.",
+    link: { label: "Les om tilbygg og påbygg", href: "/tjenester/pabygg-og-tilbygg/" },
+    pairId: "tilbygg",
+  },
+  tak: {
+    title: "Tak",
+    body: "Nytt tak, reparasjoner, takrenner og nedløp. Vi ser over taket først og forteller deg hva som må gjøres.",
+    link: { label: "Les om takarbeid", href: "/tjenester/takarbeid/" },
+    photoKey: "nytt-tak" satisfies PhotoKey,
+  },
+  closing: "Vi tar også oppussing, bad, ombygging og rehabilitering.",
+  allLink: { label: "Se alle tjenestene", href: "/tjenester/" },
+} as const;
+
+/* Home: "Alle fagene i eget firma" (the calm all-trades mention + all ten services) -------------- */
+
+export const allTradesCopy = {
+  title: "Alle fagene i eget firma",
+  body: "Vi er håndverkere fra flere firmaer som er slått sammen til ett. Tømrer, elektriker, rørlegger, maler og murer jobber hos oss, og sprenging og grunnarbeid gjør vi selv. Du får én prosjektleder som samordner fagene.",
+  listLabel: "Alle tjenestene våre",
+  allLink: "Se alle tjenestene",
 } as const;
 
 /* Home: section headings for the other sections ------------------------------------------------ */
@@ -176,12 +199,12 @@ export const servicesCopy = {
   relatedTitle: "Andre tjenester",
   indexTitle: "Alt vi bygger og fornyer",
   indexLede:
-    "Fra nytt hus til nytt bad. Alle fagene er i eget firma, og én prosjektleder samordner jobben.",
+    "Nye hus, tilbygg og påbygg og tak først, og alt fra ombygging til nytt bad. Alle fagene er i eget firma, og én prosjektleder samordner jobben.",
 } as const;
 
 export const processCopy = {
-  title: "Fra tegning til nøkkel",
-  lede: "Den samme prosjektlederen følger deg fra første samtale til overlevering.",
+  title: "Fra første samtale til overlevering",
+  lede: "Den samme prosjektlederen følger deg hele veien.",
 } as const;
 
 export const permitsCopy = {
@@ -210,6 +233,13 @@ export const beforeAfterCopy = {
 
 export const referencesCopy = {
   title: "Referanser",
+  /** Home band ("Prosjektark"). */
+  homeTitle: "Jobber vi har gjort",
+  homeLede: "Tre oppdrag fra referanselisten vår.",
+  homeNote: "Bildene mellom arkene er fra andre jobber vi har gjort.",
+  sketchCaption: "Skisse",
+  photoNote: "Foto fra eget prosjekt.",
+  sheetLink: (title: string) => `Les om ${title.charAt(0).toLowerCase()}${title.slice(1)}`,
   lede: "Et utvalg av oppdragene våre: en innvendig rehabilitering, innredning av leiligheter og et nytt bad og kjøkken.",
   scopeLabel: "Arbeid",
   placeLabel: "Sted",
@@ -238,7 +268,7 @@ export const about = {
   headline: "Håndverkere fra flere firmaer, samlet i ett",
   lede: "Bygg og Renovering Vest AS er en gruppe erfarne fagfolk med ulik bakgrunn. Vi har slått oss sammen for å kunne levere hele jobben selv.",
   body: [
-    "Vi skreddersyr løsninger for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn, og bygger etter dine spesifikasjoner. Målet er å gjøre byggeprosessen så enkel som mulig for deg.",
+    "Vi bygger for private, bedrifter og offentlige oppdragsgivere i Bergen og omegn, etter dine spesifikasjoner. Målet er å gjøre byggeprosessen så enkel som mulig for deg.",
     "Alle fagene er samlet i én bedrift: entreprenør, tømrer, elektriker, VVS, maler, mur og betong og sprenging. Firmaene som er slått sammen, har drevet stabilt over tid.",
     "Du får en egen prosjektleder som samordner fagene og følger opp tidsplanen. Vi leverer nøkkelferdig, til avtalt tid og pris.",
   ],
@@ -332,29 +362,46 @@ export const tradeById = Object.fromEntries(trades.map((t) => [t.id, t])) as Rec
   Trade
 >;
 
-/* Reference house (the 3D model) -------------------------------------------------------------- */
+/* The house in the 3D model: Adria from Boligpartner ------------------------------------------------ */
 
-export const referenceHouse = {
-  title: "Arkitekttegnet referanse – slik ville vi bygget den",
-  name: "House in Bergen",
-  architect: "Kvalbein Korsøen Arkitektur",
-  credit: "Arkitektur: Kvalbein Korsøen Arkitektur",
-  place: "Fana, Bergen",
-  completed: "2019",
-  area: "ca. 130 m²",
-  description:
-    "Et tradisjonelt trehus i form, materialer og teknikk. To gamle lønnetrær på tomten bestemte husets størrelse og form, og hvor åpningene i veggene skulle sitte. Bindingsverket er isolert med trefiber, og en buet, mørk inngang leder inn til kjøkken og stue som åpner seg mot hagen.",
-  note: "3D-modellen er vår egen tolkning av House in Bergen, tegnet av Kvalbein Korsøen Arkitektur. Bygg og Renovering Vest har ikke bygget dette huset. Vi bruker det for å vise, steg for steg, hvordan vi ville bygget et arkitekttegnet hus.",
+/**
+ * The hero builds our 3D interpretation of the catalogue house Adria from
+ * Boligpartner. Its images are shown as supplied with a visible credit; the
+ * supplier's drawings are never published. See src/content/house-models.ts.
+ */
+export const adriaHouse = {
+  name: "Adria",
+  supplier: "Boligpartner",
+  supplierUrl: "https://boligpartner.no/ferdighus/moderne/adria",
+  credit: "Husmodell Adria fra Boligpartner",
+  photoCredit: "Bilde: Boligpartner",
+  missing: "[MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]",
+  href: "/husmodeller/adria/",
+  linkLabel: "Om Adria",
+  /** /om-oss/ section. */
+  title: "Huset i 3D-modellen",
+  body: "Huset du ser bygges på forsiden er vår 3D-modell av husmodellen Adria fra Boligpartner.",
   modelNote:
-    "Arkitektens tegninger var ikke tilgjengelige da modellen ble laget. Proporsjoner og planløsning er derfor tilnærmet.",
-  shortNote: "Vår tolkning. Huset er ikke bygget av oss.",
-  rendersNote: "Alle bilder av huset er gjengivelser av vår egen 3D-modell.",
+    "Modellen er vår egen tolkning, laget etter leverandørens bilder og fakta. Interiøret i andre etasje er vår illustrasjon. Alle bilder merket «3D-modell» er gjengivelser av den.",
+  shortNote: "3D-huset er vår tolkning av husmodellen.",
+} as const;
+
+/**
+ * @deprecated Use adriaHouse. Kept so components that still read the old
+ * reference house (pre-Adria hero/build sequence) show the Adria credit.
+ */
+export const referenceHouse = {
+  title: adriaHouse.credit,
+  name: adriaHouse.name,
+  credit: adriaHouse.photoCredit,
+  shortNote: adriaHouse.shortNote,
+  note: `${adriaHouse.body} ${adriaHouse.missing}`,
 } as const;
 
 /* Footer ------------------------------------------------------------------------------------------- */
 
 export const footer = {
-  tagline: "Alle fag under ett tak. Bygg og renovering i Bergen og omegn.",
+  tagline: "Nye hus, tilbygg, påbygg og tak i Bergen og omegn.",
   servicesTitle: "Tjenester",
   contactTitle: "Kontakt",
   companyTitle: "Firma",
@@ -365,7 +412,7 @@ export const footer = {
   privacy: { label: "Personvern", href: "/personvern/" },
   copyright: (year: number) => `© ${year} Bygg og Renovering Vest AS`,
   modelCredit:
-    "3D-huset er vår tolkning av House in Bergen. Arkitektur: Kvalbein Korsøen Arkitektur.",
+    "3D-huset er vår tolkning av husmodellen Adria fra Boligpartner. [MANGLER: bekreft avtale med Boligpartner om bruk av husmodell og bilder]",
 } as const;
 
 /* 404 ----------------------------------------------------------------------------------------------- */
@@ -437,8 +484,13 @@ export const missingFacts: MissingFact[] = [
   },
   {
     key: "clientHouse",
-    label: "kundens eget hus: tegninger, bilder eller 3D-modell",
-    where: ["Hero og Slik bygger vi bruker referansehuset til dette finnes"],
+    label: "kundens egne nybygg (bilder)",
+    where: ["Forside: hero og byggestegene viser husmodellen Adria til egne nybygg kan vises"],
+  },
+  {
+    key: "boligpartnerRights",
+    label: "bekreft avtale med Boligpartner om bruk av husmodell og bilder",
+    where: ["Forside: hero og husmodeller", "Husmodeller", "Om oss", "Footer"],
   },
 ];
 
@@ -488,6 +540,10 @@ export const contentNotes: { topic: string; note: string }[] = [
   {
     topic: "Logo",
     note: "Logovarianter med «Tlf. 922 23 222» er ikke brukt, fordi nummeret avviker fra 94 01 66 10.",
+  },
+  {
+    topic: "Husmodellen Adria",
+    note: "Adria er en ferdighusmodell fra Boligpartner. Bildene vises slik leverandøren leverte dem (bare skalert og beskåret), alltid med «Bilde: Boligpartner». Fakta er hentet fra boligpartner.no; markedsføringspåstander og priser er ikke brukt. Fasadetegningene brukes bare som modelleringsgrunnlag og publiseres ikke. Skriftlig avtale med Boligpartner må på plass før lansering; uten den settes supplierImagesEnabled = false i src/content/house-models.ts.",
   },
   {
     topic: "Bilder",

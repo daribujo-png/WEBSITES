@@ -17,7 +17,7 @@
  * reorder + quantize + EXT_meshopt_compression.
  */
 import { Document, NodeIO, PropertyType } from "@gltf-transform/core";
-import { ALL_EXTENSIONS, EXTMeshGPUInstancing, KHRMaterialsEmissiveStrength } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS, EXTMeshGPUInstancing, EXTTextureWebP, KHRMaterialsEmissiveStrength } from "@gltf-transform/extensions";
 import { dedup, meshopt, prune, weld } from "@gltf-transform/functions";
 import { MeshoptEncoder, MeshoptDecoder } from "meshoptimizer";
 import * as THREE from "three";
@@ -27,9 +27,11 @@ import { MeshBuilder, SceneNode, cullBuried } from "./builder.mjs";
 /**
  * Material spec (all colours sRGB hex):
  * { color, metallic, roughness, emissive?, emissiveIntensity?, opacity?,
- *   doubleSided?, vertexColors? }
+ *   doubleSided?, vertexColors?, map?: textureKey, alphaMode?: "MASK"|"BLEND",
+ *   alphaCutoff?, uv?: { worldXZ: scale } (TEXCOORD_0 generated from positions) }
+ * Textures are passed to writeGLB as { key: { data: Buffer (WebP), name } }.
  */
-function makeMaterial(doc, name, spec, emissiveExt) {
+function makeMaterial(doc, name, spec, emissiveExt, getTexture) {
   const c = new THREE.Color(spec.color ?? "#ffffff"); // linear internally
   const m = doc
     .createMaterial(name)
@@ -38,6 +40,9 @@ function makeMaterial(doc, name, spec, emissiveExt) {
     .setRoughnessFactor(spec.roughness ?? 0.8)
     .setDoubleSided(Boolean(spec.doubleSided));
   if (spec.opacity !== undefined && spec.opacity < 1) m.setAlphaMode("BLEND");
+  if (spec.alphaMode) m.setAlphaMode(spec.alphaMode);
+  if (spec.alphaMode === "MASK") m.setAlphaCutoff(spec.alphaCutoff ?? 0.5);
+  if (spec.map) m.setBaseColorTexture(getTexture(spec.map));
   if (spec.emissive) {
     const e = new THREE.Color(spec.emissive);
     m.setEmissiveFactor([e.r, e.g, e.b]);
@@ -57,7 +62,18 @@ function makeMaterial(doc, name, spec, emissiveExt) {
 /* Merged layout                                                                                  */
 /* ---------------------------------------------------------------------------------------------- */
 
-const isTransient = (n) => Boolean(n.extras && n.extras.hideFrom);
+/**
+ * Groups that stay their own node in the merged layout: construction-only groups
+ * (extras.hideFrom), roof-variant and ceiling groups (a "__" suffix in the name),
+ * instanced templates and groups flagged `separate`.
+ */
+const isSeparate = (n) => Boolean((n.extras && n.extras.hideFrom) || n.separate || n.instances || n.name.includes("__"));
+
+/** "tak_tekking__saltak" → ["tak_tekking", "__saltak"]; names without a suffix → [name, ""]. */
+export function splitSuffix(name) {
+  const i = name.indexOf("__");
+  return i < 0 ? [name, ""] : [name.slice(0, i), name.slice(i)];
+}
 
 /** Append `src` (offset by `off` = [x, y, z]) to `dst`. */
 function appendInto(dst, src, off) {
@@ -66,63 +82,69 @@ function appendInto(dst, src, off) {
   for (let i = 0; i < P.length; i += 3) dst.positions.push(P[i] + off[0], P[i + 1] + off[1], P[i + 2] + off[2]);
   for (const v of src.normals) dst.normals.push(v);
   for (const v of src.colors) dst.colors.push(v);
+  for (const v of src.uvs) dst.uvs.push(v);
+  for (const [k, arr] of Object.entries(src.extra)) {
+    if (!dst.extra[k]) dst.extra[k] = new Array(base).fill(0);
+    for (const v of arr) dst.extra[k].push(v);
+  }
+  for (const k of Object.keys(dst.extra)) while (dst.extra[k].length < base + src.vertexCount) dst.extra[k].push(0);
   for (const i of src.indices) dst.indices.push(base + i);
   dst.useColor ||= src.useColor;
+  dst.useUV ||= src.useUV;
+  dst.mode = src.mode;
 }
 
 /**
- * All parts of `node` and of its descendants (stopping at construction-only
- * groups, which stay separate), offset by their translations, merged per
- * material in first-seen order.
+ * All parts of `node` and of its descendants (stopping at separate groups,
+ * which become their own nodes), offset by their translations, merged per
+ * material (and primitive mode) in first-seen order.
  */
-function mergeParts(node, prefix, { into = new Map(), off = [0, 0, 0], stops = [] } = {}) {
+function mergeParts(node, prefix, suffix, { into = new Map(), off = [0, 0, 0], stops = [] } = {}) {
   for (const mb of node.parts.values()) {
     if (mb.isEmpty()) continue;
-    let dst = into.get(mb.material);
+    const key = `${mb.material}|${mb.mode}`;
+    let dst = into.get(key);
     if (!dst) {
-      dst = new MeshBuilder(`${prefix}_${mb.material}`, mb.material);
-      into.set(mb.material, dst);
+      dst = new MeshBuilder(`${prefix}_${mb.material}${suffix}`, mb.material);
+      into.set(key, dst);
     }
     appendInto(dst, mb, off);
   }
   for (const c of node.children) {
-    if (isTransient(c)) {
-      stops.push(c);
+    if (isSeparate(c)) {
+      stops.push({ node: c, off });
       continue;
     }
     const t = c.translation || [0, 0, 0];
-    mergeParts(c, prefix, { into, off: [off[0] + t[0], off[1] + t[1], off[2] + t[2]], stops });
+    mergeParts(c, prefix, suffix, { into, off: [off[0] + t[0], off[1] + t[1], off[2] + t[2]], stops });
   }
   return { parts: into, stops };
 }
 
-function mergedGroup(node, name, prefix) {
+function mergedGroup(node, name, prefix, off = null) {
   const out = new SceneNode(name, node.extras);
   out.translation = node.translation;
-  const { parts, stops } = mergeParts(node, prefix);
-  for (const [mat, mb] of parts) out.parts.set(`::${mat}`, mb);
-  for (const s of stops) out.add(mergedGroup(s, s.name, s.name));
+  if (off && (off[0] || off[1] || off[2])) {
+    const t = node.translation || [0, 0, 0];
+    out.translation = [t[0] + off[0], t[1] + off[1], t[2] + off[2]];
+  }
+  out.rotation = node.rotation;
+  out.instances = node.instances;
+  const [base, suffix] = splitSuffix(prefix);
+  const { parts, stops } = mergeParts(node, base, suffix);
+  for (const [key, mb] of parts) out.parts.set(`::${key}`, mb);
+  for (const s of stops) out.add(mergedGroup(s.node, s.node.name, s.node.name, s.off));
   return out;
 }
 
 /**
- * Root → merged tree. Layer groups (`layer_<step>`) keep their name and extras;
- * mesh nodes inside are `<step>_<material>`. A birch grove (`env_birches`)
- * either becomes one merged group (unique trees) or keeps its instanced
- * template nodes, each with its parts merged per material.
+ * Root → merged tree. Top-level groups keep their name and extras; mesh nodes
+ * inside are `<group>_<material>` (a layer prefix drops "layer_"), and in
+ * suffixed groups the suffix moves to the end: `tak_tekking_roof_tile__saltak`.
  */
 export function mergeTree(root) {
   const out = new SceneNode(root.name, root.extras);
   for (const c of root.children) {
-    if (c.children.some((t) => t.instances)) {
-      const grove = out.add(new SceneNode(c.name, c.extras));
-      for (const t of c.children) {
-        const node = grove.add(new SceneNode(t.name, t.extras));
-        node.instances = t.instances;
-        for (const [mat, mb] of mergeParts(t, t.name).parts) node.parts.set(`::${mat}`, mb);
-      }
-      continue;
-    }
     const prefix = c.name.startsWith("layer_") ? c.name.slice(6) : c.name;
     out.add(mergedGroup(c, c.name, prefix));
   }
@@ -161,6 +183,7 @@ export function consolidateMaterials(roots, specs, classes) {
  * vertices of a face corner weld into one.
  */
 function isFlat(mb) {
+  if (mb.mode === "lines") return true;
   const P = mb.positions;
   const N = mb.normals;
   const I = mb.indices;
@@ -189,7 +212,7 @@ function isFlat(mb) {
   return true;
 }
 
-/** Drop vertices no triangle uses (after culling), keeping order. */
+/** Drop vertices no primitive uses (after culling), keeping order. */
 function compact(mb) {
   const n = mb.vertexCount;
   const used = new Int32Array(n).fill(-1);
@@ -200,15 +223,21 @@ function compact(mb) {
   const P = [];
   const N = [];
   const C = [];
+  const T = [];
+  const X = Object.fromEntries(Object.keys(mb.extra).map((key) => [key, []]));
   for (let i = 0; i < n; i++) {
     if (used[i] < 0) continue;
     P.push(mb.positions[i * 3], mb.positions[i * 3 + 1], mb.positions[i * 3 + 2]);
     N.push(mb.normals[i * 3], mb.normals[i * 3 + 1], mb.normals[i * 3 + 2]);
     C.push(mb.colors[i * 3], mb.colors[i * 3 + 1], mb.colors[i * 3 + 2]);
+    T.push(mb.uvs[i * 2], mb.uvs[i * 2 + 1]);
+    for (const key of Object.keys(X)) X[key].push(mb.extra[key][i] ?? 0);
   }
   mb.positions = P;
   mb.normals = N;
   mb.colors = C;
+  mb.uvs = T;
+  mb.extra = X;
   mb.indices = mb.indices.map((i) => used[i]);
 }
 
@@ -227,7 +256,7 @@ function snap(mb) {
 export function finalizeTree(roots) {
   const visit = (n) => {
     for (const mb of n.parts.values()) {
-      cullBuried(mb);
+      if (mb.mode !== "lines") cullBuried(mb);
       snap(mb);
       compact(mb);
     }
@@ -248,6 +277,7 @@ export function finalizeTree(roots) {
  * @param opts.materialClasses lite: merge plain materials per class (see LITE_MATERIAL_CLASSES)
  * @param opts.flatWithoutNormals lite: leave NORMAL out of meshes that are entirely flat shaded
  *   (true, or { keep: [material names that always keep their normals] })
+ * @param opts.textures { key: { data: Buffer (image/webp), name? } } referenced by material specs' `map`
  */
 export async function writeGLB(
   roots,
@@ -260,6 +290,7 @@ export async function writeGLB(
     quantize = {},
     materialClasses = null,
     flatWithoutNormals = false,
+    textures = {},
   } = {},
 ) {
   finalizeTree(roots);
@@ -273,36 +304,66 @@ export async function writeGLB(
   const doc = new Document();
   doc.createBuffer();
   const emissiveExt = doc.createExtension(KHRMaterialsEmissiveStrength);
+  let webpExt = null;
   const scene = doc.createScene(sceneName);
+  const texCache = new Map();
+  const getTexture = (key) => {
+    if (!texCache.has(key)) {
+      const t = textures[key];
+      if (!t) throw new Error(`Missing texture: ${key}`);
+      webpExt ??= doc.createExtension(EXTTextureWebP).setRequired(true);
+      texCache.set(key, doc.createTexture(t.name || key).setImage(new Uint8Array(t.data)).setMimeType("image/webp").setURI(""));
+    }
+    return texCache.get(key);
+  };
   const materials = new Map();
   const getMat = (name) => {
     if (!materials.has(name)) {
       const spec = materialSpecs[name];
       if (!spec) throw new Error(`Missing material spec: ${name}`);
-      materials.set(name, makeMaterial(doc, name, spec, emissiveExt));
+      materials.set(name, makeMaterial(doc, name, spec, emissiveExt, getTexture));
     }
     return materials.get(name);
   };
 
-  const stats = { meshes: 0, vertices: 0, triangles: 0, instancedTriangles: 0, flatMeshes: 0 };
+  const stats = { meshes: 0, vertices: 0, triangles: 0, lines: 0, instancedTriangles: 0, flatMeshes: 0 };
   let instancing = null;
 
   const makePrim = (mb) => {
     const vc = mb.vertexCount;
     const prim = doc.createPrimitive();
+    const lines = mb.mode === "lines";
+    if (lines) prim.setMode(1); // LINES
     prim.setAttribute("POSITION", doc.createAccessor().setType("VEC3").setArray(new Float32Array(mb.positions)));
     const keepNormals = Array.isArray(flatWithoutNormals?.keep) && flatWithoutNormals.keep.includes(mb.material);
-    if (flatWithoutNormals && !keepNormals && isFlat(mb)) stats.flatMeshes++;
-    else prim.setAttribute("NORMAL", doc.createAccessor().setType("VEC3").setArray(new Float32Array(mb.normals)));
     const spec = materialSpecs[mb.material];
+    if (lines) {
+      // no normals on lines
+    } else if (flatWithoutNormals && !keepNormals && !spec?.map && isFlat(mb)) stats.flatMeshes++;
+    else prim.setAttribute("NORMAL", doc.createAccessor().setType("VEC3").setArray(new Float32Array(mb.normals)));
     if (allColors || mb.useColor || spec?.vertexColors) {
       prim.setAttribute("COLOR_0", doc.createAccessor().setType("VEC3").setArray(new Float32Array(mb.colors)));
+    }
+    if (spec?.uv?.worldXZ) {
+      const s = spec.uv.worldXZ;
+      const uv = new Float32Array(vc * 2);
+      for (let i = 0; i < vc; i++) {
+        uv[i * 2] = mb.positions[i * 3] * s;
+        uv[i * 2 + 1] = mb.positions[i * 3 + 2] * s;
+      }
+      prim.setAttribute("TEXCOORD_0", doc.createAccessor().setType("VEC2").setArray(uv));
+    } else if (spec?.map || mb.useUV) {
+      prim.setAttribute("TEXCOORD_0", doc.createAccessor().setType("VEC2").setArray(new Float32Array(mb.uvs)));
+    }
+    for (const [k, arr] of Object.entries(mb.extra)) {
+      prim.setAttribute(k, doc.createAccessor().setType("SCALAR").setArray(new Float32Array(arr)));
     }
     const idx = vc > 65535 ? new Uint32Array(mb.indices) : new Uint16Array(mb.indices);
     prim.setIndices(doc.createAccessor().setType("SCALAR").setArray(idx));
     prim.setMaterial(getMat(mb.material));
     stats.meshes++;
-    stats.triangles += mb.indices.length / 3;
+    if (lines) stats.lines += mb.indices.length / 2;
+    else stats.triangles += mb.indices.length / 3;
     return prim;
   };
 
@@ -330,6 +391,8 @@ export async function writeGLB(
         .setAttribute("TRANSLATION", attr("translation", "VEC3"))
         .setAttribute("ROTATION", attr("rotation", "VEC4"))
         .setAttribute("SCALE", attr("scale", "VEC3"));
+      if (sn.instances.some((i) => i.birth !== undefined)) batch.setAttribute("_BIRTH", doc.createAccessor().setType("SCALAR").setArray(new Float32Array(sn.instances.map((i) => i.birth ?? 0))));
+      if (sn.instances.some((i) => i.color)) batch.setAttribute("_COLOR_0", attr("color", "VEC3"));
       node.setMesh(mesh).setExtension("EXT_mesh_gpu_instancing", batch);
     } else {
       for (const mb of parts) {
@@ -354,6 +417,7 @@ export async function writeGLB(
       quantizePosition: quantize.position ?? 14,
       quantizeNormal: quantize.normal ?? 8,
       quantizeColor: quantize.color ?? 8,
+      quantizeTexcoord: quantize.texcoord ?? 12,
     }),
   );
 
@@ -367,7 +431,7 @@ export async function writeGLB(
     .getRoot()
     .listMeshes()
     .reduce((s, m) => s + m.listPrimitives().reduce((a, p) => a + p.getAttribute("POSITION").getCount(), 0), 0);
-  return { bytes: glb.byteLength, ...stats, materials: materials.size };
+  return { bytes: glb.byteLength, ...stats, materials: materials.size, textures: texCache.size };
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -505,5 +569,7 @@ export function packMeshoptViews(glb) {
 export function describe(name, s) {
   const inst = s.instancedTriangles ? ` (+${s.instancedTriangles} instanced)` : "";
   const flat = s.flatMeshes ? ` · ${s.flatMeshes} flat meshes without normals` : "";
-  return `${name} ${(s.bytes / 1024).toFixed(0)} KB · meshes ${s.meshes} · materials ${s.materials} · vertices ${s.vertices} · triangles ${s.triangles}${inst}${flat}`;
+  const lines = s.lines ? ` · ${s.lines} line segments` : "";
+  const tex = s.textures ? ` · ${s.textures} textures` : "";
+  return `${name} ${(s.bytes / 1024).toFixed(0)} KB · meshes ${s.meshes} · materials ${s.materials} · vertices ${s.vertices} · triangles ${s.triangles}${inst}${lines}${flat}${tex}`;
 }
